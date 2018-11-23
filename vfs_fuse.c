@@ -1,7 +1,7 @@
 #include <signal.h>
 #include <errno.h>
 #define	FUSE_USE_VERSION 26
-#include <fuse/fuse_i.h>
+#include <fuse/fuse.h>
 #include <fuse/fuse_lowlevel.h>
 #include "conf.h"
 #include "db.h"

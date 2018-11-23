@@ -68,11 +68,11 @@ int main(int argc, char **argv) {
    if ((conf.log_fp = log_open(dconf_get_str("path.log", NULL))) == NULL)
       conf.log_fp = stdout;
 
-   Log(LOG_INFO, "%s: Package filesystem %s starting up...", argv[0], VERSION);
+   Log(LOG_INFO, "fs-pkg: Package filesystem %s starting up...", VERSION);
    Log(LOG_INFO, "Copyright (C) 2012-2018 bigfluffy.cloud -- See LICENSE in distribution package for terms of use");
 
    if (!conf.mountpoint)
-      conf.mountpoint = dconf_get_str("path.mountpoint", "/test");
+      conf.mountpoint = dconf_get_str("path.mountpoint", "/jails/");
 
 #if	defined(USE_FUSE)
    /*

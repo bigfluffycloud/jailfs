@@ -85,7 +85,7 @@ static void vfs_fuse_open(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info 
    }
 
    if (!i) {
-      if (!fi->flags & O_CREAT) {
+      if (!(fi->flags & O_CREAT)) {
          fuse_reply_err(req, ENOENT);
       } else {
          /*

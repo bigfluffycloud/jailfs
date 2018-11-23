@@ -1,5 +1,6 @@
 ; log.level [debug|info|warning|error|fatal|hack]
 log.level=debug
+log.stack_unwind=true
 ;path.db=:memory:
 path.db=fs-pkg.db
 ; This will be added soon, allowing saving database

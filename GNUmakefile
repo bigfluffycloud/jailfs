@@ -19,4 +19,4 @@ world:${bin} ${libs}
 
 testpkg:
 	xar --compression=none -c -f pkg/irssi.pkg /usr/bin/irssi /usr/lib/irssi /usr/share/irssi \
-		  /usr/share/irssi /usr/share/man/man1/irssi.1.gz
+		  /usr/share/irssi /usr/share/man/man1/irssi.1.bz2
