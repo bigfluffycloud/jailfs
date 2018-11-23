@@ -23,7 +23,6 @@
 #include "vfs.h"
 #include "xar/xar.h"
 
-#if	defined(CONFIG_TOC_LIBXAR)
 size_t      pkg_toc_zbufsize = 0;
 
 /* This works out a little cleaner... */
@@ -252,9 +251,7 @@ int pkg_toc_process(const char *path, const char *toc) {
 }
 
 #undef TOCLINELEN
-#endif                                 /* defined(CONFIG_TOC_LIBXAR) */
 
-#if	defined(CONFIG_TOC_LIBXML2)
 #undef	FAIL
 #define	MAX_DEPTH 16
 #define	XML_NODE_MATCHS(c, s)	(c)->type == XML_ELEMENT_NODE && !xmlStrcmp((c)->name, (const xmlChar *)(s))
@@ -322,7 +319,7 @@ static int xmltoc_parse_file(const char *pkg, xmlNode * n, int recursion) {
 }
 
 #define	TOCLINELEN	384
-int pkg_toc_process(const char *path, const char *toc) {
+int pkg_toc_process_libxml(const char *path, const char *toc) {
    u_int32_t   pkgid;
    char        buf[384];               /* a line really shouldnt be longer than this.. */
    char        pathbuf[PATH_MAX];
@@ -374,5 +371,3 @@ int pkg_toc_process(const char *path, const char *toc) {
    xmlCleanupParser();
    return EXIT_SUCCESS;
 }
-
-#endif                                 /* defined(CONFIG_TOC_LIBXML2) */

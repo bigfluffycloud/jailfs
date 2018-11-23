@@ -1,3 +1,10 @@
+* (jm) Feature/6 - Add support for cpio and squashfs image based packages.
+* (jm) Feature/3 - Allow persistence of the database (right now we clobber
+                   and rescan the pkgdir on startup.
+* (jm) BUG/10    - Ensure even on unclean exit, we umount before dying...
+* (jm) Feature/6 - unwind/profiling support from appworx/apxd
+* (jm) Feature/4 - Code cleanup
+
 Work on a library (LD_PRELOAD) method.
 	* Needs read-only package database and a daemon to fill it
 	* Needs way to disable inotify, etc

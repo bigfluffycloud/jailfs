@@ -1,6 +1,7 @@
 ifeq (${CONFIG_TOC_LIBXML2}, y)
 CFLAGS += -DCONFIG_TOC_LIBXML2
 endif
+CFLAGS += -DCONFIG_VFS_FUSE
 
 bin := fs-pkg
 objs += .obj/atomicio.o
@@ -23,6 +24,7 @@ objs += .obj/support.o
 objs += .obj/thread_pool.o
 objs += .obj/timestr.o
 objs += .obj/vfs.o
+objs += .obj/vfs_fuse.o
 objs += .obj/vfs_inotify.o
 
 ${bin}: ${objs}

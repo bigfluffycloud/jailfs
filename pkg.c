@@ -219,7 +219,8 @@ int pkg_import(const char *path) {
 
    db_begin();
 
-#if	defined(CONFIG_TOC_LIBXML2)
+#if	0
+   // LIBXML2:
    /*
     * Try to extract the package TOC 
     */
@@ -227,9 +228,8 @@ int pkg_import(const char *path) {
       Log(LOG_ERROR, "failed to export toc for %s", path);
       return EXIT_FAILURE;
    }
-
-   Log(LOG_DEBUG, "TOC for %s extracted, processing", path);
 #endif
+   Log(LOG_DEBUG, "TOC for %s extracted, processing", path);
 
    /*
     * Process the extracted TOC 
@@ -242,13 +242,13 @@ int pkg_import(const char *path) {
       db_rollback();
    }
 
-#if	defined(CONFIG_TOC_LIBXML2)
    /*
     * clean up: remove extracted toc and free its name buffer 
     */
-   unlink(tmp);
-   mem_free(tmp);
-#endif
+   if (tmp != NULL) {
+      unlink(tmp);
+      mem_free(tmp);
+   }
 
    return EXIT_SUCCESS;
 }
@@ -270,7 +270,5 @@ void pkg_init(void) {
 
    pkg_lifetime = timestr_to_time(dconf_get_str("tuning.timer.pkg_gc", NULL), 60);
    evt_timer_add_periodic(pkg_gc, "gc.pkg", pkg_lifetime);
-#if	defined(CONFIG_TOC_LIBXAR)
    pkg_toc_zbufsize = dconf_get_int("tuning.toc.gz.buffer", 1310720);
-#endif
 }
