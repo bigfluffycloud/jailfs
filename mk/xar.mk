@@ -1,8 +1,0 @@
-ifeq (${CONFIG_TOC_LIBXAR}, y)
-CFLAGS += -DCONFIG_TOC_LIBXAR
-endif
-ifeq (${CONFIG_VFS_FUSE}, y)
-CFLAGS += -DCONFIG_VFS_FUSE
-endif
-
-LDFLAGS += -lxar
