@@ -192,12 +192,12 @@ int db_pkg_add(const char *path) {
 
 /* type: [f]ile, [d]ir, [l]ink, [p]ipe, f[i]fo, [c]har, [b]lock, [s]ocket */
 int db_file_add(int pkg, const char *path, const char type,
-                uid_t owner, gid_t grp, size_t size, off_t offset, time_t ctime) {
+                uid_t owner, gid_t grp, size_t size, off_t offset, time_t ctime, const char *mode) {
 
    db_file_remove(pkg, path);
    db_query(QUERY_INT,
-            "INSERT INTO files (package, path, type, owner, grp, offset, ctime, mode, target) VALUES (%lu, '%s', '%s', %lu, %lu, %lu, %lu, %lu, '%s', %lu);",
-            pkg, path, type, owner, grp, size, offset, ctime);
+            "INSERT INTO files (package, path, type, owner, grp, size, offset, mode, ctime) VALUES (%d, '%s', '%c', %lu, %lu, %lu, %lu, '%s', %lu);",
+            pkg, path, type, (u_long)owner, (u_long)grp, size, offset, mode, ctime);
    return 0;
 }
 

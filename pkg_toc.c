@@ -210,7 +210,6 @@ int pkg_toc_process(const char *path, const char *toc) {
 
    db_pkg_remove(path);
    pkgid = db_pkg_add(path);
-   fprintf(stderr, "id: %d\n", pkgid);
 
    for (f = xar_file_first(x, i); f; f = xar_file_next(i)) {
       char       *size = xar_get_size(x, f);
@@ -239,17 +238,13 @@ int pkg_toc_process(const char *path, const char *toc) {
             type = 'l';
       }
 
-#if	0
       /*
        * what we gonna do with target? 
        */
       printf("%s: %s %8s/%-8s %10s %s %s @ %s\n", xtype, mode, user,
              group, size, mtime, xpath, offset);
 
-      db_query(QUERY_INT,
-               "INSERT INTO files (package, path, type, owner, group, size, offset, ctime, mode) VALUES (%lu, '%s', '%s', %s, %s, %s, %s, %s, %s, %s);",
-               pkgid, xpath, type, user, group, size, offset, mtime);
-#endif
+      db_file_add(pkgid, xpath, type, 0, 0, size, offset, time(NULL), mode);
       free(mtime);
       free(group);
       free(user);
