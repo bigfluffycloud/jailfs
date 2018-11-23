@@ -1,6 +1,6 @@
 /*
- * Here we provide a mechanism for LD_PRELOAD injecting support
- * for fs-pkg into programs.
+ * Here we provide a mechanism for using LD_PRELOAD to inject
+ * support for fs-pkg into unmodified programs.
  *
  * This was kind of abandoned when we rewrote fs-pkg for ##ProductnameSanitized##...
  *
@@ -85,6 +85,9 @@ static void _init(void) {
    _init_lib();
 }
 
+//
+// Below we dispatch to the appropriate (real or virtual) vfs op
+//
 int open(const char *pathname, int flags, ...) {
    return real_ops.open(pathname, flags);
 }

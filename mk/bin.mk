@@ -5,7 +5,6 @@ endif
 bin := fs-pkg
 objs += .obj/atomicio.o
 objs += .obj/balloc.o
-objs += .obj/bombsquad.o
 objs += .obj/conf.o
 objs += .obj/db_sqlite.o
 objs += .obj/dictionary.o

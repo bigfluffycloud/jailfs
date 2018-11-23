@@ -4,7 +4,7 @@
  *	See lconf.[ch] for list-based configuration
  *	suitable for ACLs and similar options.
  *
- * Copyright (C) 2008 N2 Networks LLC
+ * Copyright (C) 2008-2018 bigfluffy.cloud
  *
  * This code wouldn't be possible without N. Devillard's dictionary.[ch]
  * from the iniparser package. Thanks!!
