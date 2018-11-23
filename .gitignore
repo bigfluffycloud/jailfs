@@ -1,2 +1,6 @@
 pkg/*.pkg
 .obj/*.o
+fs-pkg
+fs-pkg.db
+fs-pkg.log
+libfspkg.so
