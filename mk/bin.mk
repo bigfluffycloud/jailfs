@@ -34,6 +34,6 @@ ifeq (${CONFIG_STRIP_BINS}, y)
 	@strip $@
 endif
 
-.obj/%.o:%.c
+.obj/%.o:src/%.c
 	@echo "[CC] $< => $@"
 	@${CC} ${warn_flags} ${CFLAGS} -o $@ -c $<

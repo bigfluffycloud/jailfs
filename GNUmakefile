@@ -4,7 +4,6 @@ include mk/config.mk
 include mk/distcc.mk
 include mk/ccache.mk
 include mk/indent.mk
-include mk/xar.mk
 include mk/bin.mk
 include mk/lib.mk
 include mk/clean.mk
