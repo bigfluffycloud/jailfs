@@ -3,12 +3,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#if	defined(USE_FUSE)
 #define	FUSE_USE_VERSION 26
-#include "fuse/fuse.h"
-#include "fuse/fuse_opt.h"
-#include "fuse/fuse_lowlevel.h"
-#endif
+#include <fuse/fuse.h>
+#include <fuse/fuse_opt.h>
+#include <fuse/fuse_lowlevel.h>
 
 #include "conf.h"
 #include "db.h"
@@ -19,7 +17,7 @@
 #include "signal_handler.h"
 #include "thread_pool.h"
 #include "vfs.h"
-#define	VERSION "0.0.1"
+#define	VERSION "0.0.2"
 
 struct conf conf;
 
@@ -27,10 +25,8 @@ void goodbye(void) {
    Log(LOG_INFO, "shutting down...");
    dconf_fini();
    vfs_watch_fini();
-#if	defined(USE_FUSE)
    vfs_fuse_fini();
    umount(conf.mountpoint);
-#endif
    inode_fini();
    dlink_fini();
    log_close(conf.log_fp);
@@ -39,9 +35,7 @@ void goodbye(void) {
 
 int main(int argc, char **argv) {
    int         fd;
-#if	defined(USE_FUSE)
    struct fuse_args margs = FUSE_ARGS_INIT(0, NULL);
-#endif
    conf.born = time(NULL);
    umask(0);
 
@@ -71,10 +65,12 @@ int main(int argc, char **argv) {
    Log(LOG_INFO, "fs-pkg: Package filesystem %s starting up...", VERSION);
    Log(LOG_INFO, "Copyright (C) 2012-2018 bigfluffy.cloud -- See LICENSE in distribution package for terms of use");
 
+   if (conf.log_level == LOG_DEBUG)
+      Log(LOG_WARNING, "Log level is set to DEBUG - this will hurt performance badly. Use log.level=info if not debugging...");
+
    if (!conf.mountpoint)
       conf.mountpoint = dconf_get_str("path.mountpoint", "/jails/");
 
-#if	defined(USE_FUSE)
    /*
     * only way to make gcc happy...argh;) -bk 
     */
@@ -90,9 +86,7 @@ int main(int argc, char **argv) {
 
    umount(conf.mountpoint);
    vfs_fuse_init();
-#endif
-
-   Log(LOG_DEBUG, "Opening database %s", dconf_get_str("path.db", ":memory"));
+   Log(LOG_INFO, "Opening database %s", dconf_get_str("path.db", ":memory"));
    db_sqlite_open(dconf_get_str("path.db", ":memory"));
 
    /*

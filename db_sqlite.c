@@ -43,9 +43,7 @@ static void db_sqlite_initialize(void) {
 
    db_query(QUERY_NULL, "DROP TABLE IF EXISTS packages");
    db_query(QUERY_NULL, "DROP TABLE IF EXISTS files");
-#if	defined(SPILLOVER)
    db_query(QUERY_NULL, "DROP TABLE IF EXISTS spillover");
-#endif
    db_query(QUERY_NULL,
             "CREATE TABLE packages (path TEXT, version INTEGER, id INTEGER PRIMARY KEY AUTOINCREMENT);");
    /*
@@ -194,7 +192,8 @@ int db_pkg_add(const char *path) {
 int db_file_add(int pkg, const char *path, const char type,
                 uid_t owner, gid_t grp, size_t size, off_t offset, time_t ctime, const char *mode) {
 
-   db_file_remove(pkg, path);
+/// XXX: This SHOULDN'T be needed... we'll see?
+//   db_file_remove(pkg, path);
    db_query(QUERY_INT,
             "INSERT INTO files (package, path, type, owner, grp, size, offset, mode, ctime) VALUES (%d, '%s', '%c', %lu, %lu, %lu, %lu, '%s', %lu);",
             pkg, path, type, (u_long)owner, (u_long)grp, size, offset, mode, ctime);
@@ -205,9 +204,7 @@ int db_pkg_remove(const char *path) {
    /*
     * If the package already exists (upgraded?), remove all traces of it 
     */
-   db_query(QUERY_NULL,
-            "DELETE FROM files WHERE package IN (SELECT id FROM packages WHERE path = '%s');",
-            path);
+   db_query(QUERY_NULL, "DELETE FROM files WHERE package IN (SELECT id FROM packages WHERE path = '%s');", path);
    db_query(QUERY_NULL, "DELETE FROM packages WHERE path = '%s';", path);
    return EXIT_SUCCESS;
 }

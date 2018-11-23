@@ -14,7 +14,7 @@
 static void vfs_fuse_getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
    pkg_inode_t *i;
    struct stat sb;
-   Log(LOG_DEBUG, "[%lu] %s:%d:%s", time(NULL), __FILE__, __LINE__, __FUNCTION__);
+   Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
 
    if ((i = db_query(QUERY_INODE, "SELECT * FROM files WHERE inode = %d", (u_int32_t) ino)) != NULL) {
       /*
@@ -31,35 +31,38 @@ static void vfs_fuse_getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_in
    /*
     * Did we get a valid response? 
     */
-   if (sb.st_ino)
+   if (sb.st_ino) {
       fuse_reply_attr(req, &sb, 0.0);
-   else
+      Log(LOG_DEBUG, "got attr.st_ino: %d", sb.st_ino);
+   } else {
+      Log(LOG_DEBUG, "couldn't find attr.st_ino");
       fuse_reply_err(req, ENOENT);
+   }
 }
 
 static void vfs_fuse_access(fuse_req_t req, fuse_ino_t ino, int mask) {
-   Log(LOG_DEBUG, "[%lu] %s:%d:%s", time(NULL), __FILE__, __LINE__, __FUNCTION__);
+   Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
    fuse_reply_err(req, 0);             /* success */
 }
 
 static void vfs_fuse_readlink(fuse_req_t req, fuse_ino_t ino) {
-   Log(LOG_DEBUG, "[%lu] %s:%d:%s", time(NULL), __FILE__, __LINE__, __FUNCTION__);
+   Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
    fuse_reply_err(req, ENOSYS);
 }
 
 static void vfs_fuse_opendir(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
-   Log(LOG_DEBUG, "[%lu] %s:%d:%s", time(NULL), __FILE__, __LINE__, __FUNCTION__);
+   Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
    fuse_reply_err(req, ENOENT);
 }
 
 static void vfs_fuse_readdir(fuse_req_t req, fuse_ino_t ino,
                              size_t size, off_t off, struct fuse_file_info *fi) {
-   Log(LOG_DEBUG, "[%lu] %s:%d:%s", time(NULL), __FILE__, __LINE__, __FUNCTION__);
+   Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
    fuse_reply_err(req, ENOENT);
 }
 
 static void vfs_fuse_releasedir(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
-   Log(LOG_DEBUG, "[%lu] %s:%d:%s", time(NULL), __FILE__, __LINE__, __FUNCTION__);
+   Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
    fuse_reply_err(req, ENOENT);
 }
 
@@ -69,10 +72,10 @@ static void vfs_fuse_open(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info 
    fi->fh = ((uint64_t) fh);
    pkg_inode_t *i;
    struct stat sb;
-   Log(LOG_DEBUG, "[%lu] %s:%d:%s", time(NULL), __FILE__, __LINE__, __FUNCTION__);
+   Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
 
    /*
-    * Look for fill inside a package 
+    * Look for file inside a package 
     */
    if ((i = db_query(QUERY_INODE, "SELECT * FROM files WHERE inode = %d", (u_int32_t) ino))) {
       /*
@@ -100,36 +103,36 @@ static void vfs_fuse_open(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info 
 }
 
 static void vfs_fuse_release(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
-   Log(LOG_DEBUG, "[%lu] %s:%d:%s", time(NULL), __FILE__, __LINE__, __FUNCTION__);
+   Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
    fuse_reply_err(req, 0);             /* success */
 }
 
 static void vfs_fuse_read(fuse_req_t req, fuse_ino_t ino,
                           size_t size, off_t off, struct fuse_file_info *fi) {
-   Log(LOG_DEBUG, "[%lu] %s:%d:%s", time(NULL), __FILE__, __LINE__, __FUNCTION__);
+   Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
 /*      reply_buf_limited(req, hello_str, strlen(hello_str), off, size); */
    fuse_reply_err(req, EBADF);
 }
 
 static void vfs_fuse_statfs(fuse_req_t req, fuse_ino_t ino) {
-   Log(LOG_DEBUG, "[%lu] %s:%d:%s", time(NULL), __FILE__, __LINE__, __FUNCTION__);
+   Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
    fuse_reply_err(req, ENOSYS);
 }
 
 static void vfs_fuse_getxattr(fuse_req_t req, fuse_ino_t ino, const char *name, size_t size) {
-   Log(LOG_DEBUG, "[%lu] %s:%d:%s", time(NULL), __FILE__, __LINE__, __FUNCTION__);
+   Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
    fuse_reply_err(req, ENOTSUP);
 }
 
 static void vfs_fuse_listxattr(fuse_req_t req, fuse_ino_t ino, size_t size) {
-   Log(LOG_DEBUG, "[%lu] %s:%d:%s", time(NULL), __FILE__, __LINE__, __FUNCTION__);
+   Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
    fuse_reply_err(req, ENOTSUP);
 }
 
 static void vfs_fuse_lookup(fuse_req_t req, fuse_ino_t parent, const char *name) {
    struct fuse_entry_param e;
 
-   Log(LOG_DEBUG, "[%lu] %s:%d:%s", time(NULL), __FILE__, __LINE__, __FUNCTION__);
+   Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
 #if	0
    if (parent != 1)                    /* XXX: need checks here */
 #endif

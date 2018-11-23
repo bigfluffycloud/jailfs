@@ -238,13 +238,8 @@ int pkg_toc_process(const char *path, const char *toc) {
             type = 'l';
       }
 
-      /*
-       * what we gonna do with target? 
-       */
-      printf("%s: %s %8s/%-8s %10s %s %s @ %s\n", xtype, mode, user,
-             group, size, mtime, xpath, offset);
-
-      db_file_add(pkgid, xpath, type, 0, 0, size, offset, time(NULL), mode);
+      // Add to the files table, 
+      db_file_add(pkgid, xpath, type, 0, 0, (type == 'd') ? 0 : size, (type == 'd') ? 0 : offset, time(NULL), mode);
       free(mtime);
       free(group);
       free(user);

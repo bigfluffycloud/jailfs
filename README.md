@@ -20,14 +20,7 @@ spin up...
 # Confirm that inotify, etc work ---
 
 [2018/11/23 01:04:57]      info: importing pkg pkg/irssi.pkg
-[2018/11/23 01:04:57]     debug: SQL query [0]: BEGIN; 
-[2018/11/23 01:04:57]     debug: SQL query [0]: DELETE FROM files WHERE package IN (SELECT id FROM packages WHERE path = 'pkg/irssi.pkg'); 
-[2018/11/23 01:04:57]     debug: SQL query [0]: DELETE FROM packages WHERE path = 'pkg/irssi.pkg'; 
-[2018/11/23 01:04:57]     debug: SQL query [0]: INSERT INTO packages (path, version) VALUES ('pkg/irssi.pkg', 1542953097); 
-[2018/11/23 01:04:57]     debug: SQL query [1]: SELECT id FROM packages WHERE path = 'pkg/irssi.pkg' AND version = 1542953097; 
-id: 2
-[2018/11/23 01:04:57]     debug: package pkg/irssi.pkg seems valid, committing...
-[2018/11/23 01:04:57]     debug: SQL query [0]: COMMIT; 
+[2018/11/23 01:04:57]      info: package pkg/irssi.pkg seems valid, committing...
 
 
 # You should see files in your mountpoint (path.mountpoint) if everything is working

@@ -235,7 +235,7 @@ int pkg_import(const char *path) {
     * Process the extracted TOC 
     */
    if (!pkg_toc_process(path, tmp)) {
-      Log(LOG_DEBUG, "package %s seems valid, committing...", path);
+      Log(LOG_INFO, "package %s seems valid, committing...", path);
       db_commit();
    } else {
       Log(LOG_ERROR, "failed adding package %s to database, skipping...", path);
