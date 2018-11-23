@@ -16,6 +16,7 @@ objs += .obj/main.o
 objs += .obj/pkg.o
 objs += .obj/pkg_map.o
 objs += .obj/pkg_toc.o
+objs += .obj/profiling.o
 objs += .obj/signal_handler.o
 objs += .obj/str.o
 objs += .obj/support.o
