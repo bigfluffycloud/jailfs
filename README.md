@@ -1,6 +1,16 @@
 This is a pretty old version of fs-pkg. I'm working to restore it to a
 usable state. Unfortunately the newest version is on a drive that will not
-spin up...
+spin up... So far it runs, can load packages into the database, and almost
+do basic vfs ops again!
+
+I wrote this some years ago, abandoned it for a few years, then was asked
+to resurrect it for a project at $FormerEmployer. Unfortunately, they
+had some really horrible ideas for what it was to become. Needless to say,
+this is a clean-room reimplementation of a lot of the code, with a focus on
+stability and security. The fs-pkg shipped with $Product appears to have
+grown to be quite a mess in the years since I left :O 
+
+-----------------------
 
 # Install libev xar and fuse.
 * apt install xar libxar-dev libev-dev fuse-dev
