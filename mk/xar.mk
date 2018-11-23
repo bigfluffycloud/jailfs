@@ -1,11 +1,11 @@
 # NEED_XAR is misleading, we always need xar....
 ifeq (${CONFIG_TOC_LIBXAR}, y)
 CFLAGS += -DCONFIG_TOC_LIBXAR
-NEED_XAR=y
+#NEED_XAR=y
 endif
 ifeq (${CONFIG_VFS_FUSE}, y)
 CFLAGS += -DCONFIG_VFS_FUSE
-NEED_XAR=y
+#NEED_XAR=y
 endif
 
 ifeq (${NEED_XAR}, y)
@@ -35,6 +35,6 @@ else
 LDFLAGS += -lxar
 endif
 
-.obj/xar/%.o:xar/%.c
+.obj/xar/%.o:ext/xar/xar/lib/%.c
 	@echo "[CC] $< => $@"
 	@${CC} ${warn_flags} ${CFLAGS} -o $@ -c $<

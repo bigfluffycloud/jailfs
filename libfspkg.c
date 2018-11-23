@@ -1,3 +1,11 @@
+/*
+ * Here we provide a mechanism for LD_PRELOAD injecting support
+ * for fs-pkg into programs.
+ *
+ * This was kind of abandoned when we rewrote fs-pkg for ##ProductnameSanitized##...
+ *
+ * I personally always preferred this to the overhead of FUSE...
+ */
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/vfs.h>

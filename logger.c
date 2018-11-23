@@ -49,6 +49,7 @@ void Log(enum log_priority priority, const char *fmt, ...) {
    time_t      t;
    struct tm  *tm;
    char       *level = NULL;
+   char	      buf[1024];
 
    if (priority < conf.log_level) {
       return;
@@ -85,10 +86,11 @@ void Log(enum log_priority priority, const char *fmt, ...) {
          break;
    }
 
+   memset(buf, 0, sizeof(buf));
    strftime(timestamp, sizeof(timestamp) - 1, "%Y/%m/%d %H:%M:%S", tm);
-   fprintf(conf.log_fp, "[%s] %s: ", timestamp, level);
-   vfprintf(conf.log_fp, fmt, ap);
-   fprintf(conf.log_fp, "\n");
+   vsprintf(buf, fmt, ap);
+   fprintf(conf.log_fp, "%s %-9s: %s\n", timestamp, level, buf);
+   printf("[%s] %9s: %s\n", timestamp, level, buf);
    fflush(conf.log_fp);
 
    va_end(ap);

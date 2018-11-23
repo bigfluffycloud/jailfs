@@ -28,7 +28,7 @@ CONFIG_VFS_LDPRELOAD=y
 ####################
 CFLAGS += -Os -g -pipe
 CFLAGS += -I. -I./fuse -I/usr/include/libxml2
-CFLAGS += -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -fPIC
+CFLAGS += -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -fPIC -D_GNU_SOURCE
 warn_noerror := -Wall -Wno-unused -Wno-strict-aliasing -ansi -std=c99
 warn_flags := ${warn_noerror} #-Werror
 LDFLAGS := -lxml2 -lz -lcrypto -pthread -lrt -lsqlite3 -lm

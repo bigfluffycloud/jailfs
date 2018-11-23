@@ -124,7 +124,7 @@ char       *pkg_toc_extract(const char *path) {
          }
 
          len = pkg_toc_zbufsize - zs.avail_out;
-         write(outfd, bufuncomp, len);
+         (void)write(outfd, bufuncomp, len);
       } while (zs.avail_out == 0);
    }
    /*
