@@ -2,22 +2,22 @@ This is a pretty old version of fs-pkg. I'm working to restore it to a
 usable state. Unfortunately the newest version is on a drive that will not
 spin up...
 
-* Install libev xar and fuse.
-# apt install xar libxar-dev libev-dev fuse-dev
+# Install libev xar and fuse.
+* apt install xar libxar-dev libev-dev fuse-dev
 
-* Build stuff
-# make clean world
+# Build stuff
+* make clean world
 
-* Configure it
-# joe fs-pkg.cf
+# Configure it
+* joe fs-pkg.cf
 
-* Run it
-# ./fs-pkg &
+# Run it
+* ./fs-pkg &
 
-* Build a test package
-# make testpkg
+# Build a test package
+* make testpkg
 
-* Confirm that inotify, etc work ---
+# Confirm that inotify, etc work ---
 
 [2018/11/23 01:04:57]      info: importing pkg pkg/irssi.pkg
 [2018/11/23 01:04:57]     debug: SQL query [0]: BEGIN; 
@@ -30,7 +30,7 @@ id: 2
 [2018/11/23 01:04:57]     debug: SQL query [0]: COMMIT; 
 
 
-- You should sese files in your mountpoint (path.mountpoint)
+# You should see files in your mountpoint (path.mountpoint) if everything is working
 
 # Bugs
 There's plenty of them. This is REALLY old code... a version before it was
