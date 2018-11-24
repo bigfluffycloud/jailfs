@@ -18,7 +18,7 @@ software for use in containers.
 ---
 * Examples
 
-Example: ./fs-pkg --jail pdns
+$ ./fs-pkg --jail pdns
 * /pkg/*.pkg		- Main package repo (all packages)
 * /rw/*.spill		- Spillover files (edits to pkg)
 */config/$jailname/	- Configuration for fs-etc
