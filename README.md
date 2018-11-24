@@ -13,7 +13,7 @@ grown to be quite a mess in the years since I left :O
 -----------------------
 
 # Install libev xar and fuse.
-* apt install xar libxar-dev libev-dev fuse-dev
+* apt install xar libxar-dev libev-dev fuse-dev libxml2-dev
 
 # Build stuff
 * make clean world
