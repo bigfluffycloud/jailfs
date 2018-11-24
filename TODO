@@ -16,3 +16,7 @@ Work on a library (LD_PRELOAD) method.
 	* Add in-place decompression (at least libz)
 		- To file
 		- To buffer
+
+
+---
+Merge the hooks and loadable module support from appworx here
