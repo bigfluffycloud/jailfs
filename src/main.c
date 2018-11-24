@@ -49,7 +49,7 @@ void goodbye(void) {
 int main(int argc, char **argv) {
    int         fd;
    struct fuse_args margs = FUSE_ARGS_INIT(0, NULL);
-   conf.born = time(NULL);
+   conf.born = conf.now = time(NULL);
    umask(0);
 
    atexit(goodbye);
@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
       Log(LOG_WARNING, "Log level is set to DEBUG - this will hurt performance badly. Use log.level=info if not debugging...");
 
    if (!conf.mountpoint)
-      conf.mountpoint = dconf_get_str("path.mountpoint", "/jails/");
+      conf.mountpoint = dconf_get_str("path.mountpoint", "chroot/");
 
    /*
     * only way to make gcc happy...argh;) -bk 
