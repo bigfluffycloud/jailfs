@@ -17,7 +17,6 @@ software for use in containers.
 
 ---
 * Examples
----------
 Example: ./fs-pkg --config=/
 /pkg/*.pkg		- Main package repo (all packages)
 /rw/*.spill		- Spillover files (edits to pkg)
