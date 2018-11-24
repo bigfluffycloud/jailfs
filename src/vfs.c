@@ -61,6 +61,11 @@ static void vfs_dir_walk_recurse(const char *path, int depth) {
             Log(LOG_INFO, "%s: reached maximum depth (%d) in %s", __FUNCTION__, MAX_RECURSE, path);
       } else {
          ext = strrchr(buf, '.');
+         
+
+         if (ext == NULL)
+            return;
+
          if (strncmp(ext, ".pkg", 4) && strncmp(ext, ".xar", 4))
             return;
          pkg_import(buf);
