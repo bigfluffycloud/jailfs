@@ -3,7 +3,7 @@ CFLAGS += -DCONFIG_TOC_LIBXML2
 endif
 CFLAGS += -DCONFIG_VFS_FUSE
 
-bin := fs-pkg
+bin := jailfs
 objs += .obj/atomicio.o
 objs += .obj/balloc.o
 objs += .obj/conf.o

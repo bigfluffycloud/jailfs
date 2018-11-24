@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
    signal_init();
    evt_init();
    blockheap_init();
-   dconf_init("fs-pkg.cf");
+   dconf_init("jailfs.cf");
    dlink_init();
    pkg_init();
    inode_init();

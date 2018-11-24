@@ -1,7 +1,7 @@
-libs += libfspkg.so
-lib_objs += .obj/libfspkg.o
+libs += libjailfs.so
+lib_objs += .obj/libjailfs.o
 
-libfspkg.so:${lib_objs}
+libjailfs.so:${lib_objs}
 	@echo "[LD] $^ => $@"
 	@${LD} -lc ${lib_ldflags} -o $@ $^
 

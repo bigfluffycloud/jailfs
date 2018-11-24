@@ -124,7 +124,7 @@ static struct pkg_handle *pkg_handle_byname(const char *path) {
 /*
  * Scan for packages with refcnt == 0 every once in a while and close them
  * 	This helps to reduce closing and reopening packages unneededly
- *	Adjust tuning parameters in fs-pkg.cf as needed, based on your memory model.
+ *	Adjust tuning parameters in jailfs.cf as needed, based on your memory model.
  * if rfcnt == 0 && now > otime + (tuning.time.pkg_gc / 2): release it
  *
  * XXX: Why do we use pkg_lifetime / 2? It seems like it'd be more intelligent to use pkg_lifetime...

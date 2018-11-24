@@ -8,8 +8,8 @@ path.mountpoint/jails/auth-dns/
 path.pkg=/pkg
 path.spillover=/rw/
 ;path.db=:memory:
-path.db=fs-pkg.db
-path.log=fs-pkg.log
+path.db=jailfs.db
+path.log=jailfs.log
 
 ;;;;;;;;;;;
 ; Logging ;
