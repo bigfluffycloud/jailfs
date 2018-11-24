@@ -38,6 +38,7 @@ void dconf_init(const char *file) {
    char        buf[512];
    int         in_comment = 0;
    int         line = 0;
+   char        *discard = NULL;
    char       *key, *val;
    _DCONF_DICT = dictionary_new(0);
 
@@ -49,7 +50,7 @@ void dconf_init(const char *file) {
    while (!feof(fp)) {
       line++;
       memset(buf, 0, 512);
-      fgets(buf, sizeof(buf), fp);
+      discard = fgets(buf, sizeof(buf), fp);
 
       /*
        * did we get a line? 

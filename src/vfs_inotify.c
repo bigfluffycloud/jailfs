@@ -34,6 +34,7 @@
 #include "logger.h"
 #include "pkg.h"
 #include "vfs.h"
+#include "vfs_inotify.h"
 
 #define	INOTIFY_BUFSIZE	((sizeof(struct inotify_event) + FILENAME_MAX) * 1024)
 static int  vfs_inotify_fd = 0;

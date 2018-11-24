@@ -28,6 +28,7 @@
 #include "profiling.h"
 #define	monstartup __monstartup
 
+#if	defined(__PROFILING)
 extern void _start,
             etext;
 static int profiling_state = 1;
@@ -64,3 +65,4 @@ void profiling_toggle(void) {
 
    profiling_newmsg = 1;
 }
+#endif
