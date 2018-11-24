@@ -90,6 +90,9 @@ void dconf_init(const char *file) {
          val++;
       }
 
+      if (val == NULL)
+         continue;
+
       val = str_unquote(val);
       dconf_set(key, val);
    }

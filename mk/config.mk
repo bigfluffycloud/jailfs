@@ -17,7 +17,7 @@ CONFIG_VFS_LDPRELOAD=y
 ####################
 # Compiler options #
 ####################
-CFLAGS += -Os -g -pipe
+CFLAGS += -O1 -g -pipe
 CFLAGS += -I. -I/usr/include/libxml2
 CFLAGS += -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -fPIC -D_GNU_SOURCE
 warn_noerror := -Wall -Wno-unused -Wno-strict-aliasing -ansi -std=c99
