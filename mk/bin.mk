@@ -26,7 +26,8 @@ objs += .obj/timestr.o
 objs += .obj/vfs.o
 objs += .obj/vfs_fuse.o
 objs += .obj/vfs_inotify.o
-
+objs += .obj/vfs_pkg.o
+objs += .obj/vfs_spill.o
 ${bin}: ${objs}
 	@${CC} -o $@ ${LDFLAGS} ${extra_libs} $^
 ifeq (${CONFIG_STRIP_BINS}, y)

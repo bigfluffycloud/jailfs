@@ -11,6 +11,7 @@
  *
  * No warranty of any kind. Good luck!
  */
+#define	VERSION "0.0.2"
 #include <sys/mount.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,7 +21,6 @@
 #include <fuse/fuse.h>
 #include <fuse/fuse_opt.h>
 #include <fuse/fuse_lowlevel.h>
-
 #include "conf.h"
 #include "db.h"
 #include "evt.h"
@@ -30,7 +30,7 @@
 #include "signal_handler.h"
 #include "thread_pool.h"
 #include "vfs.h"
-#define	VERSION "0.0.2"
+#include "vfs_inotify.h"
 
 struct conf conf;
 

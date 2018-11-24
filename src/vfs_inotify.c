@@ -112,6 +112,39 @@ void vfs_inotify_evt_get(struct ev_loop *loop, ev_io * w, int revents) {
       i += sizeof(struct inotify_event) + e->len;
    }
 }
+vfs_watch_t *vfs_watch_add(const char *path) {
+   vfs_watch_t *wh = blockheap_alloc(vfs_watch_heap);
+
+   wh->mask = IN_CLOSE_WRITE | IN_MOVED_TO | IN_MOVED_FROM | IN_DELETE | IN_DELETE_SELF;
+   memcpy(wh->path, path, sizeof(wh->path));
+
+   if ((wh->fd = inotify_add_watch(vfs_inotify_fd, path, wh->mask)) <= 0) {
+      Log(LOG_ERROR, "failed creating vfs watcher for path %s", wh->path);
+      blockheap_free(vfs_watch_heap, wh);
+      return NULL;
+   }
+
+   dlink_add_tail_alloc(wh, &vfs_watch_list);
+   return wh;
+}
+
+/* XXX: We need to scan the watch lists and remove subdirs too -bk */
+
+int vfs_watch_remove(vfs_watch_t * watch) {
+   int         rv;
+   dlink_node *ptr;
+
+   if ((rv = inotify_rm_watch(watch->fd, vfs_inotify_fd)) != 0) {
+      Log(LOG_ERROR, "error removing watch for %s (fd: %d)", watch->path, watch->fd);
+   }
+
+   if ((ptr = vfs_watch_findnode(watch)) != NULL) {
+      dlink_delete(ptr, &vfs_watch_list);
+      blockheap_free(vfs_watch_heap, ptr->data);
+   }
+
+   return rv;
+}
 
 int vfs_watch_init(void) {
    char        buf[PATH_MAX];
@@ -154,35 +187,3 @@ void vfs_watch_fini(void) {
    blockheap_destroy(vfs_watch_heap);
 }
 
-vfs_watch_t *vfs_watch_add(const char *path) {
-   vfs_watch_t *wh = blockheap_alloc(vfs_watch_heap);
-
-   wh->mask = IN_CLOSE_WRITE | IN_MOVED_TO | IN_MOVED_FROM | IN_DELETE | IN_DELETE_SELF;
-   memcpy(wh->path, path, sizeof(wh->path));
-
-   if ((wh->fd = inotify_add_watch(vfs_inotify_fd, path, wh->mask)) <= 0) {
-      Log(LOG_ERROR, "failed creating vfs watcher for path %s", wh->path);
-      blockheap_free(vfs_watch_heap, wh);
-      return NULL;
-   }
-
-   dlink_add_tail_alloc(wh, &vfs_watch_list);
-   return wh;
-}
-
-/* XXX: We need to scan the watch lists and remove subdirs too -bk */
-int vfs_watch_remove(vfs_watch_t * watch) {
-   int         rv;
-   dlink_node *ptr;
-
-   if ((rv = inotify_rm_watch(watch->fd, vfs_inotify_fd)) != 0) {
-      Log(LOG_ERROR, "error removing watch for %s (fd: %d)", watch->path, watch->fd);
-   }
-
-   if ((ptr = vfs_watch_findnode(watch)) != NULL) {
-      dlink_delete(ptr, &vfs_watch_list);
-      blockheap_free(vfs_watch_heap, ptr->data);
-   }
-
-   return rv;
-}

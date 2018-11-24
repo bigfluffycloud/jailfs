@@ -16,6 +16,7 @@
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <errno.h>
 #include "balloc.h"
 
 struct vfs_handle {
@@ -54,4 +55,3 @@ extern u_int32_t vfs_root_inode;
 extern dlink_list vfs_watch_list;
 
 #include "vfs_fuse.h"
-#include "vfs_inotify.h"

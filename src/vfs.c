@@ -23,6 +23,7 @@
 #include "logger.h"
 #include "pkg.h"
 #include "util.h"
+#define	__VFS_C
 #include "vfs.h"
 
 u_int32_t   vfs_root_inode;
@@ -74,7 +75,6 @@ static void vfs_dir_walk_recurse(const char *path, int depth) {
 
    closedir(d);
 }
-
 #undef MAX_RECURSE
 
 int vfs_dir_walk(void) {

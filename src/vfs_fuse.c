@@ -13,9 +13,6 @@
  */
 #include <signal.h>
 #include <errno.h>
-#define	FUSE_USE_VERSION 26
-#include <fuse/fuse.h>
-#include <fuse/fuse_lowlevel.h>
 #include "conf.h"
 #include "db.h"
 #include "evt.h"
@@ -23,11 +20,8 @@
 #include "memory.h"
 #include "pkg.h"
 #include "vfs.h"
-#define	VFS_FUSE_C                    /* required for vfs_fuse_spill.h */
-#include "vfs_pkg.h"
+#include "vfs_fuse.h"
 #include "vfs_spill.h"
-#undef	VFS_FUSE_C
-
 static ev_io vfs_fuse_evt;
 static struct fuse_chan *vfs_fuse_chan = NULL;
 static struct fuse_session *vfs_fuse_sess = NULL;
@@ -45,24 +39,24 @@ static struct fuse_lowlevel_ops vfs_fuse_ops = {
    .getattr = vfs_fuse_getattr,
    .access = vfs_fuse_access,
    .statfs = vfs_fuse_statfs,
-   .getxattr = vfs_fuse_getxattr,
-   .listxattr = vfs_fuse_listxattr,
+//   .getxattr = vfs_fuse_getxattr,
+//   .listxattr = vfs_fuse_listxattr,
 /* Directory operations */
    .opendir = vfs_fuse_opendir,
    .readdir = vfs_fuse_readdir,
    .releasedir = vfs_fuse_releasedir,
 /* Spillover operations, unsupported for now */
-   .create = vfs_fuse_create,
-   .mknod = vfs_fuse_mknod,
-   .mkdir = vfs_fuse_mkdir,
-   .symlink = vfs_fuse_symlink,
-   .unlink = vfs_fuse_unlink,
-   .rmdir = vfs_fuse_rmdir,
-   .rename = vfs_fuse_rename,
-   .link = vfs_fuse_link,
-   .write = vfs_fuse_write,
-   .setxattr = vfs_fuse_setxattr,
-   .removexattr = vfs_fuse_removexattr
+   .create = vfs_spill_create,
+   .mknod = vfs_spill_mknod,
+   .mkdir = vfs_spill_mkdir,
+   .symlink = vfs_spill_symlink,
+   .unlink = vfs_spill_unlink,
+   .rmdir = vfs_spill_rmdir,
+   .rename = vfs_spill_rename,
+   .link = vfs_spill_link,
+   .write = vfs_spill_write,
+//   .setxattr = vfs_fuse_setxattr,
+//   .removexattr = vfs_fuse_removexattr
 };
 
 /* This is a hacked up version of fuse/fuse_loop.c, hope it works -bk */

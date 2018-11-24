@@ -49,6 +49,7 @@ char       *pkg_toc_extract(const char *path) {
    int         len;
    int         infd, outfd;
    int         ret;
+   int	       wrote = 0;
    ssize_t     sread;
    struct xar_header h;
    z_stream    zs;
@@ -136,7 +137,7 @@ char       *pkg_toc_extract(const char *path) {
          }
 
          len = pkg_toc_zbufsize - zs.avail_out;
-         (void)write(outfd, bufuncomp, len);
+         wrote = write(outfd, bufuncomp, len);
       } while (zs.avail_out == 0);
    }
    /*

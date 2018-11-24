@@ -18,13 +18,18 @@
  * of vfs_fuse.c, in fact we throw an error if this
  * is done
  */
-#if	!defined(VFS_FUSE_C)
-#error never include vfs_fuse_pkg.h outside vfs_fuse.c
-#error this file is for internal use only
-#endif
+#include <signal.h>
+#include <errno.h>
+#include "conf.h"
+#include "db.h"
+#include "evt.h"
+#include "logger.h"
+#include "memory.h"
+#include "pkg.h"
+#include "vfs.h"
 #include "timestr.h"
 
-static void vfs_fuse_getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
+void vfs_fuse_getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
    pkg_inode_t *i;
    struct stat sb;
    Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
@@ -53,33 +58,33 @@ static void vfs_fuse_getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_in
    }
 }
 
-static void vfs_fuse_access(fuse_req_t req, fuse_ino_t ino, int mask) {
+void vfs_fuse_access(fuse_req_t req, fuse_ino_t ino, int mask) {
    Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
    fuse_reply_err(req, 0);             /* success */
 }
 
-static void vfs_fuse_readlink(fuse_req_t req, fuse_ino_t ino) {
+void vfs_fuse_readlink(fuse_req_t req, fuse_ino_t ino) {
    Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
    fuse_reply_err(req, ENOSYS);
 }
 
-static void vfs_fuse_opendir(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
+void vfs_fuse_opendir(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
    Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
    fuse_reply_err(req, ENOENT);
 }
 
-static void vfs_fuse_readdir(fuse_req_t req, fuse_ino_t ino,
+void vfs_fuse_readdir(fuse_req_t req, fuse_ino_t ino,
                              size_t size, off_t off, struct fuse_file_info *fi) {
    Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
    fuse_reply_err(req, ENOENT);
 }
 
-static void vfs_fuse_releasedir(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
+void vfs_fuse_releasedir(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
    Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
    fuse_reply_err(req, ENOENT);
 }
 
-static void vfs_fuse_open(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
+void vfs_fuse_open(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
    struct vfs_handle *fh;
    fh = blockheap_alloc(vfs_handle_heap);
    fi->fh = ((uint64_t) fh);
@@ -87,26 +92,23 @@ static void vfs_fuse_open(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info 
    struct stat sb;
    Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
 
-   /*
-    * Look for file inside a package 
-    */
-   if ((i = db_query(QUERY_INODE, "SELECT * FROM files WHERE inode = %d", (u_int32_t) ino))) {
+   /* Check if a spillover file exists */
+   if ((i = db_query(QUERY_INODE, "SELECT * FROM spillover WHERE inode = %d", (u_int32_t) ino))) {
+   /* If not, maybe this exists in a file? */
+   } else if ((i = db_query(QUERY_INODE, "SELECT * FROM files WHERE inode = %d", (u_int32_t) ino))) {
       /*
        * XXX: do stuff ;) 
        */
-   } else {
-      /*
-       * XXX: look it up in spill over 
-       */
    }
 
+   // Nope, it doesn't exist
    if (!i) {
+      // If process didn't use O_CREAT, return not found
       if (!(fi->flags & O_CREAT)) {
          fuse_reply_err(req, ENOENT);
       } else {
-         /*
-          * XXX: create spillover file instead of EROFS 
-          */
+         // XXX: We should create a new fill in spillover
+         // and return it's inode. For now we return read-only
          fuse_reply_err(req, EROFS);
       }
    }
@@ -115,34 +117,34 @@ static void vfs_fuse_open(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info 
    fuse_reply_open(req, fi);
 }
 
-static void vfs_fuse_release(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
+void vfs_fuse_release(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
    Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
    fuse_reply_err(req, 0);             /* success */
 }
 
-static void vfs_fuse_read(fuse_req_t req, fuse_ino_t ino,
+void vfs_fuse_read(fuse_req_t req, fuse_ino_t ino,
                           size_t size, off_t off, struct fuse_file_info *fi) {
    Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
 /*      reply_buf_limited(req, hello_str, strlen(hello_str), off, size); */
    fuse_reply_err(req, EBADF);
 }
 
-static void vfs_fuse_statfs(fuse_req_t req, fuse_ino_t ino) {
+void vfs_fuse_statfs(fuse_req_t req, fuse_ino_t ino) {
    Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
    fuse_reply_err(req, ENOSYS);
 }
 
-static void vfs_fuse_getxattr(fuse_req_t req, fuse_ino_t ino, const char *name, size_t size) {
+void vfs_fuse_getxattr(fuse_req_t req, fuse_ino_t ino, const char *name, size_t size) {
    Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
    fuse_reply_err(req, ENOTSUP);
 }
 
-static void vfs_fuse_listxattr(fuse_req_t req, fuse_ino_t ino, size_t size) {
+void vfs_fuse_listxattr(fuse_req_t req, fuse_ino_t ino, size_t size) {
    Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
    fuse_reply_err(req, ENOTSUP);
 }
 
-static void vfs_fuse_lookup(fuse_req_t req, fuse_ino_t parent, const char *name) {
+void vfs_fuse_lookup(fuse_req_t req, fuse_ino_t parent, const char *name) {
    struct fuse_entry_param e;
 
    Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
