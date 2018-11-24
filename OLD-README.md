@@ -33,7 +33,7 @@ Eventually adding support for archive format modules
 -----------------------
 
 # Install libev xar and fuse.
-* apt install xar libxar-dev libev-dev fuse-dev libxml2-dev
+* apt install xar libxar-dev libev-dev fuse-dev libxml2-dev libarchive-dev
 
 # Build stuff
 * make clean world

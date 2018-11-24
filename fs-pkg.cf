@@ -2,6 +2,14 @@
 ; General ;
 ;;;;;;;;;;;
 sys.daemonize=false
+path.config=/config/
+;path.mountpoint=/jails/%{s:jailname}
+path.mountpoint/jails/auth-dns/
+path.pkg=/pkg
+path.spillover=/rw/
+;path.db=:memory:
+path.db=fs-pkg.db
+path.log=fs-pkg.log
 
 ;;;;;;;;;;;
 ; Logging ;
@@ -9,17 +17,6 @@ sys.daemonize=false
 ; log.level [debug|info|warning|error|fatal|hack]
 log.level=debug
 log.stack_unwind=true
-
-;;;;;;;;;
-; Paths ;
-;;;;;;;;;
-; Since we don't support persistence right now
-; it probably works best to use :memory: as path.db
-;path.db=:memory:
-path.db=fs-pkg.db
-path.log=fs-pkg.log
-path.mountpoint=chroot
-path.pkg=pkg
 
 ;;;;;;;;;;;;;;;
 ; Tuning Kobs ;
