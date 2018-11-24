@@ -1,3 +1,6 @@
 [submodule "ext/xar"]
 	path = ext/xar
 	url = https://github.com/mackyle/xar.git
+[submodule "ext/libfuse"]
+	path = ext/libfuse
+	url = https://github.com/libfuse/libfuse.git

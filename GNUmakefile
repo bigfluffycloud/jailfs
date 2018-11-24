@@ -3,6 +3,7 @@ all: world
 include mk/config.mk
 include mk/distcc.mk
 include mk/ccache.mk
+include mk/ext.mk
 include mk/indent.mk
 include mk/bin.mk
 include mk/lib.mk
