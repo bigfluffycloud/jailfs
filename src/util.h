@@ -33,3 +33,31 @@ static __inline int file_exists(const char *path) {
 
    return 1;
 }
+
+static __inline int is_file(const char *path) {
+   return file_exists(path);
+}
+
+static int is_link(const char *path) {
+   struct stat sb;
+
+   if (stat(path, &sb) != 0)
+      return 0;
+
+   if (S_ISLNK(sb.st_mode))
+      return 1;
+
+   return 0;
+}
+
+static int is_fifo(const char *path) {
+   struct stat sb;
+
+   if (stat(path, &sb) != 0)
+      return 0;
+
+   if (S_ISFIFO(sb.st_mode))
+      return 1;
+
+   return 0;
+}

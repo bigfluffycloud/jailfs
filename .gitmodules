@@ -10,3 +10,6 @@
 [submodule "ext/libunwind"]
 	path = ext/libunwind
 	url = https://github.com/libunwind/libunwind.git
+[submodule "ext/libarchive"]
+	path = ext/libarchive
+	url = https://github.com/libarchive/libarchive.git

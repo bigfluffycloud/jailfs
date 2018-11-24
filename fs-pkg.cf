@@ -1,16 +1,29 @@
+;;;;;;;;;;;
+; General ;
+;;;;;;;;;;;
+sys.daemonize=false
+
+;;;;;;;;;;;
+; Logging ;
+;;;;;;;;;;;
 ; log.level [debug|info|warning|error|fatal|hack]
 log.level=debug
 log.stack_unwind=true
+
+;;;;;;;;;
+; Paths ;
+;;;;;;;;;
+; Since we don't support persistence right now
+; it probably works best to use :memory: as path.db
 ;path.db=:memory:
 path.db=fs-pkg.db
-; This will be added soon, allowing saving database
-; between restarts for faster loading
-path.db.persistant=/.pkgdb
 path.log=fs-pkg.log
 path.mountpoint=chroot
 path.pkg=pkg
-sys.daemonize=false
-; these should be fairly reasonable...
+
+;;;;;;;;;;;;;;;
+; Tuning Kobs ;
+;;;;;;;;;;;;;;;
 tuning.heap.inode=128
 tuning.heap.node=128
 tuning.heap.pkg=128
@@ -19,3 +32,11 @@ tuning.heap.vfs_watch=32
 tuning.timer.blockheap_gc=60
 tuning.timer.pkg_gc=60
 tuning.toc.gz.buffer=1310720
+
+;;;;;;;;;;;;;;;;;;;;;;;;;
+; Experimental features ;
+;;;;;;;;;;;;;;;;;;;;;;;;;
+experimental.libxml2-toc=false
+experimental.compress=false
+; Set to 0 seconds to disable watchdog
+watchdog.interval=0

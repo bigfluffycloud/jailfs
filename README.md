@@ -1,54 +1,29 @@
-This is a pretty old version of fs-pkg. I'm working to restore it to a
-usable state. Unfortunately the newest version is on a drive that will not
-spin up... So far it runs, can load packages into the database, and almost
-do basic vfs ops again!
+This tree is currently in a kinda broken state.
 
-I wrote this some years ago, abandoned it for a few years, then was asked
-to resurrect it for a project at $FormerEmployer. Unfortunately, they
-had some really horrible ideas for what it was to become. Needless to say,
-this is a clean-room reimplementation of a lot of the code, with a focus on
-stability and security. The fs-pkg shipped with $Product appears to have
-grown to be quite a mess in the years since I left :O 
+I'm actively working to repair the bitrot and get the
+repo to a minimal usable state this weekend.
 
------------------------
+Hopefully you'll enjoy and find time to contribute!
 
-# Install libev xar and fuse.
-* apt install xar libxar-dev libev-dev fuse-dev libxml2-dev
+The end goal is to provide a mechanism for packaging
+software for use in containers.
 
-# Build stuff
-* make clean world
-
-# Configure it
-* joe fs-pkg.cf
-
-# Run it
-* ./fs-pkg &
-
-# Build a test package
-* make testpkg
-
-# Confirm that inotify, etc work ---
-
-[2018/11/23 01:04:57]      info: importing pkg pkg/irssi.pkg
-[2018/11/23 01:04:57]      info: package pkg/irssi.pkg seems valid, committing...
+Example:
+/pkg/*.pkg		- Main package repo (all packages)
+/rw/*.spill		- Spillover files (edits to pkg)
+/config/$jailname/	- Configuration for fs-etc
+/jails/$jailname/	- Mountpoint for fs-pkg
 
 
-# You should see files in your mountpoint (path.mountpoint) if everything is working
+Packages:
+/pkg/pdns.pkg
+	/usr/bin/pdns_server
 
-# Bugs
-There's plenty of them. This is REALLY old code... a version before it was
-"ruined" to meet the needs of a small dirty hack of a project at
-$FormerEmployer.
+jailname: auth-dns
+	/config/auth-dns/etc/powerdns/named.conf
+	/pkg/pdns.pkg
+	/jails/auth-dns/		- Root directory
+	/jails/pdns/usr/bin/pdns_server	- pdns daemon
+	/jails/etc/powerdns/named.conf	- bind zone config
 
-If you can fix them, submit a diff -u or git diff to me at
-joseph@bigfluffy.cloud
-
-If you can at least send a crash report (edit fs-pkg.cf and set the below):
-
-  log.level=debug
-  log.stack_unwind=true
-
-Then send your log file (default is fs-pkg.log) by email.
-
-Debug log level WILL reduce performance. stack_unwind should not have a
-noticable effect on normal operation.
+... Add all the other missing files ;) ...

@@ -20,8 +20,10 @@
  */
 #include <stdlib.h>
 #include <signal.h>
+#include <errno.h>
 #include "thread_pool.h"
 #include "memory.h"
+#include "logger.h"
 
 thread_t   *thr_create(void *cb, void *arg, size_t stack_size) {
    thread_t   *ret = mem_alloc(sizeof(thread_t));

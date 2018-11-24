@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include "logger.h"
+
 /*
  * memory allocation wrappers
  *	These are lightweight and should catch the common allocation problems
@@ -68,3 +69,21 @@ static __inline void *mem_calloc(size_t nmemb, size_t size) {
    return p;
 }
 #endif                                 /* !defined(__MEMORY) */
+
+#if	!defined(__memory_h)
+#define	__memory_h
+#include "list.h"
+/*
+typedef struct alloc_block {
+   size_t sz;
+   List *lp;
+   unsigned long free_blocks;
+   void *elems;
+} alloc_block;
+
+*/
+//extern void *mem_alloc(size_t sz);
+//extern void mem_free(void *ptr);
+//extern void *mem_realloc(void *ptr, size_t sz);
+
+#endif	// !defined(__memory_h)

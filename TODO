@@ -20,3 +20,7 @@ Work on a library (LD_PRELOAD) method.
 
 ---
 Merge the hooks and loadable module support from appworx here
+
+* De-duplicate some of the lists & trees code.
+* Make sure EVERYTHING is using BlockHeap allocator
+  - Can we replace malloc()/free() with wrappers which log?
