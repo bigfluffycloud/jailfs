@@ -19,26 +19,26 @@ software for use in containers.
 * Examples
 
 Example: ./fs-pkg --config=/
-/pkg/*.pkg		- Main package repo (all packages)
-/rw/*.spill		- Spillover files (edits to pkg)
-/config/$jailname/	- Configuration for fs-etc
-/jails/$jailname/	- Mountpoint for jailfs
+* /pkg/*.pkg		- Main package repo (all packages)
+* /rw/*.spill		- Spillover files (edits to pkg)
+*/config/$jailname/	- Configuration for fs-etc
+* /jails/$jailname/	- Mountpoint for jailfs
 
 
 Packages:
 /pkg/pdns.pkg
-	/usr/bin/pdns_server
+*	/usr/bin/pdns_server
 
 jailname: auth-dns
 ::: On the host FS :::
-	/config/auth-dns/etc/powerdns/named.conf
-	/config/auth-dns/etc/powerdns/zones/bigfluffy.cloud
-	/config/auth-dns/fs-pkg.cf	- fs-pkg configuration
-	/pkg/pdns.pkg
+*	/config/auth-dns/etc/powerdns/named.conf
+*	/config/auth-dns/etc/powerdns/zones/bigfluffy.cloud
+*	/config/auth-dns/fs-pkg.cf	- fs-pkg configuration
+*	/pkg/pdns.pkg
 
 ::: Creates this in the jail (dir /jails/auth-dns) :::
-	/etc/powerdns/named.conf	- bind zone config
-	/etc/powerdns/zones/bigfluffy.cloud
-	/usr/bin/pdns_server		- pdns daemon
-    ... Add all the other missing files in pdns.pkg ;) ...
+*	/etc/powerdns/named.conf	- bind zone config
+*	/etc/powerdns/zones/bigfluffy.cloud
+*	/usr/bin/pdns_server		- pdns daemon
+*    ... Add all the other missing files in pdns.pkg ;) ...
 
