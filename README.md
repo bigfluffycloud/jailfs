@@ -18,12 +18,11 @@ software for use in containers.
 ---
 * Examples
 
-Example: ./fs-pkg --config=/
+Example: ./fs-pkg --jail pdns
 * /pkg/*.pkg		- Main package repo (all packages)
 * /rw/*.spill		- Spillover files (edits to pkg)
 */config/$jailname/	- Configuration for fs-etc
 * /jails/$jailname/	- Mountpoint for jailfs
-
 
 Packages:
 /pkg/pdns.pkg
@@ -34,7 +33,8 @@ jailname: auth-dns
 *	/config/auth-dns/etc/powerdns/named.conf
 *	/config/auth-dns/etc/powerdns/zones/bigfluffy.cloud
 *	/config/auth-dns/fs-pkg.cf	- fs-pkg configuration
-*	/pkg/pdns.pkg
+*	/pkg/pdns.pkg			- PowerDNS package
+*	/rw/authdns-pdns.spill		- Spillover for pdns
 
 ::: Creates this in the jail (dir /jails/auth-dns) :::
 *	/etc/powerdns/named.conf	- bind zone config
