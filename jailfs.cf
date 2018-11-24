@@ -4,7 +4,7 @@
 sys.daemonize=false
 path.config=/config/
 ;path.mountpoint=/jails/%{s:jailname}
-path.mountpoint/jails/auth-dns/
+path.mountpoint=/jails/auth-dns/
 path.pkg=/pkg
 path.spillover=/rw/
 ;path.db=:memory:
