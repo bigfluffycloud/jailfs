@@ -17,6 +17,8 @@ path.log=jailfs.log
 ; log.level [debug|info|warning|error|fatal|hack]
 log.level=debug
 log.stack_unwind=true
+debug.sql=false
+debug.pkg=true
 
 ;;;;;;;;;;;;;;;
 ; Tuning Kobs ;

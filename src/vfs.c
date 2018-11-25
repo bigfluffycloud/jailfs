@@ -21,6 +21,7 @@
 #include "balloc.h"
 #include "conf.h"
 #include "logger.h"
+#include "memory.h"
 #include "pkg.h"
 #include "util.h"
 #define	__VFS_C
@@ -91,4 +92,23 @@ int vfs_dir_walk(void) {
       vfs_dir_walk_recurse(p, 1);
    }
    return EXIT_SUCCESS;
+}
+
+/* Be sure to free these :O */
+struct vfs_lookup_reply {
+   u_int32_t	seq;
+   u_int32_t	status;
+   int		pkgid;		// Package ID if appropriate
+   int		fileid;		// File ID from database
+};
+typedef struct vfs_lookup_reply vfs_lookup_reply;
+
+vfs_lookup_reply *vfs_resolve_path(const char *path) {
+    vfs_lookup_reply *res = mem_alloc(sizeof(vfs_lookup_reply));
+
+    if (dconf_get_bool("debug.vfs", 0) == 1) {
+       Log(LOG_DEBUG, "vfs:resolve_path(%s): seq<%d> status<%d> pkg<%d> file<%d>",
+          res->seq, res->status, res->pkgid, res->fileid);
+    }
+    return res;
 }

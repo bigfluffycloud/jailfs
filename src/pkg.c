@@ -197,7 +197,7 @@ struct pkg_handle *pkg_open(const char *path) {
  *
  * We no longer free the package as the garbage collector
  * will do this for us after a delay, helping to keep packages
- * cached for a bit and reducing IO overhead
+ * cached for a bit and reduce IO overhead
  */
 void pkg_close(struct pkg_handle *pkg) {
    pkg->refcnt--;
@@ -212,6 +212,8 @@ int pkg_import(const char *path) {
    struct archive *a;
    struct archive_entry *aentry;
    int r;
+   int pkgid = -1;
+   char _f_type = '-';
 
    /*
     * XXX: what do we do when an in-use package is modified?
@@ -232,7 +234,7 @@ int pkg_import(const char *path) {
       return EXIT_SUCCESS;
    }
 
-   Log(LOG_INFO, "importing pkg %s", path);
+   Log(LOG_INFO, "BEGIN import pkg %s", path);
 
    db_begin();
    a = archive_read_new();
@@ -245,28 +247,46 @@ int pkg_import(const char *path) {
       return -1;
    }
 
-   // Add the entry to the database
-   while (TRUE) {
+   // Add the package to the database...
+   pkgid = db_pkg_add(path);
+   Log(LOG_DEBUG, "package %s appears valid, assigning pkgid %d", path, pkgid);
 
+   // Add the file entries to the database...
+   while (TRUE) {
       r = archive_read_next_header(a, &aentry);
       if (r == ARCHIVE_EOF)
          break;
 
       if (r != ARCHIVE_OK) {
+         db_rollback();
          Log(LOG_DEBUG, "pkg_import: libarchive read_next_header error %d: %s", r, archive_error_string(a));
          break;
       }
 
       const char *_f_name = archive_entry_pathname(aentry);
-      const char *_f_uname = archive_entry_uname(aentry);
-      const char *_f_gname = archive_entry_gname(aentry);
+      const char *_f_owner = archive_entry_uname(aentry);
+      const char *_f_group = archive_entry_gname(aentry);
       const uid_t _f_uid = archive_entry_uid(aentry);
       const gid_t _f_gid = archive_entry_gid(aentry);
       const mode_t _f_mode = archive_entry_perm(aentry);
       const char *_f_perm = archive_entry_strmode(aentry);
-//      db_file_add(pkgid, _f_name, type, 0, 0, (type == 'd') ? 0 : size, (type == 'd') ? 0 : offset, time(NULL), mode);
-      Log(LOG_DEBUG, "pkg %s: Found %s (user: %d %s) (group: %d %s) perms=%s",
-         path, _f_name, _f_uid, _f_uname, _f_gid, _f_gname, _f_perm);
+
+      // XXX: Determine type
+      if (*_f_perm == 'd')
+         _f_type = 'd';
+      else if (*_f_perm == 'l')
+         _f_type = 'l';
+      else
+         _f_type = 'f';
+
+      db_file_add(pkgid, path, _f_type, _f_uid, _f_gid,
+                         _f_owner, _f_group, 0 /*XXX*/,
+                         0, time(NULL), _f_mode, _f_perm);
+
+      if (dconf_get_bool("debug.pkg", 0) == 1)
+         Log(LOG_DEBUG, "+ %s:%s (user: %d %s) (group: %d %s) perms=%s",
+             basename(path), _f_name, _f_uid, _f_owner, _f_gid, _f_group, _f_perm);
+
       // Not actually required... but a good placeholder
       archive_read_data_skip(a);
    }
@@ -275,7 +295,9 @@ int pkg_import(const char *path) {
    r = archive_read_free(a);
    if (r != ARCHIVE_OK)
       Log(LOG_ERROR, "possible memory leak! archive_read_free() returned %d", r);
-   
+
+   db_commit();   
+   Log(LOG_INFO, "SUCCESS import pkg %s", path);
    return EXIT_SUCCESS;
 }
 

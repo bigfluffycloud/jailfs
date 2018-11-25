@@ -20,8 +20,8 @@ extern void db_sqlite_close(void);
 extern void db_sqlite_close(void);
 extern int  db_pkg_add(const char *path);
 extern int  db_file_add(int pkg, const char *path, const char type,
-                        uid_t owner, gid_t grp, size_t size, off_t offset, time_t ctime,
-                        const char *mode);
+                        uid_t uid, gid_t gid, const char *owner, const char *group,
+                        size_t size, off_t offset, time_t ctime, mode_t mode, const char *perm);
 extern int  db_pkg_remove(const char *path);
 extern int  db_file_remove(int pkg, const char *path);
 extern void db_begin(void);
