@@ -20,7 +20,7 @@
 #include "balloc.h"
 #include "conf.h"
 #include "db.h"
-#include "inode.h"
+#include "vfs_inode.h"
 #include "logger.h"
 #include "memory.h"
 #include "util.h"

@@ -11,8 +11,9 @@
  *
  * No warranty of any kind. Good luck!
  */
-#if	!defined(__DCONF)
-#define	__DCONF
+
+#if	!defined(__DCONF_H)
+#define	__DCONF_H
 #include <limits.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -53,4 +54,4 @@ extern int  dconf_set(const char *key, const char *val);
 extern void dconf_unset(const char *key);
 #define	_DCONF_DICT conf.dict
 
-#endif                                 /* !defined(__DCONF) */
+#endif                                 /* !defined(__DCONF_H) */

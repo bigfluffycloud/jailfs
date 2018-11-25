@@ -20,8 +20,8 @@
  * $Id: balloc.h 7779 2007-03-03 13:55:42Z pippijn $
  */
 
-#ifndef __BALLOC
-#define __BALLOC
+#ifndef __BALLOC_H
+#define __BALLOC_H
 #include <sys/types.h>
 #include <stdlib.h>
 #include "dlink.h"
@@ -65,4 +65,4 @@ extern int  blockheap_destroy(BlockHeap * bh);
 extern void blockheap_init(void);
 extern void blockheap_usage(BlockHeap * bh, size_t * bused, size_t * bfree, size_t * bmemusage);
 
-#endif                                 /* !defined(__BALLOC) */
+#endif                                 /* !defined(__BALLOC_H) */

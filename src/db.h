@@ -16,6 +16,9 @@
  *
  * Provides support for sqlite and berkeley DB
  */
+#if	!defined(__DB_H)
+#define	__DB_H
+
 enum db_query_res_type {
    QUERY_NULL = 0,                     /* no result */
    QUERY_INT,                          /* integer result */
@@ -47,3 +50,5 @@ struct db_connector {
 };
 
 #include "db_sqlite.h"
+
+#endif	// !defined(__DB_H)

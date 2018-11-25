@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include "logger.h"
 #include "profiling.h"
 #define	monstartup __monstartup
 

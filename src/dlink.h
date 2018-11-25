@@ -24,8 +24,8 @@
 /* Original Header: */
 
 /* #Id: tools.h,v 1.5 2002/09/11 17:55:38 db Exp # */
-#ifndef __DLINK
-#define __DLINK
+#ifndef __DLINK_H
+#define __DLINK_H
 
 typedef struct _dlink_node dlink_node;
 
@@ -81,4 +81,4 @@ extern void dlink_fini(void);
 #define dlink_add_tail_alloc(data, list) dlink_add_tail(data, dlink_create(), list)
 #define dlink_add_alloc(data, list) dlink_add(data, dlink_create(), list)
 #define dlink_destroy(node, list) do { dlink_delete(node, list); dlink_free(node); } while(0)
-#endif                                 /* !defined(__DLINK) */
+#endif                                 /* !defined(__DLINK_H) */

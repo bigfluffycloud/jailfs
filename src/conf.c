@@ -141,7 +141,7 @@ char       *dconf_get_str(const char *key, const char *def) {
    if (_DCONF_DICT == NULL || key == NULL)
       return NULL;
 
-   return dict_get(_DCONF_DICT, key, def);
+   return (char *)dict_get(_DCONF_DICT, key, def);
 }
 
 time_t dconf_get_time(const char *key, const time_t def) {

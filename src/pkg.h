@@ -58,7 +58,7 @@ extern int  pkg_import(const char *path);
 /* 'forget' a package, called by vfs_watcher */
 extern int  pkg_forget(const char *path);
 
-/* pkg_map.c */
+// Stuff for mmap()ing packages and hteir files
 extern void pkg_unmap_file(struct pkg_file_mapping *p);
 extern struct pkg_file_mapping *pkg_map_file(const char *path, size_t len, off_t offset);
 

@@ -50,7 +50,7 @@
 #define DEV_CAST (uint64_t)
 
 /* Once spillover files are ready for use */
-#undef	SPILLOVER
+#define	SPILLOVER	TRUE
 #define	SQLITE_OMIT_LOAD_EXTENSION
 #define	SQLITE_THREADSAFE 1
 #define	SQLITE_OMIT_SHARED_CACHE

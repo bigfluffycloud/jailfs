@@ -11,8 +11,11 @@
  *
  * No warranty of any kind. Good luck!
  */
+#if	!defined(__DB_SQLITE_H)
+#define	__DB_SQLITE_H
+
 #include <sys/types.h>
-#include "inode.h"
+#include "vfs_inode.h"
 
 extern void *db_query(enum db_query_res_type type, const char *fmt, ...);
 extern int  db_sqlite_open(const char *path);
@@ -27,3 +30,4 @@ extern int  db_file_remove(int pkg, const char *path);
 extern void db_begin(void);
 extern void db_commit(void);
 extern void db_rollback(void);
+#endif	// !defined(__DB_SQLITE_H)

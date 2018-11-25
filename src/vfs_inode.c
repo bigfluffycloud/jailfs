@@ -15,7 +15,8 @@
 #include <signal.h>
 #include "conf.h"
 #include "db.h"
-#include "inode.h"
+#include "vfs.h"
+#include "vfs_inode.h"
 #include "logger.h"
 BlockHeap  *inode_heap;
 

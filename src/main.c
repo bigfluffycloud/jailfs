@@ -24,12 +24,13 @@
 #include "conf.h"
 #include "db.h"
 #include "evt.h"
-#include "inode.h"
 #include "logger.h"
 #include "pkg.h"
-#include "signal_handler.h"
-#include "thread_pool.h"
+#include "list.h"
+#include "signals.h"
+#include "threads.h"
 #include "vfs.h"
+#include "vfs_inode.h"
 #include "vfs_inotify.h"
 
 struct conf conf;

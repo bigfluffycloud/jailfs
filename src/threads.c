@@ -1,6 +1,7 @@
 /* Thread pools */
 #include <pthread.h>
-#include "dictionary.h"
+#include "dict.h"
+#include "list.h"
 #include "logger.h"
 #include "threads.h"
 int core_ready = 0;

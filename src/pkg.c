@@ -281,7 +281,7 @@ int pkg_import(const char *path) {
       const gid_t _f_gid = archive_entry_gid(aentry);
       const mode_t _f_mode = archive_entry_perm(aentry);
       const char *_f_perm = archive_entry_strmode(aentry);
-      struct stat *st = archive_entry_stat(aentry); 
+      const struct stat *st = archive_entry_stat(aentry); 
 
       // XXX: Determine type
       if (*_f_perm == 'd')
@@ -291,27 +291,34 @@ int pkg_import(const char *path) {
       else
          _f_type = 'f';
 
+      // We do not add directories...
+      if (_f_type == 'd') {
+         archive_read_data_skip(a);
+         continue;
+      }
+
       if (dconf_get_bool("debug.pkg", 0) == 1)
          Log(LOG_DEBUG, "+ %s:%s (user: %d %s) (group: %d %s) mode=%o perms=%s size:%lu@%lu",
              basename(path), _f_name, _f_uid, _f_owner, _f_gid, _f_group, _f_mode, _f_perm, st->st_size, 0);
 
-      db_file_add(pkgid, path, _f_type, _f_uid, _f_gid,
+      if (_f_type == 'l') {
+      // XXX: Handle symlinks :O
+      } else {
+         db_file_add(pkgid, _f_name, _f_type, _f_uid, _f_gid,
                          _f_owner, _f_group, st->st_size,
                          0, time(NULL), st->st_mode, _f_perm);
-      if (_f_type == 'd' || _f_type == 'l') {
-         archive_read_data_skip(a);
-         continue;
-      }
 #if	0
-      size_t total = archive_entry_size(aentry);
-      char *buf = malloc(total);
-      Log(LOG_DEBUG, "ttl: %lu, buf: %lu", total, sizeof(buf));
-      ssize_t size = archive_read_data(aentry, buf, total);
-      if (size <= 0) {
-         // Error handling
-         Log(LOG_ERROR, "archive_read_data() short read: wanted %lu, got %lu", total, size);
-      }
+         size_t total = archive_entry_size(aentry);
+         char *buf = malloc(total);
+         Log(LOG_DEBUG, "ttl: %lu, buf: %lu", total, sizeof(buf));
+         ssize_t size = archive_read_data(aentry, buf, total);
+
+         if (size <= 0) {
+            Log(LOG_ERROR, "archive_read_data() short read: wanted %lu, got %lu", total, size);
+            continue;
+         }
 #endif
+      }
    }
 
    archive_read_close(a);
@@ -354,7 +361,7 @@ struct pkg_file_mapping *pkg_map_file(const char *path, size_t len, off_t offset
    p->len = len;
    p->offset = offset;
 
-   if (!(p->fd = open(p->pkg, O_RDONLY)) == -1) {
+   if ((p->fd = open(p->pkg, O_RDONLY)) == -1) {
       Log(LOG_ERROR, "%s:open:%s %d:%s", __FUNCTION__, p->pkg, errno, strerror(errno));
       pkg_unmap_file(p);
       return NULL;

@@ -20,7 +20,7 @@
 #include <errno.h>
 #include "conf.h"
 #include "evt.h"
-#include "signal_handler.h"
+#include "signals.h"
 #include "logger.h"
 #include "profiling.h"
 int g_argc = -1;
