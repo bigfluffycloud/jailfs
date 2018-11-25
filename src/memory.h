@@ -72,7 +72,6 @@ static __inline void *mem_calloc(size_t nmemb, size_t size) {
 
 #if	!defined(__memory_h)
 #define	__memory_h
-#include "list.h"
 /*
 typedef struct alloc_block {
    size_t sz;

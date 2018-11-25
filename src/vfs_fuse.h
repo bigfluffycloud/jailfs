@@ -11,9 +11,14 @@
  *
  * No warranty of any kind. Good luck!
  */
+#if	!defined(__VFS_FUSE_H)
+#define	__VFS_FUSE_H
+
 #define	FUSE_USE_VERSION 26
 #include <fuse/fuse.h>
 #include <fuse/fuse_lowlevel.h>
+#include <fuse/fuse_opt.h>
+
 extern struct fuse_args vfs_fuse_args;
 extern void *fuse_thr(void *unused);
 extern void vfs_fuse_fini(void);
@@ -31,3 +36,5 @@ extern void vfs_fuse_statfs(fuse_req_t req, fuse_ino_t ino);
 extern void vfs_fuse_getxattr(fuse_req_t req, fuse_ino_t ino, const char *name, size_t size);
 extern void vfs_fuse_listxattr(fuse_req_t req, fuse_ino_t ino, size_t size);
 extern void vfs_fuse_lookup(fuse_req_t req, fuse_ino_t parent, const char *name);
+
+#endif	// !defined(__VFS_FUSE_H)

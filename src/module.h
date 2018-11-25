@@ -33,7 +33,7 @@ typedef struct	Module {
 
 /* this is a hack, to make the library easier to use */
 
-extern list_p Modules;
+//extern list_p Modules;
 extern int in_module;
 extern int module_load(const char *path);
 extern int module_unload(Module *mp);

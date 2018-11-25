@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "dict.h"
-#include "list.h"
 #include "logger.h"
 #include "memory.h"
 #include "signals.h"
@@ -35,7 +34,7 @@ ThreadPool *threadpool_init(const char *name, const char *opts) {
   }
 
   r->name = strdup(name);
-  r->list = create_list();
+//  r->list = create_list();
 
   return r;
 }
@@ -61,7 +60,7 @@ Thread *thread_create(ThreadPool *pool, void *(*init)(void *), void *(*fini)(voi
      tmp->fini = fini;
 
   /* Add to thread pool */
-  list_add(pool->list, tmp, sizeof(tmp));
+//  list_add(pool->list, tmp, sizeof(tmp));
   Log(LOG_DEBUG, "new thread %x created in pool %s", tmp, pool->name);
   return tmp;
 }
@@ -70,7 +69,6 @@ Thread *thread_shutdown(ThreadPool *pool, Thread *thr) {
    if (!pool || !thr)
       return NULL;
 
-//   list_remove(pool->list, thr);
    /* If reference count hits 0, destroy the thread */
    /* Theory: This should reduce some cache churn by keeping
     *   the fairly heavyweight worker threads from being restarted
@@ -81,6 +79,7 @@ Thread *thread_shutdown(ThreadPool *pool, Thread *thr) {
    if (thr->refcnt == 0) {
       Log(LOG_DEBUG, "unallocating thread %x due to refcnt == 0", thr);
 
+//     list_remove(pool->list, thr);
       if (thr->argv)
          mem_free(thr->argv);
 

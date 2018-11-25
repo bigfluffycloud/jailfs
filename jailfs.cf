@@ -7,21 +7,32 @@ path.config=/config/
 path.mountpoint=/jails/auth-dns/
 path.pkg=/pkg
 path.spillover=/rw/
-;path.db=:memory:
-path.db=jailfs.db
+; This should be :memory: in production
+path.db=:memory:
+;path.db=jailfs.db
 path.log=jailfs.log
 
 ;;;;;;;;;;;
 ; Logging ;
 ;;;;;;;;;;;
-; log.level [debug|info|warning|error|fatal|hack]
+; log.level [debug|info|warning|error|fatal|hack] use info or lower on
+; production to avoid excessive log sizes
 log.level=debug
+; Dump stack unwind to the log - This may be a security concern for some users
 log.stack_unwind=true
+
+;;;;;;;;;;;;;
+; debugging ;
+;;;;;;;;;;;;;
+; Debugging options - Too much will slow things down badly...
 debug.net=false
 debug.mem=true
-debug.sql=true
+debug.sql=false
 debug.pkg=true
+debug.threads=false
 debug.vfs=true
+; You probably never want to turn this on...
+debug.monothread=false
 
 ;;;;;;;;;;;;;;;
 ; Tuning Kobs ;
@@ -34,11 +45,12 @@ tuning.heap.vfs_handle=512
 tuning.heap.vfs_watch=32
 tuning.timer.blockheap_gc=60
 tuning.timer.pkg_gc=60
+watchdog.interval=0
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Experimental features ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 experimental.libxml2-toc=false
 experimental.compress=false
-; Set to 0 seconds to disable watchdog
-watchdog.interval=0
+experimental.spillover=false
+experimental.watchdog=false

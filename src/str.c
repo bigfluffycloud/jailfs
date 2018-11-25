@@ -12,13 +12,13 @@
  * No warranty of any kind. Good luck!
  */
 #include <stdlib.h>
+#include <bsd/string.h>
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
 #include <time.h>
 #include "logger.h"
 #include "str.h"
-#include "support.h"
 
 char       *str_dup(const char *str) {
    register char *ptr = NULL;

@@ -19,12 +19,17 @@
 #include <errno.h>
 #include "balloc.h"
 
+#if	!defined(__VFS_H)
+#define	__VFS_H
+
 struct vfs_handle {
-   char        pkg_file[PATH_MAX];     /* package path */
-   off_t       pkg_offset;             /* offset within package */
+//   char        pkg_file[PATH_MAX];     /* package path */
+//   off_t       pkg_offset;             /* offset within package */
+   int	       pkgid;	      /* key used to find the mmap pointer */
+   u_int32_t   fileid;        /* file ID inside the package XXX: should this be inode #?? */
    char        file[PATH_MAX];         /* file name */
    size_t      len;                    /* length of file */
-   off_t       offset;                 /* current offset in file */
+//   off_t       offset;                 /* current offset in file */
    char       *maddr;                  /* mmap()'d region of package */
 };
 
@@ -55,3 +60,8 @@ extern u_int32_t vfs_root_inode;
 extern dlink_list vfs_watch_list;
 
 #include "vfs_fuse.h"
+#include "vfs_inode.h"
+#include "vfs_inotify.h"
+#include "vfs_spill.h"
+
+#endif	// !defined(__VFS_H)

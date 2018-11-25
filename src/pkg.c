@@ -10,8 +10,6 @@
  * on github - https://github.com/bigfluffycloud/fs-pkg/
  *
  * No warranty of any kind. Good luck!
- */
-/*
  * This file is ugly. It needs cleaned up and probably rewritten.
  *
  * Things are a bit intense in here as we try to do a bit of
@@ -45,7 +43,7 @@
 #include "atomicio.h"
 #include "balloc.h"
 #include "conf.h"
-#include "db.h"
+#include "database.h"
 #include "evt.h"
 #include "logger.h"
 #include "memory.h"

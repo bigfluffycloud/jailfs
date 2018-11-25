@@ -16,22 +16,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-#define	FUSE_USE_VERSION 26
-#include <fuse/fuse.h>
-#include <fuse/fuse_opt.h>
-#include <fuse/fuse_lowlevel.h>
 #include "conf.h"
-#include "db.h"
+#include "database.h"
 #include "evt.h"
 #include "logger.h"
 #include "pkg.h"
-#include "list.h"
+#include "dlink.h"
 #include "signals.h"
 #include "threads.h"
 #include "vfs.h"
-#include "vfs_inode.h"
-#include "vfs_inotify.h"
 
 struct conf conf;
 
@@ -109,7 +102,7 @@ int main(int argc, char **argv) {
    mimetype_init();
 
    Log(LOG_INFO, "Opening database %s", dconf_get_str("path.db", ":memory"));
-   db_sqlite_open(dconf_get_str("path.db", ":memory"));
+   db_open(dconf_get_str("path.db", ":memory"));
 
    // Add inotify watchers for paths in %{path.pkgdir}
    vfs_watch_init();

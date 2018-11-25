@@ -21,14 +21,12 @@
 #include <signal.h>
 #include <errno.h>
 #include "conf.h"
-#include "db.h"
+#include "database.h"
 #include "evt.h"
 #include "logger.h"
 #include "memory.h"
 #include "pkg.h"
 #include "vfs.h"
-#include "vfs_fuse.h"
-#include "vfs_spill.h"
 #include "timestr.h"
 
 /* Write-type operations which should return EROFS */

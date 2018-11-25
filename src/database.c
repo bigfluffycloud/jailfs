@@ -20,13 +20,13 @@
 #include "balloc.h"
 #include "conf.h"
 #include "database.h"
-#include "vfs_inode.h"
+#include "vfs.h"
 #include "logger.h"
 #include "memory.h"
 #include "util.h"
 #define	SQL_BUFSIZE	8192
 
-static sqlite3 *db_sqlite_db = NULL;
+static sqlite3 *sqlite_db = NULL;
 static pthread_mutex_t db_mutex;
 
 /* transaction primitives */
@@ -46,13 +46,13 @@ void db_rollback(void) {
 }
 
 /* Reuse a prepared statement */
-static int db_sqlite_statement_reset(sqlite3_stmt * s) {
+static int db_statement_reset(sqlite3_stmt * s) {
    sqlite3_clear_bindings(s);
    return sqlite3_reset(s);
 }
 
 /* Create database structure, etc */
-static void db_sqlite_initialize(void) {
+static void db_initialize(void) {
    db_begin();
 
    db_query(QUERY_NULL, "DROP TABLE IF EXISTS packages");
@@ -93,7 +93,7 @@ void       *db_query(enum db_query_res_type type, const char *fmt, ...) {
    pkg_inode_t *inode;
 
    if (!(buf = mem_alloc(SQL_BUFSIZE))) {
-      Log(LOG_ERROR, "%s: malloc: %d:%s", __FUNCTION__, errno, strerror(errno));
+      Log(LOG_ERROR, "%s: alloc: %d:%s", __FUNCTION__, errno, strerror(errno));
       return NULL;
    }
 
@@ -104,8 +104,8 @@ void       *db_query(enum db_query_res_type type, const char *fmt, ...) {
    if (dconf_get_bool("debug.sql", 0) == 1)
       Log(LOG_DEBUG, "SQL query [%d]: %s ", type, buf);
 
-   if ((i = sqlite3_prepare_v2(db_sqlite_db, buf, strlen(buf), &stmt, &tail) != SQLITE_OK)) {
-      Log(LOG_WARNING, "SQL error: %s", sqlite3_errmsg(db_sqlite_db));
+   if ((i = sqlite3_prepare_v2(sqlite_db, buf, strlen(buf), &stmt, &tail) != SQLITE_OK)) {
+      Log(LOG_WARNING, "SQL error: %s", sqlite3_errmsg(sqlite_db));
       mem_free(buf);
       errno = -i;
       return NULL;
@@ -160,16 +160,18 @@ void       *db_query(enum db_query_res_type type, const char *fmt, ...) {
 
 #undef	SQL_BUFSIZE
 
+// XXX: TODO: thread this out
+
 /* Open the database connection */
-int db_sqlite_open(const char *path) {
-   if (db_sqlite_db != NULL)
+int db_open(const char *path) {
+   if (sqlite_db != NULL)
       return 0;
 
    if (path[0] != ':' && file_exists(path))
       unlink(path);
 
-   if (sqlite3_open(path, &db_sqlite_db) != SQLITE_OK) {
-      sqlite3_close(db_sqlite_db);
+   if (sqlite3_open(path, &sqlite_db) != SQLITE_OK) {
+      sqlite3_close(sqlite_db);
       Log(LOG_FATAL, "Error opening database %s", path);
       raise(SIGTERM);
    }
@@ -177,14 +179,14 @@ int db_sqlite_open(const char *path) {
    /*
     * create the database structure, etc 
     */
-   db_sqlite_initialize();
+   db_initialize();
 
    return EXIT_SUCCESS;
 }
 
-void db_sqlite_close(void) {
+void db_close(void) {
    Log(LOG_DEBUG, "Closing database");
-   sqlite3_close(db_sqlite_db);
+   sqlite3_close(sqlite_db);
 }
 
 /* Registers a package and returns its unique ID from the database */

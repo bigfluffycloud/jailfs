@@ -14,14 +14,12 @@
 #include <signal.h>
 #include <errno.h>
 #include "conf.h"
-#include "db.h"
+#include "database.h"
 #include "evt.h"
 #include "logger.h"
 #include "memory.h"
 #include "pkg.h"
 #include "vfs.h"
-#include "vfs_fuse.h"
-#include "vfs_spill.h"
 static ev_io vfs_fuse_evt;
 static struct fuse_chan *vfs_fuse_chan = NULL;
 static struct fuse_session *vfs_fuse_sess = NULL;
@@ -35,17 +33,20 @@ static struct fuse_lowlevel_ops vfs_fuse_ops = {
    .open = vfs_fuse_open,
    .release = vfs_fuse_release,
    .read = vfs_fuse_read,
+
 /* Stat/permissions */
    .getattr = vfs_fuse_getattr,
    .access = vfs_fuse_access,
    .statfs = vfs_fuse_statfs,
 //   .getxattr = vfs_fuse_getxattr,
 //   .listxattr = vfs_fuse_listxattr,
+
 /* Directory operations */
    .opendir = vfs_fuse_opendir,
    .readdir = vfs_fuse_readdir,
    .releasedir = vfs_fuse_releasedir,
-/* Spillover operations, unsupported for now */
+
+/* for now we do not support spillover (write) */
    .create = vfs_spill_create,
    .mknod = vfs_spill_mknod,
    .mkdir = vfs_spill_mkdir,

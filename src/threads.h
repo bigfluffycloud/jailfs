@@ -14,7 +14,7 @@ typedef struct thread {
 
 typedef struct ThreadPool {
   char       *name;
-  list_p      list;
+//  list_p      list;
   pthread_attr_t pth_attr;
 } ThreadPool;
 

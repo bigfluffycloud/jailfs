@@ -20,7 +20,6 @@
 #include <fcntl.h>
 #include <time.h>
 #include "dict.h"
-#include "timestr.h"
 
 enum log_priority {
    LOG_DEBUG = 0,

@@ -27,10 +27,10 @@
 #include <string.h>
 #include <signal.h>
 #include <strings.h>
-#include "conf.h"
 #include "dict.h"
 #include "logger.h"
 #include "str.h"
+#include "conf.h"
 
 void dconf_init(const char *file) {
    FILE       *fp;

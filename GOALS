@@ -1,19 +1,17 @@
-* Clean up the db_* code. We will only ever use sqlite3
+* Redesign the VFS stuff to be less braindead
+  - dict based path cache
+     - templates (/config)
+     - Spillover files (mmap)
+     - Package files (mmap)
+     - Passthrough (local fs)
 
-* Reduce duplication of list/trees code
-	- src/dlink.c
-	- src/list.c
-	- src/tree.c
+* Improve signal handler (signals.c) so that ALWAYS unmount
 
 * Ensure we use BlockHeap allocator anywhere possible
 
 * Thread-safety and more threading
 
-* Improve signal handler (signals.c) so that ALWAYS unmount
-
 * Finish the shell
-
-* Loadable modules (eventually)
 
 * Finish the profiling code
 
@@ -21,9 +19,9 @@
 
 * Merge unix.c support.c and host.c
 
-* Redesign the VFS stuff to be less braindead
-  - dict based path cache
-     - templates (/config)
-     - Spillover files (mmap)
-     - Package files (mmap)
-     - Passthrough (local fs)
+* Loadable modules (eventually)
+
+
+* Standardize API and document stuff better (lol)
+
+* Make a script to repackage distro packages to .tar
