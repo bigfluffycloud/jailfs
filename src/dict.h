@@ -156,5 +156,6 @@ extern const int dict_getInt(dict *cp, const char *key, const int def);
 extern bool  dict_getBool(dict *cp, const char *key, bool def);
 extern const char *dict_getString(dict *cp, const char *key, const char *def);
 extern const double dict_getDouble(dict *cp, const char *key, const double def);
+extern void dict_mem_free(dict * d);
 
 #endif

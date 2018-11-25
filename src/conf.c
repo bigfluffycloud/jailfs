@@ -28,7 +28,7 @@
 #include <signal.h>
 #include <strings.h>
 #include "conf.h"
-#include "dictionary.h"
+#include "dict.h"
 #include "logger.h"
 #include "str.h"
 
@@ -40,7 +40,7 @@ void dconf_init(const char *file) {
    int         line = 0;
    char        *discard = NULL;
    char       *key, *val;
-   _DCONF_DICT = dictionary_new(0);
+   _DCONF_DICT = dict_new();
 
    if (!(fp = fopen(file, "r"))) {
       Log(LOG_FATAL, "unable to open config file %s", file);
@@ -99,7 +99,7 @@ void dconf_init(const char *file) {
 }
 
 void dconf_fini(void) {
-   dictionary_del(_DCONF_DICT);
+   dict_mem_free(_DCONF_DICT);
    _DCONF_DICT = NULL;
 }
 
@@ -141,7 +141,7 @@ char       *dconf_get_str(const char *key, const char *def) {
    if (_DCONF_DICT == NULL || key == NULL)
       return NULL;
 
-   return dictionary_get(_DCONF_DICT, key, def);
+   return dict_get(_DCONF_DICT, key, def);
 }
 
 time_t dconf_get_time(const char *key, const time_t def) {
@@ -149,9 +149,9 @@ time_t dconf_get_time(const char *key, const time_t def) {
 }
 
 int dconf_set(const char *key, const char *val) {
-   return dictionary_set(_DCONF_DICT, key, val);
+   return dict_add(_DCONF_DICT, key, val);
 }
 
 void dconf_unset(const char *key) {
-   dictionary_unset(_DCONF_DICT, key);
+   dict_del(_DCONF_DICT, key);
 }

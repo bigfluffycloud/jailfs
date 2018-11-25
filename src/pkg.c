@@ -31,6 +31,7 @@
  */
 #include <sys/types.h>
 #include <sys/param.h>
+#include <sys/mman.h>
 #include <sys/file.h>
 #include <signal.h>
 #include <errno.h>
@@ -51,11 +52,15 @@
 #include "pkg.h"
 #include "str.h"
 #include "timestr.h"
-
+/* This seems to be a BSD thing- it's not fatal if missing, so stub it */
+#if	!defined(MAP_NOSYNC)
+#define	MAP_NOSYNC	0
+#endif                                 /* !defined(MAP_NOSYNC) */
 #define	BLOCK_SIZE	10240
+
 /* private module-global stuff */
-static BlockHeap *pkg_heap;            /* Block allocator heap */
-static BlockHeap *file_heap;	       /* Heap for vfs_file's */
+static BlockHeap *pkg_heap = NULL;            /* Block allocator heap */
+static BlockHeap *file_heap = NULL;	       /* Heap for vfs_file's */
 static dlink_list pkg_list;            /* List of currently opened packages */
 
 static time_t pkg_lifetime = 0;        /* see pkg_init() for initialization */
@@ -325,15 +330,63 @@ int pkg_forget(const char *path) {
    return EXIT_SUCCESS;
 }
 
+
+void pkg_unmap_file(struct pkg_file_mapping *p) {
+   if (p->addr != NULL && p->addr != MAP_FAILED)
+      munmap(p->addr, p->len);
+
+   if (p->pkg != NULL)
+      mem_free(p->pkg);
+
+   if (p->fd > 0)
+      close(p->fd);
+
+   blockheap_free(file_heap, p);
+   p = NULL;
+}
+
+struct pkg_file_mapping *pkg_map_file(const char *path, size_t len, off_t offset) {
+   struct pkg_file_mapping *p;
+
+   p = blockheap_alloc(file_heap);
+
+   p->pkg = str_dup(path);
+   p->len = len;
+   p->offset = offset;
+
+   if (!(p->fd = open(p->pkg, O_RDONLY)) == -1) {
+      Log(LOG_ERROR, "%s:open:%s %d:%s", __FUNCTION__, p->pkg, errno, strerror(errno));
+      pkg_unmap_file(p);
+      return NULL;
+   }
+
+   if ((p->addr =
+        mmap(0, len, PROT_READ | PROT_EXEC, MAP_NOSYNC | MAP_PRIVATE,
+             p->fd, offset)) == MAP_FAILED) {
+      Log(LOG_ERROR, "%s:mmap: %d:%s", __FUNCTION__, errno, strerror(errno));
+      pkg_unmap_file(p);
+   }
+
+   return p;
+}
+
 void pkg_init(void) {
    if (!
        (pkg_heap =
         blockheap_create(sizeof(struct pkg_handle),
                          dconf_get_int("tuning.heap.pkg", 128), "pkg"))) {
-      Log(LOG_FATAL, "pkg_init(): block allocator failed");
+      Log(LOG_FATAL, "pkg_init(): block allocator failed - pkg");
+      raise(SIGTERM);
+   }
+   if (!
+       (file_heap =
+        blockheap_create(sizeof(struct pkg_file_mapping),
+                         dconf_get_int("tuning.heap.files", 128), "files"))) {
+      Log(LOG_FATAL, "pkg_init(): block allocator failed - files");
       raise(SIGTERM);
    }
 
+   // We take care of package file cleanup here too...
    pkg_lifetime = timestr_to_time(dconf_get_str("tuning.timer.pkg_gc", NULL), 60);
    evt_timer_add_periodic(pkg_gc, "gc.pkg", pkg_lifetime);
 }

@@ -18,3 +18,7 @@ world:${bin} ${libs}
 
 testpkg:
 	xar --compression=none -c -f /pkg/test.xar test-pkg/*
+
+dump-syms:
+	nm -Clp ${bin} | \
+	awk '{ printf "%s %s %s\n", $$3, $$2, $$4 }' |sort -u|less

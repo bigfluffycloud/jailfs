@@ -18,7 +18,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
-#include "dictionary.h"
+#include "dict.h"
 #include "timestr.h"
 
 enum log_priority {
@@ -35,7 +35,7 @@ struct conf {
    enum log_priority log_level;
    char       *mountpoint;
    int         dying;
-   dictionary *dict;
+   dict *dict;
    time_t      born;
    time_t      now;
 };
