@@ -24,8 +24,6 @@ objs += .obj/profiling.o
 objs += .obj/signal_handler.o
 objs += .obj/str.o
 objs += .obj/support.o
-# This is being replaced by threads.o
-objs += .obj/thread_pool.o
 #objs += .obj/threads.o
 objs += .obj/timestr.o
 objs += .obj/tree.o

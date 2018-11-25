@@ -213,7 +213,7 @@ int db_file_add(int pkg, const char *path, const char type,
             "INSERT INTO files (package, path, type, uid, gid, owner,"
                              "grp, size, offset, mode, ctime)"
                                 "VALUES (%d, '%s', '%c', %i, %i, '%s',"
-                                        "'%s', %lu, 0, %lu, %lu);",
+                                        "'%s', %lu, 0, %i, %lu);",
             pkg, path, type,
             uid, gid, owner, group, size, offset, mode, ctime);
    return 0;

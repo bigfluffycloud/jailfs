@@ -30,6 +30,7 @@
 #include "vfs_fuse.h"
 #include "vfs_spill.h"
 #include "timestr.h"
+
 /* Write-type operations which should return EROFS */
 void vfs_spill_setattr(fuse_req_t req, fuse_ino_t ino,
                              struct stat *attr, int to_set, struct fuse_file_info *fi) {

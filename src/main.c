@@ -56,7 +56,12 @@ int main(int argc, char **argv) {
    signal_init();
    evt_init();
    blockheap_init();
-   dconf_init("jailfs.cf");
+
+   if (argc > 1)
+      dconf_init(argv[1]);
+   else
+      dconf_init("jailfs.cf");
+
    dlink_init();
    pkg_init();
    inode_init();
@@ -104,7 +109,10 @@ int main(int argc, char **argv) {
    Log(LOG_INFO, "Opening database %s", dconf_get_str("path.db", ":memory"));
    db_sqlite_open(dconf_get_str("path.db", ":memory"));
 
+   // Add inotify watchers for paths in %{path.pkgdir}
    vfs_watch_init();
+
+   // Load all packages in %{path.pkgdir}
    vfs_dir_walk();
 
    while (!conf.dying) {

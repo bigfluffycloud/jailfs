@@ -287,15 +287,26 @@ int pkg_import(const char *path) {
          _f_type = 'f';
 
       if (dconf_get_bool("debug.pkg", 0) == 1)
-         Log(LOG_DEBUG, "+ %s:%s (user: %d %s) (group: %d %s) mode=%lu perms=%s size:%lu@%lu",
+         Log(LOG_DEBUG, "+ %s:%s (user: %d %s) (group: %d %s) mode=%o perms=%s size:%lu@%lu",
              basename(path), _f_name, _f_uid, _f_owner, _f_gid, _f_group, _f_mode, _f_perm, st->st_size, 0);
 
       db_file_add(pkgid, path, _f_type, _f_uid, _f_gid,
                          _f_owner, _f_group, st->st_size,
                          0, time(NULL), st->st_mode, _f_perm);
-
-      // Not actually required... but a good placeholder
-      archive_read_data_skip(a);
+      if (_f_type == 'd' || _f_type == 'l') {
+         archive_read_data_skip(a);
+         continue;
+      }
+#if	0
+      size_t total = archive_entry_size(aentry);
+      char *buf = malloc(total);
+      Log(LOG_DEBUG, "ttl: %lu, buf: %lu", total, sizeof(buf));
+      ssize_t size = archive_read_data(aentry, buf, total);
+      if (size <= 0) {
+         // Error handling
+         Log(LOG_ERROR, "archive_read_data() short read: wanted %lu, got %lu", total, size);
+      }
+#endif
    }
 
    archive_read_close(a);

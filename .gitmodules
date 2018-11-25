@@ -1,9 +1,6 @@
 [submodule "ext/libfuse"]
 	path = ext/libfuse
 	url = https://github.com/libfuse/libfuse.git
-[submodule "ext/libxml2"]
-	path = ext/libxml2
-	url = https://github.com/GNOME/libxml2.git
 [submodule "ext/libunwind"]
 	path = ext/libunwind
 	url = https://github.com/libunwind/libunwind.git

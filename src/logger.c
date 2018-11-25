@@ -69,7 +69,7 @@ void Log(enum log_priority priority, const char *fmt, ...) {
    }
 
    if (!conf.log_fp)
-      conf.log_fp = stdout;
+      conf.log_fp = stderr;
 
    va_start(ap, fmt);
    t = time(NULL);
@@ -102,8 +102,11 @@ void Log(enum log_priority priority, const char *fmt, ...) {
    memset(buf, 0, sizeof(buf));
    strftime(timestamp, sizeof(timestamp) - 1, "%Y/%m/%d %H:%M:%S", tm);
    vsprintf(buf, fmt, ap);
+
+   if ((conf.log_fp != stderr) && dconf_get_bool("sys.daemonize", 0) == 0)
+      printf("[%s] %9s: %s\n", timestamp, level, buf);
+
    fprintf(conf.log_fp, "%s %9s: %s\n", timestamp, level, buf);
-   printf("[%s] %9s: %s\n", timestamp, level, buf);
    fflush(conf.log_fp);
 
    va_end(ap);
