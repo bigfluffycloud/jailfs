@@ -1,9 +1,16 @@
 /* Thread pools */
 #include <pthread.h>
+#include <sys/errno.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include "dict.h"
 #include "list.h"
 #include "logger.h"
+#include "memory.h"
+#include "signals.h"
 #include "threads.h"
+#include "unix.h"
 int core_ready = 0;
 pthread_mutex_t core_ready_m;
 pthread_cond_t core_ready_c;
@@ -89,7 +96,7 @@ Thread *thread_shutdown(ThreadPool *pool, Thread *thr) {
  * You *MUST* call these at the beginning and end of your threads or bad things will happen,
  * like in-ability to access appworx services or crashes when you request them
  */
-void thread_entry(dict *conf) {
+void thread_entry(dict *_conf) {
     /* block until main thread is read */
     pthread_mutex_lock(&core_ready_m);
     while (core_ready < 1)
@@ -100,16 +107,10 @@ void thread_entry(dict *conf) {
     host_init();
 
     /* Configure AppWorx signals */
-//    signal_init();
-
-    if (GConf == NULL)
-       GConf = conf;
-
-    if (mainlog == NULL)
-       mainlog = dict_get_blob(conf, "__mainlog__", NULL);
+    signal_init();
 }
 
-void thread_exit(dict *conf) {
+void thread_exit(dict *_conf) {
     // XXX: See if this is old enough to exit
     pthread_exit(NULL);
 }

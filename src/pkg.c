@@ -309,7 +309,7 @@ int pkg_import(const char *path) {
                          0, time(NULL), st->st_mode, _f_perm);
 #if	0
          size_t total = archive_entry_size(aentry);
-         char *buf = malloc(total);
+         char *buf = mem_alloc(total);
          Log(LOG_DEBUG, "ttl: %lu, buf: %lu", total, sizeof(buf));
          ssize_t size = archive_read_data(aentry, buf, total);
 

@@ -106,6 +106,7 @@ int main(int argc, char **argv) {
 
    umount(conf.mountpoint);
    vfs_fuse_init();
+   mimetype_init();
 
    Log(LOG_INFO, "Opening database %s", dconf_get_str("path.db", ":memory"));
    db_sqlite_open(dconf_get_str("path.db", ":memory"));
@@ -116,7 +117,9 @@ int main(int argc, char **argv) {
    // Load all packages in %{path.pkgdir}
    vfs_dir_walk();
 
+   /// XXX: ToDo - Spawn various threads here before entering the main loop
    while (!conf.dying) {
+      // XXX: We will communicate with worker threads ONLY from main loop
       ev_loop(evt_loop, 0);
    }
 

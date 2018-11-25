@@ -11,10 +11,6 @@
  *
  * No warranty of any kind. Good luck!
  */
-/*
- * evt.[ch]: Utility functions to make using libevent a bit more 'friendly' for neo-ircd
- * Copyright (C) 2008-2018 bigfluffy.cloud
- */
 #include <stdlib.h>
 #include "ev.h"
 #include "memory.h"

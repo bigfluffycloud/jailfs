@@ -22,18 +22,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdlib.h>
 #include <string.h>
 #include "list.h"
+#include "memory.h"
 
 list_p create_list(){
-	list_p list = (list_p) malloc(sizeof(struct list));
+	list_p list = (list_p) mem_alloc(sizeof(struct list));
 	list->length = 0;
 	list->first = NULL;
 	list->last = NULL;
-	list->destructor = free;
+	list->destructor = mem_free;
 	return list;
 }
 
 list_iter_p list_iterator(list_p list, char init){
-	list_iter_p iter = (list_iter_p)malloc(sizeof(struct list_iter));
+	list_iter_p iter = (list_iter_p)mem_alloc(sizeof(struct list_iter));
 	if(init==FRONT){
 		iter->current = list->first;
 	}
@@ -46,8 +47,8 @@ list_iter_p list_iterator(list_p list, char init){
 }
 
 void list_add(list_p list, void* data, int size){
-	lnode_p node = (lnode_p)malloc(sizeof(struct linked_node));
-	node->data = malloc(size);
+	lnode_p node = (lnode_p)mem_alloc(sizeof(struct linked_node));
+	node->data = mem_alloc(size);
 	memcpy(node->data, data, size);
 	
 	if(list->first==NULL){
@@ -109,7 +110,7 @@ void* list_pop(list_p list){
 	list->last = last->prev;
 	void* data = last->data;
 	last->prev->next = NULL;
-	free(last);
+	mem_free(last);
 	return data;
 }
 
@@ -119,7 +120,7 @@ void* list_poll(list_p list){
 	list->first = first->next;
 	void* data = first->data;
 	first->next->prev = NULL;
-	free(first);
+	mem_free(first);
 	return data;
 }
 
@@ -139,9 +140,9 @@ void destroy_list(list_p list){
 	while(cur!=NULL){
 		next = cur->next;
 		list->destructor(cur->data);
-		free(cur);
+		mem_free(cur);
 		cur = next;
 	}
-	free(list);
+	mem_free(list);
 }
 

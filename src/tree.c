@@ -19,11 +19,12 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 #include <string.h>
+#include "memory.h"
 #include "tree.h"
 
 tnode_p make_node(void * data, int size){
-	tnode_p node = (tnode_p)malloc(sizeof(struct tree_node));
-	node->data = malloc(size);
+	tnode_p node = (tnode_p)mem_alloc(sizeof(struct tree_node));
+	node->data = mem_alloc(size);
 	memcpy(node->data, data, size);
 	node->parent = NULL;
 	node->left = NULL;
@@ -77,7 +78,7 @@ static tnode_p pull_out(tree_p tr, tnode_p node){
 		parent->left = next;
 	else parent->right = next;
 
-	free(node->data);
+	mem_free(node->data);
 
 	if(node != current)
 		node->data = current->data;
@@ -91,7 +92,7 @@ void tree_delete(tree_p tr, tnode_p node){
 	tnode_p current = pull_out(tr, node);
 	
 	current->parent = current->left = current->right = NULL;
-	free(current);
+	mem_free(current);
 }
 
 tnode_p tree_minimum(tnode_p node){
@@ -207,9 +208,9 @@ void destroy_node(tnode_p node){
 	node->left = NULL;
 	node->right = NULL;
 	node->parent = NULL;
-	free(node->data);
+	mem_free(node->data);
 	node->data = NULL;
-	free(node);
+	mem_free(node);
 }
 
 int rb_color(tnode_p node){
@@ -336,5 +337,5 @@ void rb_delete(tree_p tr, tnode_p node){
 		rb_delete_fixup(tr, current->parent, next);
 
 	current->parent = current->left = current->right = NULL;
-	free(current);
+	mem_free(current);
 }
