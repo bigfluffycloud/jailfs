@@ -1,0 +1,8 @@
+#!/bin/bash
+[ -z "$1" ] && {
+   echo "Usage: $0 package"
+   exit
+}
+
+pkg=$1
+equery -C files $pkg |  tar --no-recursion -T- -c -v -f /pkg/$pkg.tar

@@ -1,6 +1,4 @@
-;;;;;;;;;;;
-; General ;
-;;;;;;;;;;;
+[general]
 sys.daemonize=false
 path.config=/config/
 ;path.mountpoint=/jails/%{s:jailname}
@@ -28,7 +26,7 @@ log.stack_unwind=true
 debug.net=false
 debug.mem=true
 debug.sql=false
-debug.pkg=true
+debug.pkg=false
 debug.threads=false
 debug.vfs=true
 ; You probably never want to turn this on...
@@ -54,3 +52,6 @@ experimental.libxml2-toc=false
 experimental.compress=false
 experimental.spillover=false
 experimental.watchdog=false
+
+[modules]
+[jails]

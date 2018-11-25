@@ -51,6 +51,10 @@ extern char *dconf_get_str(const char *key, const char *def);
 extern time_t dconf_get_time(const char *key, const time_t def);
 extern int  dconf_set(const char *key, const char *val);
 extern void dconf_unset(const char *key);
+//  These two came from Appworx
+extern dict *dconf_load(const char *file);
+extern int dconf_write(dict *cp, const char *file);
+
 #define	_DCONF_DICT conf.dict
 
 #endif                                 /* !defined(__DCONF_H) */

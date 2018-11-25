@@ -1,4 +1,0 @@
-; Default configuration for test
-[general]
-listen.port=8518
-listen.addr=0.0.0.0

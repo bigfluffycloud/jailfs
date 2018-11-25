@@ -22,6 +22,7 @@
  * This code wouldn't be possible without N. Devillard's dictionary.[ch]
  * from the iniparser package. Thanks!!
  */
+#include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -31,13 +32,15 @@
 #include "logger.h"
 #include "str.h"
 #include "conf.h"
+#include "timestr.h"
 
+// I feel like in many ways this is a better parser
+// and that we should instead merge the sections code into here...
+#if	0
 void dconf_init(const char *file) {
    FILE       *fp;
    char       *p;
    char        buf[512];
-   int         in_comment = 0;
-   int         line = 0;
    char        *discard = NULL;
    char       *key, *val;
    _DCONF_DICT = dict_new();
@@ -97,10 +100,172 @@ void dconf_init(const char *file) {
       dconf_set(key, val);
    }
 }
-
+#endif	
 void dconf_fini(void) {
    dict_mem_free(_DCONF_DICT);
    _DCONF_DICT = NULL;
+}
+
+void dconf_init(const char *file) {
+   _DCONF_DICT = dconf_load(file);
+}
+
+dict *dconf_load(const char *file) {
+   int line = 0, errors = 0;
+   int         in_comment = 0;
+   char buf[768];
+   FILE *fp;
+   char *end, *skip,
+        *key, *val,
+        *section = 0;
+   dict *cp = dict_new();
+
+   if (!(fp = fopen(file, "r"))) {
+      Log(LOG_ERROR, "%s: Failed loading %s", __FUNCTION__, file);
+      fclose(fp);
+      return false;
+   }
+
+//   Modules = create_list();
+
+   do {
+      memset(buf, 0, sizeof(buf));
+      fgets(buf, sizeof(buf) - 1, fp);
+      line++;
+
+      // delete prior whitespace...
+      skip = buf;
+      while(*skip == ' ')
+        skip++;
+
+      // Delete trailing newlines
+      end = buf + strlen(buf);
+      do {
+        *end = '\0';
+        end--;
+      } while(*end == '\r' || *end == '\n');
+
+      // did we eat the whole line?
+      if ((end - skip) <= 0)
+         continue;
+
+
+      if (skip[0] == '*' && skip[1] == '/') {
+         in_comment = 0;               /* end of block comment */
+         continue;
+      } else if (skip[0] == ';' || skip[0] == '#' || (skip[0] == '/' && skip[1] == '/')) {
+         continue;                     /* line comment */
+      } else if (skip[0] == '/' && skip[1] == '*')
+         in_comment = 1;               /* start of block comment */
+
+      if (in_comment)
+         continue;                     /* ignored line, in block comment */
+
+      if ((*skip == '/' && *skip+1 == '/') ||		// comments
+           *skip == '#' || *skip == ';')
+         continue;
+      else if (*skip == '[' && *end == ']') {		// section
+         section = strndup(skip + 1, strlen(skip) - 2);
+         Log(LOG_DEBUG, "cfg.section.open: '%s' [%d]", section, strlen(section));
+         continue;
+      } else if (*skip == '@') {			// preprocessor
+         if (strncasecmp(skip + 1, "if ", 3) == 0) {
+            /* XXX: finish this */
+         } else if (strncasecmp(skip + 1, "endif", 5) == 0) {
+            /* XXX: finish this */
+         } else if (strncasecmp(skip + 1, "else ", 5) == 0) {
+            /* XXX: finish this */
+         }
+      }
+
+      // Configuration data *MUST* be inside of a section, no exceptions.
+      if (!section) {
+         Log(LOG_ERROR, "config %s has line outside section header at line %d: %s", file, line, buf);
+         errors++;
+         continue;
+      }
+
+      // Handle configuration sections
+      if (strncasecmp(section, "general", 7) == 0) {
+         // Parse configuration line (XXX: GET RID OF STRTOK!)
+         key = strtok(skip, "= \n");
+         val = strtok(NULL, "= \n");
+
+         // Store value
+         dict_add(cp, key, val);
+      } else if (strncasecmp(section, "modules", 8) == 0) {
+         Log(LOG_INFO, "Loading module %s", skip);
+
+//         if (module_load(skip) != 0)
+//            errors++;
+      } else {
+         Log(LOG_ERROR, "Unknown configuration section '%s' parsing '%s' at %s:%d", section, buf, file, line);
+         errors++;
+      }
+   } while (!feof(fp));
+
+   Log(LOG_INFO, "configuration loaded with %d errors from %s (%d lines)", errors, file, line);
+   fclose(fp);
+
+   return cp;
+}
+
+// Write-out the in-memory configuration
+int dconf_write(dict *cp, const char *file) {
+   FILE *fp;
+   time_t t;
+   int errors = 0;
+   char nambuf[PATH_MAX];
+
+   sprintf(nambuf, "%s.auto", file);
+
+   if ((fp = fopen(nambuf, "w+")) == NULL || errno) {
+      Log(LOG_ERROR, "%s: fopen(%s, \"w+\") failed: %d (%s)", __FUNCTION__, nambuf, errno, strerror(errno));
+
+      if (fp)
+         fclose(fp);
+      return false;
+   }
+
+   t = time(NULL);
+
+   // Dump configuration to file..
+   if (fprintf(fp, "# This configuration file automatically saved on %s\n", ctime(&t)) < 0)
+      errors++;
+
+   if (fprintf(fp, "[general]\n") < 0)
+      errors++;
+
+   if (dict_dump(cp, fp) < 0)
+      errors++;
+#if	0	// NYI
+   if (Modules) {
+      Module *mp = NULL;
+      list_iter_p mod_cur = list_iterator(Modules, FRONT);
+
+      fprintf(fp, "[modules]\n");
+
+      do {
+         if (mp->name && fprintf(fp, "%s\n", mp->name) < 0)
+            errors++;
+         fflush(fp);
+      } while((mp = list_next(mod_cur)));
+   } else
+     Log(LOG_ERROR, "conf_write: No Modules list");
+#endif
+   if (errors > 0)
+      fprintf(fp, "# Saved with %d errors, please review before using, autorename disabled\n", errors);
+
+   fclose(fp);
+
+   if (errors == 0) {
+      unlink(file);
+      rename(nambuf, file);
+      Log(LOG_INFO, "Saved configuration as %s with no errors", file);
+   } else
+      Log(LOG_ERROR, "Saving configuration had %d errors, keeping as %s", errors, nambuf);
+
+   return true;
 }
 
 int dconf_get_bool(const char *key, const int def) {

@@ -25,3 +25,7 @@
 * Standardize API and document stuff better (lol)
 
 * Make a script to repackage distro packages to .tar
+
+* Maybe a bit of buffering on logs so that very early
+  - startup messages can still be printed to the log
+  - and not just stdout/stderr which may not exist

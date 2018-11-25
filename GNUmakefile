@@ -15,17 +15,12 @@ endif
 
 world:${bin} ${libs}
 
+#	equery list \* --format="\$$name" |
 testpkg:
-#	xar --compression=none -c -f /pkg/test.xar test-pkg/*
-	tar -cvf /pkg/tar.tar test-pkg/*
-#	equery list \* --format="\$category/\$name" | \
-#	  while read line; do \
-#	     PKNAME=$(echo $$line|cut -f 2 -d '/'); \
-#	     echo $$PKNAME; \
-#	     tar -cvf /pkg/$$PKNAME.tar $(equery files $$line); \
-#	  done
-#	tar -cvf /pkg/irss.tar $(equery files irssi)
-	equery -C files irssi | tar -cvf /pkg/irsi.tar -T-
+	for line in "irssi tar"; do \
+	   equery -C files $$line |  tar --no-recursion -T- -c -v -f /pkg/$$line.tar; \
+	done
+
 dump-syms:
 	nm -Clp ${bin} | \
 	awk '{ printf "%s %s %s\n", $$3, $$2, $$4 }' |sort -u|less

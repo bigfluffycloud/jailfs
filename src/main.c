@@ -25,6 +25,7 @@
 #include "signals.h"
 #include "threads.h"
 #include "vfs.h"
+#include "mimetypes.h"
 
 struct conf conf;
 
@@ -52,9 +53,11 @@ int main(int argc, char **argv) {
    blockheap_init();
 
    if (argc > 1)
-      dconf_init(argv[1]);
+//      dconf_init(argv[1]);
+      conf.dict = dconf_load("jailfs.cf");
    else
-      dconf_init("jailfs.cf");
+//      dconf_init("jailfs.cf");
+      conf.dict = dconf_load("jailfs.cf");
 
    dlink_init();
    pkg_init();
@@ -70,7 +73,7 @@ int main(int argc, char **argv) {
    /*
     * open log file, if its valid, otherwise assume debug mode and use stdout 
     */
-   if ((conf.log_fp = log_open(dconf_get_str("path.log", NULL))) == NULL)
+   if ((conf.log_fp = log_open(dconf_get_str("path.log", "jailfs.log"))) == NULL)
       conf.log_fp = stdout;
 
    Log(LOG_INFO, "jailfs: Package filesystem %s starting up...", VERSION);
@@ -95,7 +98,7 @@ int main(int argc, char **argv) {
    if ((fuse_opt_add_arg(&vfs_fuse_args, argv[0]) == -1 ||
         fuse_opt_add_arg(&vfs_fuse_args, "-o") == -1 ||
         fuse_opt_add_arg(&vfs_fuse_args, "nonempty,allow_other") == -1))
-      Log(LOG_ERROR, "Failed to set FUSE options.\n");
+      Log(LOG_ERROR, "Failed to set FUSE options.");
 
    umount(conf.mountpoint);
    vfs_fuse_init();
@@ -109,6 +112,8 @@ int main(int argc, char **argv) {
 
    // Load all packages in %{path.pkgdir}
    vfs_dir_walk();
+
+   Log(LOG_INFO, "jail at %s is now ready!", conf.mountpoint);
 
    /// XXX: ToDo - Spawn various threads here before entering the main loop
    while (!conf.dying) {
