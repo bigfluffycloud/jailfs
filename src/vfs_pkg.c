@@ -21,7 +21,7 @@
 #include <signal.h>
 #include <errno.h>
 #include "conf.h"
-#include "db.h"
+#include "database.h"
 #include "evt.h"
 #include "logger.h"
 #include "memory.h"

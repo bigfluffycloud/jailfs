@@ -19,7 +19,7 @@
 #include <sqlite3.h>
 #include "balloc.h"
 #include "conf.h"
-#include "db.h"
+#include "database.h"
 #include "vfs_inode.h"
 #include "logger.h"
 #include "memory.h"
