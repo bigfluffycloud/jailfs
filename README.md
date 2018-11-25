@@ -8,9 +8,9 @@ Hopefully you'll enjoy and find time to contribute!
 The end goal is to provide a mechanism for packaging
 software for use in containers.
 
+Packages can be in any format libarchive supports (yay!)
 ---
 * Goals for 0.1.0
-- libarchive support
 - Working target mounts
 - Improve configuration system to support
   global & per-jail configurations

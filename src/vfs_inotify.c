@@ -95,13 +95,6 @@ void vfs_inotify_evt_get(struct ev_loop *loop, ev_io * w, int revents) {
       memset(path, 0, PATH_MAX);
       snprintf(path, PATH_MAX - 1, "%s/%s", ((vfs_watch_t *) ptr->data)->path, e->name);
 
-      /*
-       * Skip over non-packages 
-       */
-      ext = strrchr(path, '.');
-      if (strncmp(ext, ".pkg", 4) && strncmp(ext, ".xar", 4))
-         return;
-
       if (e->mask & IN_CLOSE_WRITE || e->mask & IN_MOVED_TO)
          pkg_import(path);
       else if (e->mask & IN_DELETE || e->mask & IN_MOVED_FROM)

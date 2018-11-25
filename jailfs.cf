@@ -28,7 +28,6 @@ tuning.heap.vfs_handle=512
 tuning.heap.vfs_watch=32
 tuning.timer.blockheap_gc=60
 tuning.timer.pkg_gc=60
-tuning.toc.gz.buffer=1310720
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Experimental features ;

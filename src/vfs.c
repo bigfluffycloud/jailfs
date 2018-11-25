@@ -67,8 +67,6 @@ static void vfs_dir_walk_recurse(const char *path, int depth) {
          if (ext == NULL)
             return;
 
-         if (strncmp(ext, ".pkg", 4) && strncmp(ext, ".xar", 4))
-            return;
          pkg_import(buf);
       }
    }

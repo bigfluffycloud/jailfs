@@ -39,6 +39,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <archive.h>
+#include <archive_entry.h>
 #include "atomicio.h"
 #include "balloc.h"
 #include "conf.h"
@@ -50,6 +52,7 @@
 #include "str.h"
 #include "timestr.h"
 
+#define	BLOCK_SIZE	10240
 /* private module-global stuff */
 static BlockHeap *pkg_heap;            /* Block allocator heap */
 static dlink_list pkg_list;            /* List of currently opened packages */
@@ -206,6 +209,9 @@ int pkg_import(const char *path) {
    char       *tmp = NULL;
    int         infd, outfd;
    int         db_id = -1;
+   struct archive *a;
+   struct archive_entry *aentry;
+   int r;
 
    /*
     * XXX: what do we do when an in-use package is modified?
@@ -229,38 +235,47 @@ int pkg_import(const char *path) {
    Log(LOG_INFO, "importing pkg %s", path);
 
    db_begin();
+   a = archive_read_new();
+   archive_read_support_filter_all(a);
+   archive_read_support_format_all(a);
+   r = archive_read_open_filename(a, path, BLOCK_SIZE);
 
-#if	0
-   // LIBXML2:
-   /*
-    * Try to extract the package TOC 
-    */
-   if ((tmp = pkg_toc_extract(path)) == NULL) {
-      Log(LOG_ERROR, "failed to export toc for %s", path);
-      return EXIT_FAILURE;
-   }
-#endif
-   Log(LOG_DEBUG, "TOC for %s extracted, processing", path);
-
-   /*
-    * Process the extracted TOC 
-    */
-   if (!pkg_toc_process(path, tmp)) {
-      Log(LOG_INFO, "package %s seems valid, committing...", path);
-      db_commit();
-   } else {
-      Log(LOG_ERROR, "failed adding package %s to database, skipping...", path);
-      db_rollback();
+   if (r != ARCHIVE_OK) {
+      Log(LOG_ERROR, "package %s is not valid: libarchive returned %d", path, r);
+      return -1;
    }
 
-   /*
-    * clean up: remove extracted toc and free its name buffer 
-    */
-   if (tmp != NULL) {
-      unlink(tmp);
-      mem_free(tmp);
+   // Add the entry to the database
+   while (TRUE) {
+
+      r = archive_read_next_header(a, &aentry);
+      if (r == ARCHIVE_EOF)
+         break;
+
+      if (r != ARCHIVE_OK) {
+         Log(LOG_DEBUG, "pkg_import: libarchive read_next_header error %d: %s", r, archive_error_string(a));
+         break;
+      }
+
+      const char *_f_name = archive_entry_pathname(aentry);
+      const char *_f_uname = archive_entry_uname(aentry);
+      const char *_f_gname = archive_entry_gname(aentry);
+      const uid_t _f_uid = archive_entry_uid(aentry);
+      const gid_t _f_gid = archive_entry_gid(aentry);
+      const mode_t _f_mode = archive_entry_perm(aentry);
+      const char *_f_perm = archive_entry_strmode(aentry);
+//      db_file_add(pkgid, _f_name, type, 0, 0, (type == 'd') ? 0 : size, (type == 'd') ? 0 : offset, time(NULL), mode);
+      Log(LOG_DEBUG, "pkg %s: Found %s (user: %d %s) (group: %d %s) perms=%s",
+         path, _f_name, _f_uid, _f_uname, _f_gid, _f_gname, _f_perm);
+      // Not actually required... but a good placeholder
+      archive_read_data_skip(a);
    }
 
+   archive_read_close(a);
+   r = archive_read_free(a);
+   if (r != ARCHIVE_OK)
+      Log(LOG_ERROR, "possible memory leak! archive_read_free() returned %d", r);
+   
    return EXIT_SUCCESS;
 }
 
@@ -281,5 +296,4 @@ void pkg_init(void) {
 
    pkg_lifetime = timestr_to_time(dconf_get_str("tuning.timer.pkg_gc", NULL), 60);
    evt_timer_add_periodic(pkg_gc, "gc.pkg", pkg_lifetime);
-   pkg_toc_zbufsize = dconf_get_int("tuning.toc.gz.buffer", 1310720);
 }
