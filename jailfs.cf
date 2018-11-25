@@ -26,8 +26,8 @@ log.stack_unwind=true
 debug.net=false
 debug.mem=true
 debug.sql=false
-debug.pkg=false
-debug.threads=false
+debug.pkg=truee
+debug.threads=true
 debug.vfs=true
 ; You probably never want to turn this on...
 debug.monothread=false
@@ -54,4 +54,5 @@ experimental.spillover=false
 experimental.watchdog=false
 
 [modules]
-[jails]
+
+[jail]

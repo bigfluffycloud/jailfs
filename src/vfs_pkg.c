@@ -10,8 +10,8 @@
  * on github - https://github.com/bigfluffycloud/fs-pkg/
  *
  * No warranty of any kind. Good luck!
- */
-/*
+ *
+ *
  * FUSE VFS Package file operations
  *
  * This file should NEVER be included directly outside
@@ -35,9 +35,6 @@ void vfs_fuse_getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
    Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
 
    if ((i = db_query(QUERY_INODE, "SELECT * FROM files WHERE inode = %d", (u_int32_t) ino)) != NULL) {
-      /*
-       * XXX: do stuff ;) 
-       */
       sb.st_ino = ino;
       sb.st_mode = i->st_mode;
       sb.st_size = i->st_size;
@@ -46,9 +43,7 @@ void vfs_fuse_getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
       blockheap_free(inode_heap, i);
    }
 
-   /*
-    * Did we get a valid response? 
-    */
+   // Did we get a valid response?
    if (sb.st_ino) {
       fuse_reply_attr(req, &sb, 0.0);
       Log(LOG_DEBUG, "got attr.st_ino: %d", sb.st_ino);

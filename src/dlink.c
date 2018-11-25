@@ -10,20 +10,17 @@
  * on github - https://github.com/bigfluffycloud/fs-pkg/
  *
  * No warranty of any kind. Good luck!
- */
-/* Sentinel - IRC Statistical and Operator Services
-** dlink.c - Hybrid derived doubly linked list library
-**
-** Copyright W. Campbell and others.  See README for more details
-** Some code Copyright: Jonathan George, Kai Seidler, ircd-hybrid Team,
-**                      IRCnet IRCD developers.
-**
-** $Id: dlink.c,v 1.2 2003/09/11 14:56:34 wcampbel Exp $
-*/
-
-/* Original header */
-
-/*  tcm-hybrid/src/tools.c by fl_
+ *
+ * Sentinel - IRC Statistical and Operator Services
+ * dlink.c - Hybrid derived doubly linked list library
+ *
+ * Copyright W. Campbell and others.  See README for more details
+ * Some code Copyright: Jonathan George, Kai Seidler, ircd-hybrid Team,
+ *                      IRCnet IRCD developers.
+ *
+ * $Id: dlink.c,v 1.2 2003/09/11 14:56:34 wcampbel Exp $
+ *
+ *  tcm-hybrid/src/tools.c by fl_
  *  Copyright (C) 2002 ircd-hybrid development team
  *
  *  #Id: tools.c,v 1.6 2002/06/24 16:21:51 leeh Exp #
