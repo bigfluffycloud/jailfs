@@ -1,0 +1,14 @@
+joseph@atl1:~> mush
+mush:config> jail
+mush:jail> repl auth-dns kit:pdns master
+=> jail auth-dns
+  - marked for removal kit:pdns 20181122
+  + imported kit:pdns master
+    resolved to kit:pdns 20181124
+kit:pdns still has refcnt 1
+
+mush:jail> kill auth-dns
+I'm afraid I cannot do that, joseph.
+
+mush:jail> exit
+mush:config> 
