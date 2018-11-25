@@ -53,7 +53,6 @@ int main(int argc, char **argv) {
    umask(0);
 
    atexit(goodbye);
-
    signal_init();
    evt_init();
    blockheap_init();
@@ -78,8 +77,10 @@ int main(int argc, char **argv) {
    Log(LOG_INFO, "jailfs: Package filesystem %s starting up...", VERSION);
    Log(LOG_INFO, "Copyright (C) 2012-2018 bigfluffy.cloud -- See LICENSE in distribution package for terms of use");
 
-   if (conf.log_level == LOG_DEBUG)
-      Log(LOG_WARNING, "Log level is set to DEBUG - this will hurt performance badly. Use log.level=info if not debugging...");
+   if (conf.log_level == LOG_DEBUG) {
+      Log(LOG_WARNING, "Log level is set to DEBUG. Please use info or lower in production");
+      Log(LOG_WARNING, "You can always toggle individual components (debug.*) to adjust the output");
+   }
 
    if (!conf.mountpoint)
       conf.mountpoint = dconf_get_str("path.mountpoint", "chroot/");
@@ -99,28 +100,16 @@ int main(int argc, char **argv) {
 
    umount(conf.mountpoint);
    vfs_fuse_init();
+
    Log(LOG_INFO, "Opening database %s", dconf_get_str("path.db", ":memory"));
    db_sqlite_open(dconf_get_str("path.db", ":memory"));
 
-   /*
-    * set up the watch subsystem 
-    */
    vfs_watch_init();
-
-   /*
-    * walk the package dirs and import all existing packages 
-    */
    vfs_dir_walk();
 
-   /*
-    * the big event loop 
-    */
    while (!conf.dying) {
       ev_loop(evt_loop, 0);
    }
 
-   /*
-    * shouldnt be reached... 
-    */
    return EXIT_SUCCESS;
 }

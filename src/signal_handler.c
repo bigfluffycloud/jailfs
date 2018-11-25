@@ -11,12 +11,13 @@
  *
  * No warranty of any kind. Good luck!
  */
-#include <errno.h>
+
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <errno.h>
 #include "conf.h"
 #include "evt.h"
 #include "signal_handler.h"
@@ -26,26 +27,7 @@ int g_argc = -1;
 char **g_argv = NULL;
 
 /* src/module.c */
-//extern int module_dying(int signal);
-
-static ev_signal signal_die;
-static ev_signal signal_reload;
-
-static void signal_handler_die(struct ev_loop *loop, ev_signal * w, int revents) {
-   conf.dying = 1;
-   goodbye();
-}
-
-static void signal_handler_reload(struct ev_loop *loop, ev_signal * w, int revents) {
-}
-
-void signal_init_ev(void) {
-   ev_signal_init(&signal_die, signal_handler_die, SIGINT);
-   ev_signal_init(&signal_die, signal_handler_die, SIGQUIT);
-   ev_signal_init(&signal_die, signal_handler_die, SIGTERM);
-   ev_signal_init(&signal_reload, signal_handler_reload, SIGHUP);
-   signal(SIGPIPE, SIG_IGN);
-}
+extern int module_dying(int signal);
 
 /*
  * Signal handling
@@ -72,8 +54,8 @@ static void signal_handler(int signal) {
          if (module_dying(signal) != 0)
             daemon_restart();
       } else
-         conf.dying = 1;
 #endif
+         conf.dying = 1;
 //   } else if (signal == SIGUSR1) {
 //      profiling_dump();
 //   } else if (signal == SIGUSR2) {
@@ -83,6 +65,7 @@ static void signal_handler(int signal) {
       while(waitpid(-1, NULL, WNOHANG) > 0)
          ;
    Log(LOG_WARNING, "Caught signal %d", signal);
+   goodbye();
 }
 
 #if	0

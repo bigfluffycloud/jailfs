@@ -55,7 +55,9 @@
 #define	BLOCK_SIZE	10240
 /* private module-global stuff */
 static BlockHeap *pkg_heap;            /* Block allocator heap */
+static BlockHeap *file_heap;	       /* Heap for vfs_file's */
 static dlink_list pkg_list;            /* List of currently opened packages */
+
 static time_t pkg_lifetime = 0;        /* see pkg_init() for initialization */
 
 static dlink_node *pkg_findnode(struct pkg_handle *pkg) {
@@ -77,6 +79,10 @@ static dlink_node *pkg_findnode(struct pkg_handle *pkg) {
  */
 static void pkg_release(struct pkg_handle *pkg) {
    dlink_node *ptr;
+
+   // XXX: Purge files
+   // XXX: - Free file contents cache
+   // XXX: - Free all pointers/structs associated
 
    /*
     * If name is allocated, free it 
@@ -270,6 +276,7 @@ int pkg_import(const char *path) {
       const gid_t _f_gid = archive_entry_gid(aentry);
       const mode_t _f_mode = archive_entry_perm(aentry);
       const char *_f_perm = archive_entry_strmode(aentry);
+      struct stat *st = archive_entry_stat(aentry); 
 
       // XXX: Determine type
       if (*_f_perm == 'd')
@@ -279,13 +286,13 @@ int pkg_import(const char *path) {
       else
          _f_type = 'f';
 
-      db_file_add(pkgid, path, _f_type, _f_uid, _f_gid,
-                         _f_owner, _f_group, 0 /*XXX*/,
-                         0, time(NULL), _f_mode, _f_perm);
-
       if (dconf_get_bool("debug.pkg", 0) == 1)
-         Log(LOG_DEBUG, "+ %s:%s (user: %d %s) (group: %d %s) perms=%s",
-             basename(path), _f_name, _f_uid, _f_owner, _f_gid, _f_group, _f_perm);
+         Log(LOG_DEBUG, "+ %s:%s (user: %d %s) (group: %d %s) mode=%lu perms=%s size:%lu@%lu",
+             basename(path), _f_name, _f_uid, _f_owner, _f_gid, _f_group, _f_mode, _f_perm, st->st_size, 0);
+
+      db_file_add(pkgid, path, _f_type, _f_uid, _f_gid,
+                         _f_owner, _f_group, st->st_size,
+                         0, time(NULL), st->st_mode, _f_perm);
 
       // Not actually required... but a good placeholder
       archive_read_data_skip(a);

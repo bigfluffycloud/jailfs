@@ -17,12 +17,13 @@ path.log=jailfs.log
 ; log.level [debug|info|warning|error|fatal|hack]
 log.level=debug
 log.stack_unwind=true
-debug.sql=false
+debug.sql=true
 debug.pkg=true
 
 ;;;;;;;;;;;;;;;
 ; Tuning Kobs ;
 ;;;;;;;;;;;;;;;
+tuning.heap.files=8192
 tuning.heap.inode=128
 tuning.heap.node=128
 tuning.heap.pkg=128
