@@ -125,9 +125,7 @@ static struct pkg_handle *pkg_handle_byname(const char *path) {
  * Scan for packages with refcnt == 0 every once in a while and close them
  * 	This helps to reduce closing and reopening packages unneededly
  *	Adjust tuning parameters in jailfs.cf as needed, based on your memory model.
- * if rfcnt == 0 && now > otime + (tuning.time.pkg_gc / 2): release it
- *
- * XXX: Why do we use pkg_lifetime / 2? It seems like it'd be more intelligent to use pkg_lifetime...
+ * if rfcnt == 0 && now > otime + (tuning.time.pkg_gc): release it
  */
 static void pkg_gc(int fd, short event, void *arg) {
    dlink_node *ptr, *tptr;
@@ -136,7 +134,7 @@ static void pkg_gc(int fd, short event, void *arg) {
    DLINK_FOREACH_SAFE(ptr, tptr, pkg_list.head) {
       p = (struct pkg_handle *)ptr->data;
 
-      if (p->refcnt == 0 && (time(NULL) > p->otime + (pkg_lifetime / 2)))
+      if (p->refcnt == 0 && (time(NULL) > p->otime + pkg_lifetime))
          pkg_release(p);
    }
 }
