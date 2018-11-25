@@ -111,7 +111,7 @@ void dconf_init(const char *file) {
 }
 
 dict *dconf_load(const char *file) {
-   int line = 0, errors = 0;
+   int line = 0, errors = 0, warnings = 0;
    int         in_comment = 0;
    char buf[768];
    FILE *fp;
@@ -204,7 +204,7 @@ dict *dconf_load(const char *file) {
       }
    } while (!feof(fp));
 
-   Log(LOG_INFO, "configuration loaded with %d errors from %s (%d lines)", errors, file, line);
+   Log(LOG_INFO, "configuration loaded with %d errors and %d warnings from %s (%d lines)", errors, warnings, file, line);
    fclose(fp);
 
    return cp;

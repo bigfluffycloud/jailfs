@@ -48,8 +48,6 @@ watchdog.interval=0
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Experimental features ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;
-experimental.libxml2-toc=false
-experimental.compress=false
 experimental.spillover=false
 experimental.watchdog=false
 

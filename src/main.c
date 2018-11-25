@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
 
    if (argc > 1)
 //      dconf_init(argv[1]);
-      conf.dict = dconf_load("jailfs.cf");
+      conf.dict = dconf_load(argv[1]);
    else
 //      dconf_init("jailfs.cf");
       conf.dict = dconf_load("jailfs.cf");

@@ -7,3 +7,6 @@
 [submodule "ext/libarchive"]
 	path = ext/libarchive
 	url = https://github.com/libarchive/libarchive.git
+[submodule "ext/sqlite"]
+	path = ext/sqlite
+	url = https://github.com/mackyle/sqlite.git
