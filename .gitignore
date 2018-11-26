@@ -1,6 +1,10 @@
-pkg/*.pkg
+pkg/*
 .obj/*.o
 jailfs
 jailfs.db
 jailfs.log
 libjailfs.so
+examples/*/state/jailfs.cf
+examples/*/log/jailfs.log
+examples/*/state/*
+examples/*/pkg/*

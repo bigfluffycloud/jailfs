@@ -106,6 +106,12 @@ typedef struct vfs_lookup_reply vfs_lookup_reply;
 vfs_lookup_reply *vfs_resolve_path(const char *path) {
     vfs_lookup_reply *res = mem_alloc(sizeof(vfs_lookup_reply));
 
+    // XXX: Locate the file and return vfs_file handle for it
+    // - Look in jail/config/
+    // - Look in jail/state/*.spill
+    // - Look in jail/pkg/
+    // - Look in ../pkg/
+    // If not found, create in spillover (if O_CREAT) or return ENOENT.
     if (dconf_get_bool("debug.vfs", 0) == 1) {
        Log(LOG_DEBUG, "vfs:resolve_path(%s): seq<%d> status<%d> pkg<%d> file<%d>",
           res->seq, res->status, res->pkgid, res->fileid);

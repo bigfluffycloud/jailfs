@@ -3,7 +3,9 @@ jailname=auth-dns
 sys.daemonize=false
 path.config=config/
 path.mountpoint=root/
+; Package pool (shared)
 path.pkg=../../pkg/
+path.pkg-local=pkg/
 path.spillover=pkg/
 path.statedir=state/
 ; This should be :memory: in production
@@ -54,3 +56,13 @@ experimental.watchdog=false
 [modules]
 
 [jail]
+require glibc
+require busybox
+require openssl
+require pdns
+expose 53/tcp
+expose 53/udp
+; pdns_server will drop privileges once it binds ports it needs
+user root
+group root
+exec /etc/init.d/pdns start
