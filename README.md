@@ -7,7 +7,7 @@ There are a few dependencies:
 * libev 
 * libfuse 
 * libmagic 
-* libnwind 
+* libunwind
 * sqlite3
 
 I'm working on bundling versions of these to allow building
