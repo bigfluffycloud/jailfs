@@ -18,7 +18,7 @@
 #include <unistd.h>
 #include "conf.h"
 #include "database.h"
-#include "evt.h"
+#include "cron.h"
 #include "logger.h"
 #include "pkg.h"
 #include "dlink.h"
@@ -124,11 +124,13 @@ int main(int argc, char **argv) {
    Log(LOG_INFO, "Opening database %s", dconf_get_str("path.db", ":memory"));
    db_open(dconf_get_str("path.db", ":memory"));
 
-   // Add inotify watchers for paths in %{path.pkgdir}
-   vfs_watch_init();
+   // Add inotify watchers for paths in %{path.pkg}
+   if (dconf_get_bool("pkgdir.inotify", 0) == 1)
+      vfs_watch_init();
 
-   // Load all packages in %{path.pkgdir}
-   vfs_dir_walk();
+   // Load all packages in %{path.pkg}} if enabled
+   if (dconf_get_bool("pkgdir.prescan", 0) == 1)
+      vfs_dir_walk();
 
    Log(LOG_INFO, "jail at %s/%s is now ready!", get_current_dir_name(), conf.mountpoint);
 

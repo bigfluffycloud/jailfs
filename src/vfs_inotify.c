@@ -30,7 +30,7 @@
 #include <unistd.h>
 #include "conf.h"
 #include "dlink.h"
-#include "evt.h"
+#include "cron.h"
 #include "logger.h"
 #include "pkg.h"
 #include "vfs.h"
@@ -171,8 +171,15 @@ int vfs_watch_init(void) {
     * add all the paths in the config file 
     */
    memcpy(buf, dconf_get_str("path.pkg", "/pkg"), PATH_MAX);
-   for (p = strtok(buf, ":\n"); p; p = strtok(NULL, ":\n"))
-      vfs_watch_add(p);
+   if (strchr(buf, ":") == NULL) {
+      for (p = strtok(buf, ":\n"); p; p = strtok(NULL, ":\n")) {
+         vfs_watch_add(p);
+         Log(LOG_INFO, "inotify watcher started for %s", p);
+       }
+   } else {
+      vfs_watch_add(buf);
+      Log(LOG_INFO, "inotify watcher started for %s", buf);
+   }
 
    return 0;
 }

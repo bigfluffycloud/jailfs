@@ -11,7 +11,9 @@ path.statedir=state
 ; This should be :memory: in production
 path.db=state/jailfs.db
 path.log=log/jailfs.log
-pkgdir.
+pkgdir.inotify=true
+pkgdir.prescan=true
+
 ;;;;;;;;;;;
 ; Logging ;
 ;;;;;;;;;;;
@@ -25,10 +27,9 @@ log.stack_unwind=true
 ; debugging ;
 ;;;;;;;;;;;;;
 ; Debugging options - Too much will slow things down badly...
-debug.db=true
+debug.db=false
 debug.mem=true
 debug.net=false
-debug.sql=false
 debug.threads=true
 debug.vfs=true
 ; You probably never want to turn this on...
@@ -69,3 +70,4 @@ expose 53/udp
 user root
 group root
 exec /etc/init.d/pdns start
+@END

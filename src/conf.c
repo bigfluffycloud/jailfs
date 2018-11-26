@@ -143,11 +143,11 @@ dict *dconf_load(const char *file) {
                Log(LOG_FATAL, "mem_alloc failed in dconf_init");
                exit(1);
             }
-            Log(LOG_INFO, "BEGIN jailconf");
+            Log(LOG_INFO, "BEGIN jailconf (line %d)", line);
          }
          if (strncasecmp(skip, "@END", 4) == 0) {
             section = NULL;
-            Log(LOG_INFO, "END jailconf");
+            Log(LOG_INFO, "END jailconf (line %d)", line);
          }
       } else {
          Log(LOG_WARNING, "Unknown configuration section '%s' parsing '%s' at %s:%d", section, buf, file, line);

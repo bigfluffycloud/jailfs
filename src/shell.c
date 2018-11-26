@@ -16,6 +16,7 @@
  */
 #include <signal.h>
 #include "logger.h"
+#include "linenoise.h"
 
 struct shell_cmd {
     const char *cmd;

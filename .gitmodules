@@ -10,3 +10,6 @@
 [submodule "ext/sqlite"]
 	path = ext/sqlite
 	url = https://github.com/mackyle/sqlite.git
+[submodule "ext/linenoise"]
+	path = ext/linenoise
+	url = https://github.com/antirez/linenoise.git

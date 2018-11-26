@@ -1,3 +1,5 @@
+Fix inotify to remove packages & files if deleted
+
 * (jm) Feature/6 - Add support for cpio and squashfs image based packages.
 * (jm) Feature/3 - Allow persistence of the database (right now we clobber
                    and rescan the pkgdir on startup.
