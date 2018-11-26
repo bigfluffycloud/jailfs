@@ -1,3 +1,20 @@
+jailfs:	A FUSE and libarchive filesystem for safe jails
+
+
+There are a few dependencies:
+* libarchive
+* libbsd
+* libev 
+* libfuse 
+* libmagic 
+* libnwind 
+* sqlite3
+
+I'm working on bundling versions of these to allow building
+a jailfs against musl+integrated trees... This will happen soon-ish
+
+------------------
+
 See examples/ for example jails
 
 Quick start
