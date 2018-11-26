@@ -28,7 +28,7 @@ Quick start
 
 ## If using gentoo/funtoo, try this ;)
 ```
-# for i in glibc busybox openssl pdns; do ./scripts/emege2pkg $i; done
+# for i in glibc busybox openssl pdns; do ./scripts/emerge2pkg $i; done
 ```
 ## Start the jailfs instance
 ```
