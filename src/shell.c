@@ -10,6 +10,9 @@
  * on github - https://github.com/bigfluffycloud/fs-pkg/
  *
  * No warranty of any kind. Good luck!
+ *
+ * shell.c: A read-line based simple CLI interface
+ *       which should help ease setup and debugging
  */
 #include <signal.h>
 #include "logger.h"
@@ -66,6 +69,9 @@ struct shell_cmd db_menu[] = {
 struct shell_cmd debug_menu[] = {
 };
 
+struct shell_cmd logging_menu[] = {
+};
+
 struct shell_cmd mem_gc_menu[] = {
    { "debug", "show/toggle debugging status", 1, 0, 1, NULL, menu_value },
    { "now", "Run garbage collection now", 0, 0, 0, NULL, NULL }
@@ -120,6 +126,8 @@ struct shell_cmd vfs_menu[] = {
 
 struct shell_cmd menu[] = {
    { "cd", "Change directory", 0, 1, 1, NULL, NULL },
+   { "chown", "Change file/dir ownership in jail", 0, 2, -1, NULL, NULL },
+   { "chmod", "Change file/dir permissions in jail", 0, 2, -1, NULL, NULL },
    { "cp", "Copy file in jail", 0, 1, -1, NULL, NULL },
    { "cron", "Periodic event scheduler", 1, 0, -1, NULL, cron_menu },
    { "db", "Database admin", 1, 0, -1, &cmd_help, db_menu },
@@ -127,10 +135,11 @@ struct shell_cmd menu[] = {
    { "help", "Display help", 0, 0, -1, &cmd_help, NULL },
    { "hooks", "Hooks management", 1, 0, -1, &cmd_help, hooks_menu },
    { "less", "Show contents of a file (with pager)", 0, 1, 1, NULL, NULL },
+   { "logging", "Log file", 1, 0, -1, &cmd_help, logging_menu },
    { "ls", "Display directory listing", 0, 0, 1, NULL, NULL },
    { "memory", "Memory manager", 1, 0, -1, &cmd_help, mem_menu },
    { "module", "Loadable module support", 1, 0, -1, &cmd_help, module_menu },
-   { "mv", "Move file in jail", 0, 1, -1, NULL, NULL },
+   { "mv", "Move file/dir in jail", 0, 1, -1, NULL, NULL },
    { "net", "Network", 1, 0, -1, &cmd_help, net_menu },
    { "pkg", "Package commands", 1, 1, -1, &cmd_help, pkg_menu },
    { "profiling", "Profiling support", 1, 0, -1, NULL, profiling_menu },
