@@ -22,7 +22,7 @@
 #include "dict.h"
 
 enum log_priority {
-   LOG_DEBUG = 0,
+   LOG_DEBUG = 1,
    LOG_INFO,
    LOG_HACK,
    LOG_WARNING,

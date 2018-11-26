@@ -243,7 +243,7 @@ int pkg_import(const char *path) {
       return EXIT_SUCCESS;
    }
 
-   Log(LOG_INFO, "BEGIN import pkg %s", path);
+   Log(LOG_INFO, "BEGIN import pkg %s", basename(path));
 
    db_begin();
    a = archive_read_new();
@@ -325,7 +325,7 @@ int pkg_import(const char *path) {
       Log(LOG_ERROR, "possible memory leak! archive_read_free() returned %d", r);
 
    db_commit();   
-   Log(LOG_INFO, "SUCCESS import pkg %s", path);
+   Log(LOG_INFO, "SUCCESS import pkg %s", basename(path));
    return EXIT_SUCCESS;
 }
 

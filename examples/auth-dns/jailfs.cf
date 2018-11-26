@@ -1,17 +1,17 @@
 [general]
 jailname=auth-dns
 sys.daemonize=false
-path.config=config/
-path.mountpoint=root/
+path.config=config
+path.mountpoint=root
 ; Package pool (shared)
-path.pkg=../../pkg/
-path.pkg-local=pkg/
-path.spillover=pkg/
-path.statedir=state/
+path.pkg=../../pkg
+path.pkg-local=pkg
+path.spillover=pkg
+path.statedir=state
 ; This should be :memory: in production
 path.db=state/jailfs.db
 path.log=log/jailfs.log
-
+pkgdir.
 ;;;;;;;;;;;
 ; Logging ;
 ;;;;;;;;;;;
@@ -25,10 +25,10 @@ log.stack_unwind=true
 ; debugging ;
 ;;;;;;;;;;;;;
 ; Debugging options - Too much will slow things down badly...
-debug.net=false
+debug.db=true
 debug.mem=true
+debug.net=false
 debug.sql=false
-debug.pkg=truee
 debug.threads=true
 debug.vfs=true
 ; You probably never want to turn this on...
@@ -54,6 +54,9 @@ experimental.spillover=false
 experimental.watchdog=false
 
 [modules]
+simple_template.so
+fs-etc.so
+fs-pkg.so
 
 [jail]
 require glibc

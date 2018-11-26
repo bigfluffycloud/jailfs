@@ -32,7 +32,6 @@
 struct conf conf;
 
 void goodbye(void) {
-   Log(LOG_INFO, "shutting down...");
    dconf_fini();
    vfs_watch_fini();
    vfs_fuse_fini();
@@ -41,6 +40,14 @@ void goodbye(void) {
    dlink_fini();
    log_close(conf.log_fp);
    exit(EXIT_SUCCESS);
+}
+
+void usage(int argc, char **argv) {
+   printf("Usage: %s <jaildir>\n", basename(argv[0]));
+   printf("Compose a chroot jail based on a shared package pool.\n\n");
+   printf("Options:\n");
+   printf("\t<jaildir>\t\tThe directory containing jailfs.cf, etc for the jail)\n\n");
+   exit(1);
 }
 
 int main(int argc, char **argv) {
@@ -55,8 +62,10 @@ int main(int argc, char **argv) {
    evt_init();
    blockheap_init();
 
-   if (argc > 1)
+   if (argc > 1) {
       chdir(argv[1]);
+   } else
+      usage(argc, argv);
 
    conf.dict = dconf_load("jailfs.cf");
 
@@ -131,5 +140,7 @@ int main(int argc, char **argv) {
       ev_loop(evt_loop, 0);
    }
 
+   Log(LOG_INFO, "shutting down...");
+   goodbye();
    return EXIT_SUCCESS;
 }

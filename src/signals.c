@@ -47,9 +47,9 @@ extern int module_dying(int signal);
 static void signal_handler(int signal) {
    Log(LOG_WARNING, "Caught signal %d", signal);
 
-   if (signal == SIGTERM || signal == SIGQUIT) {
-      goodbye();
-   }
+   if (signal == SIGTERM || signal == SIGQUIT)
+      conf.dying = 1;
+
    if (signal == SIGSEGV) {
       stack_unwind();
       if (in_module) {
@@ -66,7 +66,6 @@ static void signal_handler(int signal) {
       while(waitpid(-1, NULL, WNOHANG) > 0)
          ;
    Log(LOG_WARNING, "Caught signal %d", signal);
-   goodbye();
 }
 
 #if	0
@@ -94,7 +93,8 @@ void signal_init(void) {
    struct sigaction action, old;
    int i = 0;
 
-   Log(LOG_DEBUG, "setting up signal handlers");
+   if (conf.log_level == LOG_DEBUG)
+      Log(LOG_DEBUG, "setting up signal handlers");
    sigfillset(&action.sa_mask);
    action.sa_handler = signal_handler;
 

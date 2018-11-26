@@ -29,3 +29,12 @@
 * Maybe a bit of buffering on logs so that very early
   - startup messages can still be printed to the log
   - and not just stdout/stderr which may not exist
+
+
+
+
+
+---------
+
+startup
+scan pkgdir & add all packages and files to db

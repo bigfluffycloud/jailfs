@@ -34,7 +34,10 @@
 #include "str.h"
 #include "conf.h"
 #include "timestr.h"
+#include "memory.h"
 #include "module.h"
+
+#define	JAILCONF_SIZE	16384		// should be plenty...
 
 void dconf_fini(void) {
    dict_mem_free(_DCONF_DICT);
@@ -53,7 +56,7 @@ dict *dconf_load(const char *file) {
    FILE *fp;
    char *end, *skip,
         *key, *val,
-        *section = 0;
+        *section = NULL;
    dict *cp = dict_new();
 
    if (!(fp = fopen(file, "r"))) {
@@ -135,7 +138,17 @@ dict *dconf_load(const char *file) {
 //         if (module_load(skip) != 0)
 //            errors++;
       } else if (strncasecmp(section, "jail", 4) == 0) {
-         Log(LOG_INFO, "BEGIN jailconf");
+         if (jailconf == NULL) {
+            if (!(jailconf = mem_alloc(JAILCONF_SIZE))) {
+               Log(LOG_FATAL, "mem_alloc failed in dconf_init");
+               exit(1);
+            }
+            Log(LOG_INFO, "BEGIN jailconf");
+         }
+         if (strncasecmp(skip, "@END", 4) == 0) {
+            section = NULL;
+            Log(LOG_INFO, "END jailconf");
+         }
       } else {
          Log(LOG_WARNING, "Unknown configuration section '%s' parsing '%s' at %s:%d", section, buf, file, line);
          warnings++;

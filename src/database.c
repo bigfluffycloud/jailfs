@@ -101,7 +101,7 @@ void       *db_query(enum db_query_res_type type, const char *fmt, ...) {
    vsnprintf(buf, SQL_BUFSIZE, fmt, ap);
    va_end(ap);
 
-   if (dconf_get_bool("debug.sql", 0) == 1)
+   if (dconf_get_bool("debug.db", 0) == 1)
       Log(LOG_DEBUG, "SQL query [%d]: %s ", type, buf);
 
    if ((i = sqlite3_prepare_v2(sqlite_db, buf, strlen(buf), &stmt, &tail) != SQLITE_OK)) {
