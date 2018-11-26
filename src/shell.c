@@ -55,6 +55,12 @@ struct shell_cmd menu_value[] = {
    { "true", "Set true", 0, 0, 0, NULL, NULL }
 };
 
+struct shell_cmd conf_menu[] = {
+   { "list", "List config values", 0, 0, 0, NULL, NULL },
+   { "set", "Set config value", 0, 3, 3, NULL, NULL },
+   { "show", "Get config value", 0, 1, 3, NULL, NULL },
+};
+
 struct shell_cmd cron_menu[] = {
    { "jobs", "Show scheduled events", 0, 0, 0, NULL, NULL },
    { "stop", "Stop a scheduled event", 0, 1, 1, NULL, NULL }
@@ -129,6 +135,7 @@ struct shell_cmd menu[] = {
    { "cd", "Change directory", 0, 1, 1, NULL, NULL },
    { "chown", "Change file/dir ownership in jail", 0, 2, -1, NULL, NULL },
    { "chmod", "Change file/dir permissions in jail", 0, 2, -1, NULL, NULL },
+   { "conf", "Configuration keys", 0, 0, -1, &cmd_help, NULL },
    { "cp", "Copy file in jail", 0, 1, -1, NULL, NULL },
    { "cron", "Periodic event scheduler", 1, 0, -1, NULL, cron_menu },
    { "db", "Database admin", 1, 0, -1, &cmd_help, db_menu },
