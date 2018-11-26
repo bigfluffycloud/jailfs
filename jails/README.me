@@ -1,0 +1,14 @@
+Here you will create one folder per jail.
+
+
+The layout is so:
+
+
+jails/jailname/:	
+	config/				Settings, etc which are overlayed into jail
+	pkg/				Local (non-pool) packages
+	root/				Root mountpoint (MUST BE EMPTY!)
+	spillover/			Spillover files (changes to packages)
+	jailfs.cf			Configuration for the jailfs service
+
+pkg/:			Global package pool

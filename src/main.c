@@ -47,6 +47,7 @@ int main(int argc, char **argv) {
    conf.born = conf.now = time(NULL);
    umask(0);
 
+   host_init();
    atexit(goodbye);
    signal_init();
    evt_init();
@@ -84,9 +85,16 @@ int main(int argc, char **argv) {
       Log(LOG_WARNING, "You can always toggle individual components (debug.*) to adjust the output");
    }
 
+   // Start cron
+   if (conf.log_level == LOG_DEBUG)
+      Log(LOG_DEBUG, "starting periodic task scheduler (cron)");
+   cron_init();
+
+   // Figure out where we're supposed to build this jail
    if (!conf.mountpoint)
       conf.mountpoint = dconf_get_str("path.mountpoint", "chroot/");
 
+   // XXX: TODO: We need to unlink mountpoint/.keepme if it exist before calling fuse...
    /*
     * only way to make gcc happy...argh;) -bk 
     */
@@ -116,6 +124,8 @@ int main(int argc, char **argv) {
    Log(LOG_INFO, "jail at %s is now ready!", conf.mountpoint);
 
    /// XXX: ToDo - Spawn various threads here before entering the main loop
+
+   // Main loop
    while (!conf.dying) {
       // XXX: We will communicate with worker threads ONLY from main loop
       ev_loop(evt_loop, 0);

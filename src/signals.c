@@ -23,6 +23,7 @@
 #include "signals.h"
 #include "logger.h"
 #include "profiling.h"
+#include "module.h"
 int g_argc = -1;
 char **g_argv = NULL;
 
@@ -44,21 +45,21 @@ extern int module_dying(int signal);
  */
 
 static void signal_handler(int signal) {
-   if (signal == SIGTERM || signal == SIGQUIT)
-      exit(EXIT_FAILURE);
+   Log(LOG_WARNING, "Caught signal %d", signal);
 
+   if (signal == SIGTERM || signal == SIGQUIT) {
+      goodbye();
+   }
    if (signal == SIGSEGV) {
       stack_unwind();
-#if	0
       if (in_module) {
          if (module_dying(signal) != 0)
             daemon_restart();
       } else
-#endif
          conf.dying = 1;
-//   } else if (signal == SIGUSR1) {
+   } else if (signal == SIGUSR1) {
 //      profiling_dump();
-//   } else if (signal == SIGUSR2) {
+   } else if (signal == SIGUSR2) {
 //      profiling_toggle();
    }
    else if (signal == SIGCHLD) /* Prevent zombies */

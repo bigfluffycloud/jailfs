@@ -20,7 +20,7 @@ Packages can be in any format libarchive supports (yay!)
 ---
 * Examples
 
-$ ./jailfs pdns-auth.cf
+$ ./jailfs jails/auth-dns/jailfs.cf
 
 * /pkg/*.pkg		- Main package repo (all packages)
 * /rw/*.spill		- Spillover files (edits to pkg)

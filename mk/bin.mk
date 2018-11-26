@@ -7,6 +7,7 @@ bin := jailfs
 objs += .obj/atomicio.o
 objs += .obj/balloc.o
 objs += .obj/conf.o
+objs += .obj/cron.o
 objs += .obj/database.o
 objs += .obj/dict.o
 objs += .obj/dlink.o
