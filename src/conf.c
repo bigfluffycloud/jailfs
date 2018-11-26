@@ -30,77 +30,12 @@
 #include <strings.h>
 #include "dict.h"
 #include "logger.h"
+#include "dlink.h"
 #include "str.h"
 #include "conf.h"
 #include "timestr.h"
+#include "module.h"
 
-// I feel like in many ways this is a better parser
-// and that we should instead merge the sections code into here...
-#if	0
-void dconf_init(const char *file) {
-   FILE       *fp;
-   char       *p;
-   char        buf[512];
-   char        *discard = NULL;
-   char       *key, *val;
-   _DCONF_DICT = dict_new();
-
-   if (!(fp = fopen(file, "r"))) {
-      Log(LOG_FATAL, "unable to open config file %s", file);
-      raise(SIGTERM);
-   }
-
-   while (!feof(fp)) {
-      line++;
-      memset(buf, 0, 512);
-      discard = fgets(buf, sizeof(buf), fp);
-
-      /*
-       * did we get a line? 
-       */
-      if (buf == NULL)
-         continue;
-
-      p = buf;
-
-      str_strip(p);
-      p = str_whitespace_skip(p);
-
-      /*
-       * did we eat the whole line? 
-       */
-      if (strlen(p) == 0)
-         continue;
-
-      /*
-       * fairly flexible comment handling
-       */
-      if (p[0] == '*' && p[1] == '/') {
-         in_comment = 0;               /* end of block comment */
-         continue;
-      } else if (p[0] == ';' || p[0] == '#' || (p[0] == '/' && p[1] == '/')) {
-         continue;                     /* line comment */
-      } else if (p[0] == '/' && p[1] == '*')
-         in_comment = 1;               /* start of block comment */
-
-      if (in_comment)
-         continue;                     /* ignored line, in block comment */
-
-      key = p;
-
-      if ((val = strchr(p, '=')) != NULL) {
-         *val = '\0';
-         val++;
-      }
-
-      if (val == NULL)
-         continue;
-
-      val = str_unquote(val);
-      dconf_set(key, val);
-   }
-}
-#endif	
 void dconf_fini(void) {
    dict_mem_free(_DCONF_DICT);
    _DCONF_DICT = NULL;
@@ -114,6 +49,7 @@ dict *dconf_load(const char *file) {
    int line = 0, errors = 0, warnings = 0;
    int         in_comment = 0;
    char buf[768];
+   char *jailconf = NULL;	// Only used if jailconf has happened
    FILE *fp;
    char *end, *skip,
         *key, *val,
@@ -130,7 +66,7 @@ dict *dconf_load(const char *file) {
 
    do {
       memset(buf, 0, sizeof(buf));
-      fgets(buf, sizeof(buf) - 1, fp);
+      char *discard = fgets(buf, sizeof(buf) - 1, fp);
       line++;
 
       // delete prior whitespace...
@@ -180,8 +116,8 @@ dict *dconf_load(const char *file) {
 
       // Configuration data *MUST* be inside of a section, no exceptions.
       if (!section) {
-         Log(LOG_ERROR, "config %s has line outside section header at line %d: %s", file, line, buf);
-         errors++;
+         Log(LOG_WARNING, "config %s:%d: line outside of section: %s", file, line, buf);
+         warnings++;
          continue;
       }
 
@@ -198,9 +134,11 @@ dict *dconf_load(const char *file) {
 
 //         if (module_load(skip) != 0)
 //            errors++;
+      } else if (strncasecmp(section, "jail", 4) == 0) {
+         Log(LOG_INFO, "BEGIN jailconf");
       } else {
-         Log(LOG_ERROR, "Unknown configuration section '%s' parsing '%s' at %s:%d", section, buf, file, line);
-         errors++;
+         Log(LOG_WARNING, "Unknown configuration section '%s' parsing '%s' at %s:%d", section, buf, file, line);
+         warnings++;
       }
    } while (!feof(fp));
 
@@ -238,7 +176,7 @@ int dconf_write(dict *cp, const char *file) {
 
    if (dict_dump(cp, fp) < 0)
       errors++;
-#if	0	// NYI
+#if	0	// XXX: Rewrite this using dlink or dict?
    if (Modules) {
       Module *mp = NULL;
       list_iter_p mod_cur = list_iterator(Modules, FRONT);

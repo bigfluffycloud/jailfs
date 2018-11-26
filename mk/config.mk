@@ -1,6 +1,9 @@
 # enable more debugging output (slower, noisier)
 CONFIG_DEBUG=y
 
+# enable gprof profiling (slower, even noisier)
+CONFIG_PROFILING=n
+
 # debug block allocator? should be unneeded
 CONFIG_DEBUG_BALLOC=n
 
@@ -24,3 +27,12 @@ warn_noerror := -Wall -Wno-unused -Wno-strict-aliasing -ansi -std=gnu99
 warn_flags := ${warn_noerror} #-Werror
 LDFLAGS := -lxml2 -lz -lcrypto -pthread -lrt -lsqlite3 -lm -lev -lunwind -lfuse -lmagic -ldl -larchive -lbsd
 lib_ldflags += -shared -ldl
+
+
+#################
+# Autoconfigure #
+#################
+ifeq (y, ${CONFIG_PROFILING})
+CFLAGS += -pg
+LDFLAGS += -pg
+endif

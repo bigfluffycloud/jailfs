@@ -41,8 +41,8 @@ void cmd_stats(int argc, char **argv) {
 }
 
 struct shell_cmd cmds[] = {
-    { 'exit', 0, 0, 0, &cmd_exit },
-    { 'help', 0, 0, 0, &cmd_help },
-    { 'reload', 0, 0, 0, &cmd_reload },
-    { 'stats', 0, 0, 0, &cmd_stats }
+    { "exit", 0, 0, 0, &cmd_exit },
+    { "help", 0, 0, 0, &cmd_help },
+    { "reload", 0, 0, 0, &cmd_reload },
+    { "stats", 0, 0, 0, &cmd_stats }
 };

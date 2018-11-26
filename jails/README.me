@@ -6,9 +6,9 @@ The layout is so:
 
 jails/jailname/:	
 	config/				Settings, etc which are overlayed into jail
-	pkg/				Local (non-pool) packages
+	pkg/				Local (non-pool) packages & spillover files
 	root/				Root mountpoint (MUST BE EMPTY!)
-	spillover/			Spillover files (changes to packages)
+	state/				Container state & persistent data
 	jailfs.cf			Configuration for the jailfs service
 
 pkg/:			Global package pool

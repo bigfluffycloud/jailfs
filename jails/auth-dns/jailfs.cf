@@ -1,14 +1,14 @@
 [general]
+jailname=auth-dns
 sys.daemonize=false
-path.config=/config/
-;path.mountpoint=/jails/%{s:jailname}
-path.mountpoint=/jails/auth-dns/
-path.pkg=/pkg
-path.spillover=/rw/
+path.config=config/
+path.mountpoint=root/
+path.pkg=../../pkg/
+path.spillover=pkg/
+path.statedir=state/
 ; This should be :memory: in production
-path.db=:memory:
-;path.db=jailfs.db
-path.log=jailfs.log
+path.db=state/jailfs.db
+path.log=log/jailfs.log
 
 ;;;;;;;;;;;
 ; Logging ;

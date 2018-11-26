@@ -26,6 +26,8 @@
 #include "threads.h"
 #include "vfs.h"
 #include "mimetypes.h"
+#include "unix.h"
+#include "cron.h"
 
 struct conf conf;
 
@@ -54,11 +56,9 @@ int main(int argc, char **argv) {
    blockheap_init();
 
    if (argc > 1)
-//      dconf_init(argv[1]);
-      conf.dict = dconf_load(argv[1]);
-   else
-//      dconf_init("jailfs.cf");
-      conf.dict = dconf_load("jailfs.cf");
+      chdir(argv[1]);
+
+   conf.dict = dconf_load("jailfs.cf");
 
    dlink_init();
    pkg_init();
@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
    // Load all packages in %{path.pkgdir}
    vfs_dir_walk();
 
-   Log(LOG_INFO, "jail at %s is now ready!", conf.mountpoint);
+   Log(LOG_INFO, "jail at %s/%s is now ready!", get_current_dir_name(), conf.mountpoint);
 
    /// XXX: ToDo - Spawn various threads here before entering the main loop
 

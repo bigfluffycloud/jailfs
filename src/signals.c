@@ -58,9 +58,9 @@ static void signal_handler(int signal) {
       } else
          conf.dying = 1;
    } else if (signal == SIGUSR1) {
-//      profiling_dump();
+      profiling_dump();
    } else if (signal == SIGUSR2) {
-//      profiling_toggle();
+      profiling_toggle();
    }
    else if (signal == SIGCHLD) /* Prevent zombies */
       while(waitpid(-1, NULL, WNOHANG) > 0)
@@ -127,11 +127,11 @@ void posix_signal_quiet(void) {
    /* these should be by debugger: SIGTRAP, SIGFPE, SIGSEGV */
    sigemptyset(&sigset);
 
-   for (int i = 0; i <= sizeof(signals) / sizeof(signals[0]); i++)
+   for (int i = 0; i <= (size_t)(sizeof(signals) / sizeof(signals[0])); i++)
        sigaddset(&sigset, signals[i]);
 
    pthread_sigmask(SIG_SETMASK, &sigset, NULL);
 
-   for (int i = 0; i <= sizeof(sigign) / sizeof(sigign[0]); i++)
+   for (int i = 0; i <= (size_t)(sizeof(sigign) / sizeof(sigign[0])); i++)
        signal(sigign[i], SIG_IGN);
 }

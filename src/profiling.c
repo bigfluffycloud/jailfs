@@ -29,7 +29,6 @@
 #include "profiling.h"
 #define	monstartup __monstartup
 
-#if	defined(__PROFILING)
 extern void _start,
             etext;
 static int profiling_state = 1;
@@ -42,7 +41,7 @@ void profiling_dump(void) {
    sprintf(buf, "gmod.%lu", time(NULL));
    setenv("GMON_OUT_PREFIX", buf, 1);
    _mcleanup();
-   monstartup((unsigned long)&_start, (unsigned long)&etext);
+   monstartup(&_start, &etext);
    setenv("GMON_OUT_PREFIX", "gmon.auto", 1);
    sprintf(profiling_msg, "Reset profile, saved past profiling data to %s", buf);
    profiling_newmsg = 1;
@@ -66,4 +65,3 @@ void profiling_toggle(void) {
 
    profiling_newmsg = 1;
 }
-#endif
