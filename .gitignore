@@ -8,3 +8,9 @@ examples/*/state/jailfs.cf
 examples/*/log/jailfs.log
 examples/*/state/*
 examples/*/pkg/*
+ext/*
+ext/libarchive/*
+ext/libfuse/*
+ext/libunwind/*
+ext/linenoise/*
+ext/sqlite/*
