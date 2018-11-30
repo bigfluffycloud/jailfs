@@ -43,10 +43,11 @@ void goodbye(void) {
 }
 
 void usage(int argc, char **argv) {
-   printf("Usage: %s <jaildir>\n", basename(argv[0]));
+   printf("Usage: %s <jaildir> [action]\n", basename(argv[0]));
    printf("Compose a chroot jail based on a shared package pool.\n\n");
    printf("Options:\n");
-   printf("\t<jaildir>\t\tThe directory containing jailfs.cf, etc for the jail)\n\n");
+   printf("\t<jaildir>\t\tThe directory containing jailfs.cf, etc for the desired jail\n");
+   printf("\t[action]\t\tOptionally an action to take on the jail ([start]|stop|status)\n\n");
    exit(1);
 }
 
