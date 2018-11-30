@@ -37,3 +37,16 @@ Quick start
 
 You should now have a a working chroot jail at
 examples/auth-dns/root/
+
+
+--
+If jailfs crashes and you aren't using warden to supervise it, you likely
+will end up with a broken mount on the mountpoints in example/.
+
+
+If you see errors similar to examples/auth-dns/root/: Transport endpoint is not connected
+
+Please do the following (edited to the jail path of course):
+```
+umount examples/auth-dns/root/
+```

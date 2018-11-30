@@ -245,7 +245,10 @@ int pkg_import(const char *path) {
 
    Log(LOG_INFO, "BEGIN import pkg %s", basename(path));
 
+   // Start transaction
    db_begin();
+
+   // Initialize our libarchive reader
    a = archive_read_new();
    archive_read_support_filter_all(a);
    archive_read_support_format_all(a);
@@ -256,11 +259,11 @@ int pkg_import(const char *path) {
       return -1;
    }
 
-   // Add the package to the database...
+   // Add the package to the database & get the pkgid for it
    pkgid = db_pkg_add(path);
    Log(LOG_DEBUG, "package %s appears valid, assigning pkgid %d", path, pkgid);
 
-   // Add the file entries to the database...
+   // Add the achive's file entries to the database...
    while (TRUE) {
       r = archive_read_next_header(a, &aentry);
       if (r == ARCHIVE_EOF)
@@ -281,7 +284,7 @@ int pkg_import(const char *path) {
       const char *_f_perm = archive_entry_strmode(aentry);
       const struct stat *st = archive_entry_stat(aentry); 
 
-      // XXX: Determine type
+      // XXX: Determine type more sanely
       if (*_f_perm == 'd')
          _f_type = 'd';
       else if (*_f_perm == 'l')
@@ -300,7 +303,7 @@ int pkg_import(const char *path) {
              basename(path), _f_name, _f_uid, _f_owner, _f_gid, _f_group, _f_mode, _f_perm, st->st_size, 0);
 
       if (_f_type == 'l') {
-      // XXX: Handle symlinks :O
+         // XXX: Handle symlinks...
       } else {
          db_file_add(pkgid, _f_name, _f_type, _f_uid, _f_gid,
                          _f_owner, _f_group, st->st_size,
