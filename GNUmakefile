@@ -21,7 +21,7 @@ testpkg:
 symtab:
 	nm -Clp ${bin} | \
 	awk '{ printf "%s %s %s\n", $$3, $$2, $$4 }' | \
-	grep -v "@@GLIBC" | \
+	egrep -v "(@@|__FUNCTION)" | \
 	sort -u > dbg/${bin}.symtab
 
 strings:

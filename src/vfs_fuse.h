@@ -6,7 +6,7 @@
  *
  * Copyright (C) 2012-2018 BigFluffy.Cloud <joseph@bigfluffy.cloud>
  *
- * Distributed under a BSD license. Send bugs/patches by email or
+ * Distributed under a MIT license. Send bugs/patches by email or
  * on github - https://github.com/bigfluffycloud/fs-pkg/
  *
  * No warranty of any kind. Good luck!

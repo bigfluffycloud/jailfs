@@ -1,0 +1,16 @@
+How this beast works
+--------------------
+
+Top-level GNUmakefile contains rule 'symtab' which generates dbg/jailfs.symtab
+
+We use this to look up where in the source code a symbol is defined
+
+Examples:
+	vfs_watch_heap B /opt/jailfs/src/vfs.c:33
+	vfs_watch_init T /opt/jailfs/src/vfs_inotify.c:143
+
+In the shell, you can use various commands to explore:
+
+	Try help:
+
+jailfs> help debug
