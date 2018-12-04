@@ -28,10 +28,11 @@
 #include "mimetypes.h"
 #include "unix.h"
 #include "cron.h"
-
+#include "util.h"
 struct conf conf;
 
 void goodbye(void) {
+   char *pidfile = dconf_get_str("path.pid", NULL);
    dconf_fini();
    vfs_watch_fini();
    vfs_fuse_fini();
@@ -39,6 +40,10 @@ void goodbye(void) {
    inode_fini();
    dlink_fini();
    log_close(conf.log_fp);
+
+   if (pidfile && file_exists(pidfile))
+      unlink(pidfile);
+
    exit(EXIT_SUCCESS);
 }
 
@@ -63,12 +68,20 @@ int main(int argc, char **argv) {
    evt_init();
    blockheap_init();
 
+   // Always require jail top-level as first argument
+   // as that's where our config file lives
    if (argc > 1) {
       chdir(argv[1]);
    } else
       usage(argc, argv);
 
    conf.dict = dconf_load("jailfs.cf");
+
+   // Creat our PID file...
+   if (pidfile_open(dconf_get_str("path.pid", "borked.pid"))) {
+      Log(LOG_FATAL, "Failed opening PID file. Are we already running?");
+      return 1;
+   }
 
    dlink_init();
    pkg_init();

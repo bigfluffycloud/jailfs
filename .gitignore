@@ -1,11 +1,11 @@
-pkg/*
 .obj/*.o
 jailfs
-jailfs.db
-jailfs.log
 libjailfs.so
-examples/*/state/jailfs.cf
+pkg/*
+# This is where we store autoconf stuff
+examples/*/state/*
 examples/*/log/jailfs.log
+examples/*/log/jailfs.pid
 examples/*/state/*
 examples/*/pkg/*
 ext/*

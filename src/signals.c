@@ -61,11 +61,12 @@ static void signal_handler(int signal) {
       profiling_dump();
    } else if (signal == SIGUSR2) {
       profiling_toggle();
-   }
-   else if (signal == SIGCHLD) /* Prevent zombies */
+   } else if (signal == SIGCHLD) { /* Prevent zombies */
       while(waitpid(-1, NULL, WNOHANG) > 0)
          ;
-   Log(LOG_WARNING, "Caught signal %d", signal);
+   } else {
+      goodbye();
+   }
 }
 
 #if	0

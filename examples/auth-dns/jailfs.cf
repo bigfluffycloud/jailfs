@@ -1,7 +1,18 @@
+/*
+ * examples/auth-dns/jailfs.cf
+ *	An example configuration for jailfs to provide a working PowerDNS
+ * Authoritative DNS server. You will need to supply your own configs
+ * in examples/auth-dns/config/etc/pdns/
+ *
+ * Paths anywhere can be relative to the chroot directory or
+ * absolute. Ex: path.pkg=../../pkg will point to the pkg/ directory
+ * at the top of the jailfs distribution.
+ */
 [general]
 jailname=auth-dns
 sys.daemonize=false
 path.config=config
+path.pid=jailfs.pid
 path.mountpoint=root
 ; Package pool (shared)
 path.pkg=../../pkg
@@ -32,7 +43,7 @@ debug.mem=true
 debug.net=false
 debug.threads=true
 debug.vfs=true
-; You probably never want to turn this on...
+; You probably never want to turn this to true...
 debug.monothread=false
 
 ;;;;;;;;;;;;;;;

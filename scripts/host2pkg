@@ -1,0 +1,9 @@
+#!/bin/bash
+#
+# scripts/host2pkg:
+#	This script creates the packages needed to support
+# the example jails in examples/ using files installed on
+# the host system.
+#
+# Eventually we'll make a better tool for this maybe?
+

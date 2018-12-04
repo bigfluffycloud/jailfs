@@ -15,11 +15,8 @@ endif
 
 world:${bin} ${libs}
 
-#	equery list \* --format="\$$name" |
 testpkg:
-	for line in "irssi tar"; do \
-	   equery -C files $$line |  tar --no-recursion -T- -c -v -f /pkg/$$line.tar; \
-	done
+	./scripts/test-pkg.sh
 
 dump-syms:
 	nm -Clp ${bin} | \
