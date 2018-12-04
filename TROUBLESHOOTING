@@ -1,0 +1,35 @@
+When the tree has not been properly set up you'll have errors from missing
+files (look for where the symlink in src/ points to)
+
+
+If it's in ext/ -- You didn't read the directions... See below to fix...
+
+```
+atl1 /opt/jailfs # ls ext/*
+ext/libarchive:
+
+ext/libfuse:
+
+ext/libunwind:
+
+ext/linenoise:
+
+ext/sqlite:
+atl1 /opt/jailfs # git submodule init
+Submodule 'ext/libarchive' (https://github.com/libarchive/libarchive.git) registered for path 'ext/libarchive'
+Submodule 'ext/libfuse' (https://github.com/libfuse/libfuse.git) registered for path 'ext/libfuse'
+Submodule 'ext/libunwind' (https://github.com/libunwind/libunwind.git) registered for path 'ext/libunwind'
+Submodule 'ext/linenoise' (https://github.com/antirez/linenoise.git) registered for path 'ext/linenoise'
+Submodule 'ext/sqlite' (https://github.com/mackyle/sqlite.git) registered for path 'ext/sqlite'
+atl1 /opt/jailfs # git submodule update
+Cloning into '/opt/jailfs/ext/libarchive'...
+Cloning into '/opt/jailfs/ext/libfuse'...
+Cloning into '/opt/jailfs/ext/libunwind'...
+Cloning into '/opt/jailfs/ext/linenoise'...
+Cloning into '/opt/jailfs/ext/sqlite'...
+Submodule path 'ext/libarchive': checked out '0e416f2fe757ad6841dbb3386a17d88b5c9f5533'
+Submodule path 'ext/libfuse': checked out 'd4a7ba44b022e3b63fc215374d87ed9e930d9974'
+Submodule path 'ext/libunwind': checked out '748a2df11f0d10bd39fd5291d2b27b61392732da'
+Submodule path 'ext/linenoise': checked out '4a961c0108720741e2683868eb10495f015ee422'
+Submodule path 'ext/sqlite': checked out 'ea9abc13e5bb8e518d36f7fea35e8cf3e96dfb40'
+```
