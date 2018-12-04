@@ -13,7 +13,7 @@ CONFIG_STRIP_BINS=n
 CFLAGS += -DCONFIG_DEBUG
 endif
 
-world: ${bin} ${libs}
+world: ${libs} ${bin} symtab strings
 
 testpkg:
 	./scripts/test-pkg.sh
@@ -22,11 +22,11 @@ symtab:
 	nm -Clp ${bin} | \
 	awk '{ printf "%s %s %s\n", $$3, $$2, $$4 }' | \
 	grep -v "@@GLIBC" | \
-	sort -u > ${bin}.symtab
+	sort -u > dbg/${bin}.symtab
 
 strings:
 	strings ${bin} \
-	> ${bin}.strings
+	> dbg/${bin}.strings
 
 umount:
 	-for i in $(wildcard examples/*/root); do \
@@ -40,5 +40,5 @@ test: umount
 qa:
 	${MAKE} clean world testpkg test umount
 
-extra_clean += ${bin}.symtab ${bin}.strings
+extra_clean += dbg/${bin}.symtab dbg/${bin}.strings
 extra_clean += $(wildcard examples/*/state/*.pid)

@@ -7,3 +7,13 @@
 #
 # Eventually we'll make a better tool for this maybe?
 
+#	equery list \* --format="\$$name" |
+# Scan through 
+for line in "; do \
+   if [ "$(which equery)x" != "x" ]; then
+      equery -C files $$line |  tar --no-recursion -T- -c -v -f /pkg/$$line.tar; \
+   fi
+   if [ "$(which pacman)x" != "x" ]; then
+      pacman -Ql $$line | cut -f 2- -d ' ' | tar --no-recursion -T- -c -v -f /pkg/$$line.tar;
+   fi
+done
