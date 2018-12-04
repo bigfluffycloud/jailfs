@@ -83,19 +83,19 @@ void Log(enum log_priority priority, const char *fmt, ...) {
          level = "info";
          break;
       case LOG_WARNING:
-         level = "warning";
+         level = "warn";
          break;
       case LOG_ERROR:
          level = "error";
          break;
       case LOG_FATAL:
-         level = "critical";
+         level = "fatal";
          break;
       case LOG_HACK:
          level = "hack";
          break;
       default:
-         level = "unknown";
+         level = "???";
          break;
    }
 
@@ -104,9 +104,9 @@ void Log(enum log_priority priority, const char *fmt, ...) {
    vsprintf(buf, fmt, ap);
 
    if ((conf.log_fp != stderr) && dconf_get_bool("sys.daemonize", 0) == 0)
-      printf("[%s] %9s: %s\n", timestamp, level, buf);
+      printf("%s %5s: %s\n", timestamp, level, buf);
 
-   fprintf(conf.log_fp, "%s %9s: %s\n", timestamp, level, buf);
+   fprintf(conf.log_fp, "%s %5s: %s\n", timestamp, level, buf);
    fflush(conf.log_fp);
 
    va_end(ap);

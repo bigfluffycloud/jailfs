@@ -1,0 +1,35 @@
+bin := jailfs
+jailfs_objs += .obj/atomicio.o
+jailfs_objs += .obj/balloc.o
+jailfs_objs += .obj/conf.o
+jailfs_objs += .obj/cron.o
+jailfs_objs += .obj/database.o
+jailfs_objs += .obj/debugger.o
+jailfs_objs += .obj/dict.o
+jailfs_objs += .obj/dlink.o
+jailfs_objs += .obj/hooks.o
+jailfs_objs += .obj/i18n.o
+jailfs_objs += .obj/linenoise.o
+jailfs_objs += .obj/logger.o
+jailfs_objs += .obj/main.o
+jailfs_objs += .obj/mimetypes.o
+jailfs_objs += .obj/module.o
+jailfs_objs += .obj/pkg.o
+jailfs_objs += .obj/profiling.o
+jailfs_objs += .obj/shell.o
+jailfs_objs += .obj/signals.o
+jailfs_objs += .obj/str.o
+jailfs_objs += .obj/threads.o
+jailfs_objs += .obj/timestr.o
+jailfs_objs += .obj/tree.o
+jailfs_objs += .obj/unix.o
+jailfs_objs += .obj/vfs.o
+jailfs_objs += .obj/vfs_fuse.o
+jailfs_objs += .obj/vfs_inode.o
+jailfs_objs += .obj/vfs_inotify.o
+jailfs_objs += .obj/vfs_pathutil.o
+jailfs_objs += .obj/vfs_pkg.o
+jailfs_objs += .obj/vfs_spill.o
+
+
+clean_objs += ${jailfs_objs}

@@ -1,6 +1,5 @@
 jailfs:	A FUSE and libarchive filesystem for safe jails
 
-
 There are a few dependencies:
 * libarchive
 * libbsd

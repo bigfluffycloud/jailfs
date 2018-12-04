@@ -10,6 +10,8 @@
  */
 [general]
 jailname=auth-dns
+i18n.lang=en_US
+path.i18n=../../i18n
 sys.daemonize=false
 path.config=config
 path.pid=jailfs.pid

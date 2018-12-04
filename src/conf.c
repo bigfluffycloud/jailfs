@@ -16,11 +16,11 @@
  * 	Used for single-entry configurations
  *	See lconf.[ch] for list-based configuration
  *	suitable for ACLs and similar options.
- *
  * Copyright (C) 2008-2018 bigfluffy.cloud
  *
  * This code wouldn't be possible without N. Devillard's dictionary.[ch]
- * from the iniparser package. Thanks!!
+ * from the iniparser package. See dict.[ch] for slightly modified version
+ * Thanks!!
  */
 #include <errno.h>
 #include <stdlib.h>
@@ -36,6 +36,7 @@
 #include "timestr.h"
 #include "memory.h"
 #include "module.h"
+#include "i18n.h"
 
 #define	JAILCONF_SIZE	16384		// should be plenty...
 
@@ -47,6 +48,18 @@ void dconf_fini(void) {
 void dconf_init(const char *file) {
    _DCONF_DICT = dconf_load(file);
 }
+
+/////////////////
+// in progress //
+#define	DCONF_SECT_KEYVAL	0x01
+#define	DCONF_SECT_DICT		0x02
+#define	DCONF_SECT_CUSTOM	0x04
+
+struct ConfigFile {
+   char section;
+   int section_type;
+};
+/////////////////
 
 dict *dconf_load(const char *file) {
    int line = 0, errors = 0, warnings = 0;
@@ -67,6 +80,11 @@ dict *dconf_load(const char *file) {
 
 //   Modules = create_list();
 
+   //
+   // This could use some cleanup... But it does work.
+   //
+   // We need to use safer string functions...
+   //
    do {
       memset(buf, 0, sizeof(buf));
       char *discard = fgets(buf, sizeof(buf) - 1, fp);
@@ -114,6 +132,8 @@ dict *dconf_load(const char *file) {
             /* XXX: finish this */
          } else if (strncasecmp(skip + 1, "else ", 5) == 0) {
             /* XXX: finish this */
+         } else if (strncasecmp(skip + 1, "include ", 8) == 0) {
+            /* XXX: Add includes (non-recursive?) */
          }
       }
 
@@ -138,6 +158,7 @@ dict *dconf_load(const char *file) {
 //         if (module_load(skip) != 0)
 //            errors++;
       } else if (strncasecmp(section, "jail", 4) == 0) {
+         // XXX: Add this to dconf_write
          if (jailconf == NULL) {
             if (!(jailconf = mem_alloc(JAILCONF_SIZE))) {
                Log(LOG_FATAL, "mem_alloc failed in dconf_init");
@@ -149,6 +170,19 @@ dict *dconf_load(const char *file) {
             section = NULL;
             Log(LOG_INFO, "END jailconf (line %d)", line);
          }
+      } else if (strncasecmp(section, "language", 8) == 0) {
+         // Parse configuration line (XXX: GET RID OF STRTOK!)
+         key = strtok(skip, "= \n");
+         val = strtok(NULL, "= \n");
+         if (strncasecmp(key, "name", 4) == 0) {
+           // XXX:
+         } else if (strncasecmp(key, "description", 12) == 0) {
+           // XXX:
+         } else if (strncasecmp(key, "author", 6) == 0) {
+           // XXX:
+         }
+      } else if (strncasecmp(section, "strings", 7) == 0) {
+         // XXX: Store i18n strings in a dictionary
       } else {
          Log(LOG_WARNING, "Unknown configuration section '%s' parsing '%s' at %s:%d", section, buf, file, line);
          warnings++;
