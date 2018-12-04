@@ -118,9 +118,8 @@ int main(int argc, char **argv) {
       conf.mountpoint = dconf_get_str("path.mountpoint", "chroot/");
 
    // XXX: TODO: We need to unlink mountpoint/.keepme if it exist before calling fuse...
-   /*
-    * only way to make gcc happy...argh;) -bk 
-    */
+
+   // only way to make gcc happy...argh;) -bk 
    vfs_fuse_args = margs;
 
    /*

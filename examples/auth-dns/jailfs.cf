@@ -41,7 +41,7 @@ log.stack_unwind=true
 ; debugging ;
 ;;;;;;;;;;;;;
 ; Debugging options - Too much will slow things down badly...
-debug.db=false
+debug.db=true
 debug.mem=true
 debug.net=false
 debug.threads=true

@@ -10,7 +10,7 @@ examples/*/state/*
 examples/*/log/*
 examples/*/state/*
 examples/*/pkg/*
-ext/*
+#ext/*
 ext/libarchive/*
 ext/libfuse/*
 ext/libunwind/*

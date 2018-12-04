@@ -13,3 +13,6 @@
 [submodule "ext/linenoise"]
 	path = ext/linenoise
 	url = https://github.com/antirez/linenoise.git
+[submodule "ext/musl"]
+	path = ext/musl
+	url = git://git.musl-libc.org/musl
