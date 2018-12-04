@@ -28,4 +28,17 @@ strings:
 	strings ${bin} \
 	> ${bin}.strings
 
+umount:
+	-for i in $(wildcard examples/*/root); do \
+	    mountpoint $$i; \
+	    [ "$$?" == 0 ] && umount $$i; \
+	done
+
+test: umount
+	./jailfs examples/auth-dns
+
+qa:
+	${MAKE} clean world testpkg test umount
+
 extra_clean += ${bin}.symtab ${bin}.strings
+extra_clean += $(wildcard examples/*/state/*.pid)

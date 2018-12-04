@@ -1,13 +1,5 @@
 # Convenience makefile...
 
-all build clean world testpkg:
+all build clean world testpkg umount test qa:
 	${MAKE} -C ../ $@
 
-test: umount
-	(cd ../; ./jailfs examples/auth-dns)
-
-umount:
-	umount ../examples/auth-dns/root
-
-qa:
-	${MAKE} clean world testpkg test umount
