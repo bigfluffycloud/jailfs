@@ -15,6 +15,7 @@ path.i18n=../../i18n
 sys.daemonize=false
 path.config=config
 path.pid=state/jailfs.pid
+path.modules=../../lib/modules
 path.mountpoint=root
 ; Package pool (shared)
 path.pkg=../../pkg
