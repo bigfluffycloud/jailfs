@@ -11,13 +11,14 @@
  *
  * No warranty of any kind. Good luck!
  *
- * shell.c: A read-line based simple CLI interface
+ * shell.c: A linenoise based simple CLI interface
  *       which should help ease setup and debugging
  */
 #include <signal.h>
 #include "logger.h"
 #include "linenoise.h"
 
+static const char *prompt = "jailfs> ";
 struct shell_cmd {
     const char *cmd;
     const char *desc;	// Description
@@ -57,6 +58,8 @@ struct shell_cmd menu_value[] = {
 
 struct shell_cmd conf_menu[] = {
    { "list", "List config values", 0, 0, 0, NULL, NULL },
+   { "load", "Load saved config file", 0, 1, 1, NULL, NULL },
+   { "save", "Write config file", 0, 1, 1, NULL, NULL },
    { "set", "Set config value", 0, 3, 3, NULL, NULL },
    { "show", "Get config value", 0, 1, 3, NULL, NULL },
 };

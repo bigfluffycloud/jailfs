@@ -123,7 +123,7 @@ dict *dconf_load(const char *file) {
          continue;
       else if (*skip == '[' && *end == ']') {		// section
          section = strndup(skip + 1, strlen(skip) - 2);
-         Log(LOG_DEBUG, "cfg.section.open: '%s' [%d]", section, strlen(section));
+         Log(LOG_DEBUG, "cfg.section.open: '%s", section);
          continue;
       } else if (*skip == '@') {			// preprocessor
          if (strncasecmp(skip + 1, "if ", 3) == 0) {
@@ -164,11 +164,11 @@ dict *dconf_load(const char *file) {
                Log(LOG_FATAL, "mem_alloc failed in dconf_init");
                exit(1);
             }
-            Log(LOG_INFO, "BEGIN jailconf (line %d)", line);
+            Log(LOG_DEBUG, "BEGIN jailconf (line %d)", line);
          }
          if (strncasecmp(skip, "@END", 4) == 0) {
             section = NULL;
-            Log(LOG_INFO, "END jailconf (line %d)", line);
+            Log(LOG_DEBUG, "END jailconf (line %d)", line);
          }
       } else if (strncasecmp(section, "language", 8) == 0) {
          // Parse configuration line (XXX: GET RID OF STRTOK!)

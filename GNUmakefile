@@ -16,7 +16,7 @@ endif
 world: ${libs} ${bin} symtab strings
 
 testpkg:
-	./scripts/test-pkg.sh
+	./scripts/testpkg.sh
 
 symtab:
 	nm -Clp ${bin} | \
