@@ -52,7 +52,7 @@ umount examples/auth-dns/root/
 
 
 --
-If you make complains similiar to this: make: *** No rule to make target 'src/linenoise.c', needed by '.obj/linenoise.o'.  Stop.
+If make complains similiar to this: make: *** No rule to make target 'src/linenoise.c', needed by '.obj/linenoise.o'.  Stop.
 
 ```
 git submodule init; git submodule update
