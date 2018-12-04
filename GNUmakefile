@@ -29,10 +29,11 @@ strings:
 	> dbg/${bin}.strings
 
 umount:
-	-for i in $(wildcard examples/*/root); do \
-	    mountpoint $$i; \
-	    [ "$$?" == 0 ] && umount $$i; \
-	done
+	-umount examples/auth-dns/root
+#	-for i in examples/auth-dns/root; do \
+#	    mountpoint $$i; \
+#	    [ "$$?" == 0 ] && umount $$i; \
+#	done
 
 test: umount
 	./jailfs examples/auth-dns
