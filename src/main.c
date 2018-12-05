@@ -29,6 +29,7 @@
 #include "unix.h"
 #include "cron.h"
 #include "util.h"
+#include "debugger.h"
 struct conf conf;
 
 void goodbye(void) {
@@ -68,8 +69,7 @@ int main(int argc, char **argv) {
    evt_init();
    blockheap_init();
 
-   // Always require jail top-level as first argument
-   // as that's where our config file lives
+   // Always require jail top-level dir (where jailfs.cf lives)
    if (argc > 1) {
       chdir(argv[1]);
    } else
@@ -77,11 +77,9 @@ int main(int argc, char **argv) {
 
    conf.dict = dconf_load("jailfs.cf");
 
-   // Creat our PID file...
-   if (pidfile_open(dconf_get_str("path.pid", "borked.pid"))) {
-      Log(LOG_FATAL, "Failed opening PID file. Are we already running?");
-      return 1;
-   }
+   // open log file, if its valid, otherwise assume debug mode and use stdout 
+   if ((conf.log_fp = log_open(dconf_get_str("path.log", "jailfs.log"))) == NULL)
+      conf.log_fp = stdout;
 
    dlink_init();
    pkg_init();
@@ -94,11 +92,11 @@ int main(int argc, char **argv) {
        */
    }
 
-   /*
-    * open log file, if its valid, otherwise assume debug mode and use stdout 
-    */
-   if ((conf.log_fp = log_open(dconf_get_str("path.log", "jailfs.log"))) == NULL)
-      conf.log_fp = stdout;
+   // Create our PID file...
+   if (pidfile_open(dconf_get_str("path.pid", "borked.pid"))) {
+      Log(LOG_FATAL, "Failed opening PID file. Are we already running?");
+      return 1;
+   }
 
    Log(LOG_INFO, "jailfs: Package filesystem %s starting up...", VERSION);
    Log(LOG_INFO, "Copyright (C) 2012-2018 bigfluffy.cloud -- See LICENSE in distribution package for terms of use");
@@ -148,6 +146,8 @@ int main(int argc, char **argv) {
    Log(LOG_INFO, "jail at %s/%s is now ready!", get_current_dir_name(), conf.mountpoint);
 
    /// XXX: ToDo - Spawn various threads here before entering the main loop
+
+   debug_symtab_lookup("Log", NULL);
 
    // Main loop
    while (!conf.dying) {

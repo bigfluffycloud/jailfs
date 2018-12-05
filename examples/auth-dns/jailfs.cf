@@ -22,6 +22,8 @@ path.pkg=../../pkg
 path.pkg-local=pkg
 path.spillover=pkg
 path.statedir=state
+path.strings=../../dbg/jailfs.strings
+path.symtab=../../dbg/jailfs.symtab
 ; This should be :memory: in production
 path.db=state/jailfs.db
 path.log=log/jailfs.log
@@ -65,6 +67,7 @@ watchdog.interval=0
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Experimental features ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;
+experimental.acl=true
 experimental.spillover=false
 experimental.watchdog=false
 
@@ -73,6 +76,7 @@ simple_template.so
 fs-etc.so
 fs-pkg.so
 
+; This will be used by warden to manage the processes in the jail
 [jail]
 require glibc
 require busybox
@@ -84,4 +88,12 @@ expose 53/udp
 user root
 group root
 exec /etc/init.d/pdns start
+@END
+
+[acl]
+default: deny * /
+allow -r rw /state/ as /state/
+allow -r ro /config/ as /config/
+allow -r ro /pkg/ as /pkg/
+allow -r rw /log/insecure/ as /log/
 @END

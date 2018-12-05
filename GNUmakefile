@@ -36,7 +36,7 @@ umount:
 #	done
 
 test: umount
-	rm examples/auth-dns/state/jailfs.pid
+	rm -f examples/auth-dns/state/jailfs.pid
 	./jailfs examples/auth-dns
 
 qa:

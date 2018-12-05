@@ -65,7 +65,6 @@ dict *dconf_load(const char *file) {
    int line = 0, errors = 0, warnings = 0;
    int         in_comment = 0;
    char buf[768];
-   char *jailconf = NULL;	// Only used if jailconf has happened
    FILE *fp;
    char *end, *skip,
         *key, *val,
@@ -123,7 +122,7 @@ dict *dconf_load(const char *file) {
          continue;
       else if (*skip == '[' && *end == ']') {		// section
          section = strndup(skip + 1, strlen(skip) - 2);
-         Log(LOG_DEBUG, "cfg.section.open: '%s", section);
+         Log(LOG_DEBUG, "cfg.section.open: '%s'", section);
          continue;
       } else if (*skip == '@') {			// preprocessor
          if (strncasecmp(skip + 1, "if ", 3) == 0) {
@@ -153,23 +152,15 @@ dict *dconf_load(const char *file) {
          // Store value
          dict_add(cp, key, val);
       } else if (strncasecmp(section, "modules", 8) == 0) {
-         Log(LOG_INFO, "Loading module %s", skip);
+         Log(LOG_DEBUG, "Loading module %s", skip);
 
 //         if (module_load(skip) != 0)
 //            errors++;
       } else if (strncasecmp(section, "jail", 4) == 0) {
-         // XXX: Add this to dconf_write
-         if (jailconf == NULL) {
-            if (!(jailconf = mem_alloc(JAILCONF_SIZE))) {
-               Log(LOG_FATAL, "mem_alloc failed in dconf_init");
-               exit(1);
-            }
-            Log(LOG_DEBUG, "BEGIN jailconf (line %d)", line);
-         }
-         if (strncasecmp(skip, "@END", 4) == 0) {
+         // We ignore [jail] ection as it is for warden
+         if (strncasecmp(skip, "@END", 4) == 0)
             section = NULL;
-            Log(LOG_DEBUG, "END jailconf (line %d)", line);
-         }
+         continue;
       } else if (strncasecmp(section, "language", 8) == 0) {
          // Parse configuration line (XXX: GET RID OF STRTOK!)
          key = strtok(skip, "= \n");

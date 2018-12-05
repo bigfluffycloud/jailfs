@@ -11,5 +11,12 @@
  *
  * No warranty of any kind. Good luck!
  */
-extern const char *debug_symtab_lookup(const char *symbol, const char *symtab);
-
+struct shell_cmd {
+    const char *cmd;
+    const char *desc;	// Description
+    const int submenu;	// 0 for false, 1 for true
+    const int min_args,
+              max_args;
+    void (*handler)();
+    struct shell_cmd *menu;
+};

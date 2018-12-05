@@ -13,21 +13,18 @@
  *
  * shell.c: A linenoise based simple CLI interface
  *       which should help ease setup and debugging
+ *
+ *	It primarily exists to allow access to these things:
+ *		* dconf (configuration file)
+ *		* debug (debugger)
+ *		* log (log message handler)
  */
 #include <signal.h>
 #include "logger.h"
 #include "linenoise.h"
+#include "shell.h"
 
 static const char *prompt = "jailfs> ";
-struct shell_cmd {
-    const char *cmd;
-    const char *desc;	// Description
-    const int submenu;	// 0 for false, 1 for true
-    const int min_args,
-              max_args;
-    void (*handler)();
-    struct shell_cmd *menu;
-};
 
 void cmd_shutdown(int argc, char **argv) {
    raise(SIGTERM);
@@ -48,6 +45,22 @@ void cmd_stats(int argc, char **argv) {
    Log(LOG_INFO, "stats requested by user: ");
 }
 
+
+///////////
+// Menus //
+///////////
+/* from shell.h
+struct shell_cmd {
+    const char *cmd;
+    const char *desc;	// Description
+    const int submenu;	// 0 for false, 1 for true
+    const int min_args,
+              max_args;
+    void (*handler)();
+    struct shell_cmd *menu;
+};
+*/
+
 // Show/toggle (true/false)/set value
 struct shell_cmd menu_value[] = {
    { "false", "Set false", 0, 0, 0, NULL, NULL },
@@ -61,10 +74,11 @@ struct shell_cmd conf_menu[] = {
    { "load", "Load saved config file", 0, 1, 1, NULL, NULL },
    { "save", "Write config file", 0, 1, 1, NULL, NULL },
    { "set", "Set config value", 0, 3, 3, NULL, NULL },
-   { "show", "Get config value", 0, 1, 3, NULL, NULL },
+   { "show", "Get config value", 0, 1, 3, NULL, NULL }
 };
 
 struct shell_cmd cron_menu[] = {
+   { "debug", "show/toggle debugging status", 1, 0, 1, NULL, menu_value },
    { "jobs", "Show scheduled events", 0, 0, 0, NULL, NULL },
    { "stop", "Stop a scheduled event", 0, 1, 1, NULL, NULL }
 };
@@ -77,6 +91,7 @@ struct shell_cmd db_menu[] = {
 
 
 struct shell_cmd debug_menu[] = {
+   { "symtab_lookup", "Lookup a symbol in the symtab", 0, 1, 2, NULL, NULL },
 };
 
 struct shell_cmd logging_menu[] = {
@@ -88,6 +103,7 @@ struct shell_cmd mem_gc_menu[] = {
 };
 
 struct shell_cmd hooks_menu[] = {
+   { "debug", "show/toggle debugging status", 1, 0, 1, NULL, menu_value },
    { "list", "List registered hooks", 0, 0, 0, NULL, NULL },
    { "unregister", "Unregister a hook", 0, 1, 1, NULL, NULL }
 };
@@ -96,6 +112,7 @@ struct shell_cmd mem_bh_tuning_menu[] = {
 };
 
 struct shell_cmd mem_bh_menu[] = {
+   { "debug", "show/toggle debugging status", 1, 0, 1, NULL, menu_value },
    { "tuning", "Tuning knobs", 1, 0, -1, NULL, mem_bh_tuning_menu }
 };
 
