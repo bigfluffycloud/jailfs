@@ -1,6 +1,7 @@
 bin := jailfs
 jailfs_objs += .obj/atomicio.o
 jailfs_objs += .obj/balloc.o
+jailfs_objs += .obj/cache.o
 jailfs_objs += .obj/conf.o
 jailfs_objs += .obj/cron.o
 jailfs_objs += .obj/database.o
@@ -8,6 +9,7 @@ jailfs_objs += .obj/debugger.o
 jailfs_objs += .obj/dict.o
 jailfs_objs += .obj/dlink.o
 jailfs_objs += .obj/hooks.o
+jailfs_objs += .obj/jail.o
 jailfs_objs += .obj/i18n.o
 jailfs_objs += .obj/linenoise.o
 jailfs_objs += .obj/logger.o

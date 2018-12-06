@@ -30,6 +30,7 @@ strings:
 
 umount:
 	-umount examples/auth-dns/root
+	-umount examples/auth-dns/cache
 #	-for i in examples/auth-dns/root; do \
 #	    mountpoint $$i; \
 #	    [ "$$?" == 0 ] && umount $$i; \

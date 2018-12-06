@@ -178,3 +178,10 @@ struct shell_cmd menu[] = {
    { "stats", "Display statistics", 0, 0, 0, &cmd_stats, NULL },
    { "vfs", "Virtual FileSystem (VFS)", 1, 1, -1, &cmd_help, vfs_menu } 
 };
+
+//
+// Initialize the shell/debugger thread
+//
+int shell_init(void) {
+   return 0;
+}

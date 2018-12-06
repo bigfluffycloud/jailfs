@@ -30,7 +30,9 @@
 #include "unix.h"
 #include "cron.h"
 #include "util.h"
+#include "shell.h"
 #include "debugger.h"
+
 struct conf conf;
 ThreadPool *threads_main;
 
@@ -170,9 +172,10 @@ int main(int argc, char **argv) {
    Log(LOG_INFO, "Ready to accept requests.");
 
    // Looks like everything came up OK, detach if configured to do so...
-   if (dconf_get_bool("sys.daemonize", 0) == 1) {
+   if (dconf_get_bool("sys.daemonize", 0) == 1)
       host_detach();
-   }
+   else // Otherwise, we should initialize shell thread here
+      shell_init();
 
    // Main loop
    while (!conf.dying) {
@@ -180,6 +183,7 @@ int main(int argc, char **argv) {
       ev_loop(evt_loop, 0);
    }
 
+   umount(cache);
    Log(LOG_INFO, "shutting down...");
    goodbye();
    return EXIT_SUCCESS;

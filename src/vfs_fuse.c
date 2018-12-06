@@ -11,6 +11,11 @@
  *
  * No warranty of any kind. Good luck!
  */
+/*
+ * src/vfs_fuse.c:
+ *	Here we provide a FUSE based interface for presenting
+ * the jail root file system.
+ */
 #include <signal.h>
 #include <errno.h>
 #include "conf.h"
@@ -60,7 +65,6 @@ static struct fuse_lowlevel_ops vfs_fuse_ops = {
 //   .removexattr = vfs_fuse_removexattr
 };
 
-/* This is a hacked up version of fuse/fuse_loop.c, hope it works -bk */
 static void vfs_fuse_read_cb(struct ev_loop *loop, ev_io * w, int revents) {
    int         res = 0;
    struct fuse_chan *ch = fuse_session_next_chan(vfs_fuse_sess, NULL);

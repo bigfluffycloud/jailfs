@@ -30,8 +30,11 @@
 
 u_int32_t   vfs_root_inode;
 
+// Block allocator heaps
 BlockHeap  *vfs_handle_heap = NULL;
 BlockHeap  *vfs_watch_heap = NULL;
+
+// Doubly-linked list
 dlink_list  vfs_watch_list;
 
 /* We do not want to infinitely recurse... */

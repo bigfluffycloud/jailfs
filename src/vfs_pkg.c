@@ -46,7 +46,8 @@ void vfs_fuse_getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
    // Did we get a valid response?
    if (sb.st_ino) {
       fuse_reply_attr(req, &sb, 0.0);
-      Log(LOG_DEBUG, "got attr.st_ino: %d", sb.st_ino);
+      Log(LOG_DEBUG, "got attr.st_ino: %d <mode:%o> <size:%lu> (%d:%d)", sb.st_ino,
+          sb.st_mode, sb.st_size, sb.st_uid, sb.st_gid);
    } else {
       Log(LOG_DEBUG, "couldn't find attr.st_ino");
       fuse_reply_err(req, ENOENT);
@@ -87,13 +88,18 @@ void vfs_fuse_open(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
    struct stat sb;
    Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
 
-   /* Check if a spillover file exists */
+   // Check if a spillover file exists
    if ((i = db_query(QUERY_INODE, "SELECT * FROM spillover WHERE inode = %d", (u_int32_t) ino))) {
-   /* If not, maybe this exists in a file? */
+     // if file doesn't exist in cache but exist in spillover, extract to cache
+     //
+     // if file exists in cache; use it
+     //
+   // If not, maybe this exists in a package?
    } else if ((i = db_query(QUERY_INODE, "SELECT * FROM files WHERE inode = %d", (u_int32_t) ino))) {
-      /*
-       * XXX: do stuff ;) 
-       */
+     // if file doesn't exist in cache but exists in pkg, extract it to cache
+     //
+     // if file exists in cache; use it
+     //
    }
 
    // Nope, it doesn't exist

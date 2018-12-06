@@ -11,6 +11,10 @@
  *
  * No warranty of any kind. Good luck!
  */
+/*
+ * debugger.c:
+ *	Extends the shell(.c) to add a debuggger
+ */
 #include "debugger.h"
 #include "logger.h"
 #include "memory.h"

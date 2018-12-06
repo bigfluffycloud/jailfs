@@ -14,7 +14,7 @@ i18n.lang=en_US
 path.i18n=../../i18n
 sys.daemonize=false
 cache.type=tmpfs
-path.cache=../../cache
+path.cache=cache
 path.config=config
 path.pid=state/jailfs.pid
 path.modules=../../lib/modules
@@ -45,7 +45,7 @@ log.stack_unwind=true
 ; debugging ;
 ;;;;;;;;;;;;;
 ; Debugging options - Too much will slow things down badly...
-debug.db=true
+debug.db=false
 debug.mem=true
 debug.net=false
 debug.threads=true
@@ -69,14 +69,15 @@ watchdog.interval=0
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Experimental features ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;
-experimental.acl=true
+#experimental.acl=true
 experimental.spillover=false
+#experimental.warden=true
 experimental.watchdog=false
 
 [modules]
-simple_template.so
-fs-etc.so
-fs-pkg.so
+#simple_template.so
+#fs-etc.so
+#fs-pkg.so
 
 ; This will be used by warden to manage the processes in the jail
 [jail]

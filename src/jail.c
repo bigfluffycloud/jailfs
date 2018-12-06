@@ -11,15 +11,19 @@
  *
  * No warranty of any kind. Good luck!
  */
-struct shell_cmd {
-    const char *cmd;
-    const char *desc;	// Description
-    const int submenu;	// 0 for false, 1 for true
-    const int min_args,
-              max_args;
-    void (*handler)();
-    struct shell_cmd *menu;
-};
+/*
+ * src/jail.c:
+ *	Code we use to restrict the processes running inside of the
+ * jail. Ideally, we will be running in a clean namespace, with no
+ * privileges.
+ */
 
-// Set up the shell
-extern int shell_init(void);
+#include "conf.h"
+#include "memory.h"
+#include "str.h"
+#include "logger.h"
+
+int	jail_drop_privs(void) {
+    Log(LOG_INFO, "jail_drop_privs(): called.");
+    return 0;
+}
