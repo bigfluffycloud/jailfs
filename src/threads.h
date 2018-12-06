@@ -3,7 +3,7 @@
 #include <pthread.h>
 //#include "dictionary.h"
 #include "dict.h"
-
+#include "list.h"
 typedef struct thread {
    pthread_t 	thr_info;
    pthread_attr_t thr_attr;
@@ -14,7 +14,7 @@ typedef struct thread {
 
 typedef struct ThreadPool {
   char       *name;
-//  list_p      list;
+  list_p      list;
   pthread_attr_t pth_attr;
 } ThreadPool;
 

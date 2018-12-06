@@ -2,6 +2,7 @@
 #define	__module_h
 #include "dlink.h"
 #include "dict.h"
+#include "list.h"
 #define	API_VERSION 1
 
 #define	MODULE_MAGIC	0x49fa0000
@@ -33,7 +34,7 @@ typedef struct	Module {
 
 /* this is a hack, to make the library easier to use */
 
-//extern list_p Modules;
+extern list_p Modules;
 extern int in_module;
 extern int module_load(const char *path);
 extern int module_unload(Module *mp);

@@ -34,7 +34,7 @@ ThreadPool *threadpool_init(const char *name, const char *opts) {
   }
 
   r->name = strdup(name);
-//  r->list = create_list();
+  r->list = create_list();
 
   return r;
 }
@@ -60,7 +60,7 @@ Thread *thread_create(ThreadPool *pool, void *(*init)(void *), void *(*fini)(voi
      tmp->fini = fini;
 
   /* Add to thread pool */
-//  list_add(pool->list, tmp, sizeof(tmp));
+  list_add(pool->list, tmp, sizeof(tmp));
   Log(LOG_DEBUG, "new thread %x created in pool %s", tmp, pool->name);
   return tmp;
 }
@@ -79,7 +79,7 @@ Thread *thread_shutdown(ThreadPool *pool, Thread *thr) {
    if (thr->refcnt == 0) {
       Log(LOG_DEBUG, "unallocating thread %x due to refcnt == 0", thr);
 
-//     list_remove(pool->list, thr);
+     list_remove(pool->list, thr);
       if (thr->argv)
          mem_free(thr->argv);
 

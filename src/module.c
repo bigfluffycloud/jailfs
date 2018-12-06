@@ -10,7 +10,7 @@
 #include "module.h"
 #include "util.h"
 #include "memory.h"
-//list_p Modules;
+list_p Modules;
 int in_module = 0;
 sigjmp_buf env;
 

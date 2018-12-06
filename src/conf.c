@@ -77,7 +77,7 @@ dict *dconf_load(const char *file) {
       return false;
    }
 
-//   Modules = create_list();
+   Modules = create_list();
 
    //
    // This could use some cleanup... But it does work.

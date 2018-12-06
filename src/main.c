@@ -32,6 +32,7 @@
 #include "util.h"
 #include "shell.h"
 #include "debugger.h"
+#include "profiling.h"
 
 struct conf conf;
 ThreadPool *threads_main;
@@ -71,7 +72,8 @@ int main(int argc, char **argv) {
 
    host_init();
    atexit(goodbye);
-   signal_init();
+   // Block all non-fatal signals until we are up and running
+   posix_signal_quiet();
    evt_init();
    blockheap_init();
 
@@ -91,7 +93,6 @@ int main(int argc, char **argv) {
    dlink_init();
    pkg_init();
    inode_init();
-
 
    Log(LOG_INFO, "jailfs: Package filesystem %s starting up...", VERSION);
    Log(LOG_INFO, "Copyright (C) 2012-2018 bigfluffy.cloud -- See LICENSE in distribution package for terms of use");
@@ -169,6 +170,10 @@ int main(int argc, char **argv) {
    /// XXX: ToDo - Spawn various threads here before entering the main loop
    debug_symtab_lookup("Log", NULL);
 
+   // Bring up multithreading core
+   threads_main = threadpool_init("main", NULL);
+   thread_entry(&conf);
+
    Log(LOG_INFO, "Ready to accept requests.");
 
    // Looks like everything came up OK, detach if configured to do so...
@@ -176,6 +181,8 @@ int main(int argc, char **argv) {
       host_detach();
    else // Otherwise, we should initialize shell thread here
       shell_init();
+
+   signal_init();
 
    // Main loop
    while (!conf.dying) {
