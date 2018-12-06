@@ -53,7 +53,8 @@ int pkg_import(const char *path) {
       return EXIT_SUCCESS;
    }
 
-   Log(LOG_INFO, "BEGIN import pkg %s", basename(path));
+   if (dconf_get_bool("debug.pkg", 0) == 1)
+      Log(LOG_DEBUG, "BEGIN import pkg %s", basename(path));
 
    // Start transaction
    db_begin();
@@ -121,7 +122,10 @@ int pkg_import(const char *path) {
 #if	0
          size_t total = archive_entry_size(aentry);
          char *buf = mem_alloc(total);
-         Log(LOG_DEBUG, "ttl: %lu, buf: %lu", total, sizeof(buf));
+
+         if (dconf_get_bool("debug.pkg", 0) == 1)
+            Log(LOG_DEBUG, "ttl: %lu, buf: %lu", total, sizeof(buf));
+
          ssize_t size = archive_read_data(aentry, buf, total);
 
          if (size <= 0) {
@@ -137,7 +141,10 @@ int pkg_import(const char *path) {
    if (r != ARCHIVE_OK)
       Log(LOG_ERROR, "possible memory leak! archive_read_free() returned %d", r);
 
-   db_commit();   
-   Log(LOG_INFO, "SUCCESS import pkg %s", basename(path));
+   db_commit();
+
+   if (dconf_get_bool("debug.pkg", 0) == 1)
+      Log(LOG_INFO, "SUCCESS import pkg %s", basename(path));
+
    return EXIT_SUCCESS;
 }

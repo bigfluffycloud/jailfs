@@ -37,7 +37,6 @@ extern char *str_ctime(time_t);
 extern int  str_tokenize(char *, char **);
 extern int  str_tokenize_generic(char, int, char *, char **);
 extern void str_parv_expand(char *, int, int, int, char **);
-extern int  str_islower(char *);
 extern void str_strip(char *);
 extern char *str_dup(const char *str);
 extern void str_tohex(char *dst, const char *src, unsigned int length);
@@ -46,4 +45,6 @@ extern char *sec_to_dhms(time_t itime);
 extern char *str_unquote(char *str);
 extern char *str_whitespace_skip(char *str);
 extern char *str_tolower(char *s);
+extern int is_lower(char *s);
+
 #endif

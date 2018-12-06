@@ -261,7 +261,7 @@ char       *str_tolower(char *s) {
 }
 
 /* Return 1 if the string s is all lower case, return 0 if not */
-int stris_lower(char *s) {
+int is_lower(char *s) {
    char       *t;
 
    if (s == NULL)

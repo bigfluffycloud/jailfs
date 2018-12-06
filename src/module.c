@@ -55,7 +55,7 @@ int module_load(const char *path) {
    if (tmp->init)
       (tmp->init)(conf.dict);
 
-//   list_add(Modules, tmp, sizeof(tmp));
+   list_add(Modules, tmp, sizeof(tmp));
    return 0;
 }
 
@@ -90,14 +90,12 @@ int module_dying(int signal) {
 
 Module *module_find(const char *name) {
   Module *mp = NULL;
-#if	0
   list_iter_p mod_cur = list_iterator(Modules, FRONT);
 
   do {
      if (mp && strcasecmp(mp->name, name) == 0)
         return mp;
   } while ((mp = list_next(mod_cur)));
-#endif
 
   return NULL;
 }

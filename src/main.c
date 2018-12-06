@@ -32,10 +32,36 @@
 #include "util.h"
 #include "shell.h"
 #include "debugger.h"
+#include "module.h"
 #include "profiling.h"
 
 struct conf conf;
 ThreadPool *threads_main;
+
+struct ThreadCreator {
+   char *name;
+   void (*init)(void *);
+   void (*fini)(void *);
+} threads[] = {
+   {
+      .name = "db",
+//      .init = &thread_db_init,
+//      .fini = &thread_db_fini,
+   },
+   {
+      .name = "shell",
+//      .init = &thread_shell_init,
+//      .fini = &thread_shell_fini,
+   },
+   {
+      .name = "vfs",
+//      .init = &thread_vfs_init,
+//      .fini = &thread_vfs_fini,
+   },
+   {
+      .name = NULL
+   }
+};
 
 // Called on exit to cleanup..
 void goodbye(void) {
@@ -65,11 +91,15 @@ void usage(int argc, char **argv) {
 
 int main(int argc, char **argv) {
    int         fd;
+   int i, thr_cnt = 0;
    char *cache = NULL;
    struct fuse_args margs = FUSE_ARGS_INIT(0, NULL);
-   conf.born = conf.now = time(NULL);
-   umask(0);
 
+   conf.born = conf.now = time(NULL);
+   umask(0077);
+
+   // Lock the Big Lock until everything is running
+   pthread_mutex_lock(&core_ready_m);
    host_init();
    atexit(goodbye);
    // Block all non-fatal signals until we are up and running
@@ -173,6 +203,29 @@ int main(int argc, char **argv) {
    // Bring up multithreading core
    threads_main = threadpool_init("main", NULL);
    thread_entry(&conf);
+   // Launch main threads
+   thr_cnt = sizeof(threads)/sizeof(struct ThreadCreator) - 1;
+   i = 0;
+   do {
+      if (threads[i].name != NULL) {
+         if (!threads[i].init)
+            continue;
+
+         if (thread_create(threads_main, threads[i].init, threads[i].fini, NULL, threads[i].name) == NULL) {
+            Log(LOG_ERROR, "failed starting thread main:%s", threads[i].name);
+            abort();
+          }
+          Log(LOG_INFO, "started thread main:%s", threads[i].name);
+      }
+
+      i++;
+   } while (i <= thr_cnt);
+
+   list_iter_p m_cur = list_iterator(Modules, FRONT);
+   Module *mod;
+   do {
+     Log(LOG_INFO, "Module @ %x", mod);
+   } while ((mod = list_next(m_cur)));
 
    Log(LOG_INFO, "Ready to accept requests.");
 
@@ -184,8 +237,17 @@ int main(int argc, char **argv) {
 
    signal_init();
 
+   core_ready = 1;
+   pthread_mutex_unlock(&core_ready_m);
+   pthread_cond_broadcast(&core_ready_c);
+
    // Main loop
    while (!conf.dying) {
+      // Handle profiling events
+      if (profiling_newmsg) {
+         Log(LOG_DEBUG, "profiling: %s", profiling_msg);
+         profiling_newmsg = 0;
+      }
       // XXX: We will communicate with worker threads ONLY from main loop
       ev_loop(evt_loop, 0);
    }
