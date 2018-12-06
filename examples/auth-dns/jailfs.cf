@@ -74,6 +74,7 @@ experimental.spillover=false
 #experimental.warden=true
 experimental.watchdog=false
 
+/*
 [modules]
 #simple_template.so
 #fs-etc.so
@@ -100,3 +101,4 @@ allow -r ro /config/ as /config/
 allow -r ro /pkg/ as /pkg/
 allow -r rw /log/insecure/ as /log/
 @END
+*/

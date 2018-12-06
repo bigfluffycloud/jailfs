@@ -27,3 +27,12 @@ int	jail_drop_privs(void) {
     Log(LOG_INFO, "jail_drop_privs(): called.");
     return 0;
 }
+
+int	jail_chroot(const char *path) {
+    Log(LOG_INFO, "jail_chroot(): entered chroot %s", path);
+    return 0;
+}
+
+int	jail_namespace_init(void);
+    return 0;
+}

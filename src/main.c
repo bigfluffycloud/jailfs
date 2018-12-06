@@ -50,7 +50,7 @@ struct ThreadCreator {
    },
    {
       .name = "shell",
-//      .init = &thread_shell_init,
+      .init = &thread_shell_init,
 //      .fini = &thread_shell_fini,
    },
    {
@@ -197,30 +197,32 @@ int main(int argc, char **argv) {
          }
       }
    }
-   /// XXX: ToDo - Spawn various threads here before entering the main loop
-   debug_symtab_lookup("Log", NULL);
 
-   // Bring up multithreading core
+   Log(LOG_INFO, "Starting threads...");
+
    threads_main = threadpool_init("main", NULL);
-   thread_entry(&conf);
    // Launch main threads
    thr_cnt = sizeof(threads)/sizeof(struct ThreadCreator) - 1;
    i = 0;
+   Log(LOG_INFO, "->");
    do {
       if (threads[i].name != NULL) {
-         if (!threads[i].init)
+         if (!threads[i].init) {
+            Log(LOG_ERROR, "module entry %s has no init function", threads[i].name);
+            i++;
             continue;
+         }
 
          if (thread_create(threads_main, threads[i].init, threads[i].fini, NULL, threads[i].name) == NULL) {
             Log(LOG_ERROR, "failed starting thread main:%s", threads[i].name);
             abort();
-          }
-          Log(LOG_INFO, "started thread main:%s", threads[i].name);
+         }
+         Log(LOG_INFO, "started thread main:%s", threads[i].name);
       }
-
       i++;
    } while (i <= thr_cnt);
 
+   Log(LOG_INFO, "====");
    list_iter_p m_cur = list_iterator(Modules, FRONT);
    Module *mod;
    do {
@@ -229,11 +231,6 @@ int main(int argc, char **argv) {
 
    Log(LOG_INFO, "Ready to accept requests.");
 
-   // Looks like everything came up OK, detach if configured to do so...
-   if (dconf_get_bool("sys.daemonize", 0) == 1)
-      host_detach();
-   else // Otherwise, we should initialize shell thread here
-      shell_init();
 
    signal_init();
 
@@ -241,7 +238,13 @@ int main(int argc, char **argv) {
    pthread_mutex_unlock(&core_ready_m);
    pthread_cond_broadcast(&core_ready_c);
 
-   // Main loop
+   /// XXX: ToDo - Spawn various threads here before entering the main loop
+   debug_symtab_lookup("Log", NULL);
+
+   // Looks like everything came up OK, detach if configured to do so...
+   if (dconf_get_bool("sys.daemonize", 0) == 1)
+      host_detach();
+
    while (!conf.dying) {
       // Handle profiling events
       if (profiling_newmsg) {

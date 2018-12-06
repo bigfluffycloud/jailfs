@@ -154,8 +154,8 @@ dict *dconf_load(const char *file) {
       } else if (strncasecmp(section, "modules", 8) == 0) {
          Log(LOG_DEBUG, "Loading module %s", skip);
 
-//         if (module_load(skip) != 0)
-//            errors++;
+         if (module_load(skip) != 0)
+            errors++;
       } else if (strncasecmp(section, "jail", 4) == 0) {
          // We ignore [jail] ection as it is for warden
          if (strncasecmp(skip, "@END", 4) == 0)

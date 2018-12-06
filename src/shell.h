@@ -23,3 +23,4 @@ struct shell_cmd {
 
 // Set up the shell
 extern int shell_init(void);
+extern void *thread_shell_init(void *data);

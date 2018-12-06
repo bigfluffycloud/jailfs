@@ -179,9 +179,57 @@ struct shell_cmd menu[] = {
    { "vfs", "Virtual FileSystem (VFS)", 1, 1, -1, &cmd_help, vfs_menu } 
 };
 
+void shell_completion(const char *buf, linenoiseCompletions *lc) {
+   // Scan through the menu and generate completions...
+   if (buf[0] == 'h')
+      linenoiseAddCompletion(lc, "help");
+}
+
+char *shell_hints(const char *buf, int *color, int *bold) {
+   // Scan through the menu and provide hint...
+   if (!strcasecmp(buf, "help")) {
+      *color = 35;
+      *bold = 0;
+      return " show help messages";
+   }
+
+   return NULL;
+}
+
 //
 // Initialize the shell/debugger thread
 //
 int shell_init(void) {
    return 0;
+}
+
+void *thread_shell_init(void *data) {
+   char *line;
+
+   thread_entry((dict *)data);
+   linenoiseSetMultiLine(1);
+   linenoiseSetCompletionCallback(shell_completion);
+   linenoiseSetHintsCallback(shell_hints);
+   linenoiseHistoryLoad("state/.shell.history");
+
+   while (!conf.dying) {
+      line = linenoise("jailfs> ");
+
+      if (line == NULL)
+         continue;
+
+      if (line[0] != '\0' && line[0] != '/') {
+         printf("read: %s\n", line);
+         linenoiseHistoryAdd(line);
+         linenoiseHistorySave("state/.shell.history");
+         // XXX: Dispatch the command
+      } else if (!strncmp(line, "/historylen", 11)) {
+         int len = atoi(line + 11);
+         linenoiseHistorySetMaxLen(len);
+      } else if (line[0] == '/') {
+         printf("Unrecognized command: %s\n", line);
+      }
+      free(line);
+   }
+   return NULL;
 }
