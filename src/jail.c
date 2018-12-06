@@ -33,6 +33,6 @@ int	jail_chroot(const char *path) {
     return 0;
 }
 
-int	jail_namespace_init(void);
+int	jail_namespace_init(void) {
     return 0;
 }
