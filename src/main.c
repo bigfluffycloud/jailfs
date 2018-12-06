@@ -66,13 +66,14 @@ struct ThreadCreator {
 // Called on exit to cleanup..
 void goodbye(void) {
    char *pidfile = dconf_get_str("path.pid", NULL);
-   dconf_fini();
+   umount(conf.mountpoint);
+   umount(dconf_get_str("path.cache", NULL));
    vfs_watch_fini();
    vfs_fuse_fini();
-   umount(conf.mountpoint);
    inode_fini();
    dlink_fini();
    log_close(conf.log_fp);
+   dconf_fini();
 
    if (pidfile && file_exists(pidfile))
       unlink(pidfile);
@@ -95,15 +96,19 @@ int main(int argc, char **argv) {
    char *cache = NULL;
    struct fuse_args margs = FUSE_ARGS_INIT(0, NULL);
 
-   conf.born = conf.now = time(NULL);
-   umask(0077);
-
    // Lock the Big Lock until everything is running
    pthread_mutex_lock(&core_ready_m);
    host_init();
-   atexit(goodbye);
+
    // Block all non-fatal signals until we are up and running
    posix_signal_quiet();
+
+   // Set the clock
+   conf.born = conf.now = time(NULL);
+
+   // Restrict default permissions on new files
+   umask(0077);
+
    evt_init();
    blockheap_init();
 
@@ -141,7 +146,6 @@ int main(int argc, char **argv) {
    // Start cron
    if (conf.log_level == LOG_DEBUG)
       Log(LOG_DEBUG, "starting periodic task scheduler (cron)");
-
    cron_init();
 
    // Figure out where we're supposed to build this jail
@@ -199,12 +203,9 @@ int main(int argc, char **argv) {
    }
 
    Log(LOG_INFO, "Starting threads...");
-
    threads_main = threadpool_init("main", NULL);
-   // Launch main threads
    thr_cnt = sizeof(threads)/sizeof(struct ThreadCreator) - 1;
    i = 0;
-   Log(LOG_INFO, "->");
    do {
       if (threads[i].name != NULL) {
          if (!threads[i].init) {
@@ -222,40 +223,34 @@ int main(int argc, char **argv) {
       i++;
    } while (i <= thr_cnt);
 
-   Log(LOG_INFO, "====");
    list_iter_p m_cur = list_iterator(Modules, FRONT);
    Module *mod;
    do {
      Log(LOG_INFO, "Module @ %x", mod);
    } while ((mod = list_next(m_cur)));
 
-   Log(LOG_INFO, "Ready to accept requests.");
-
-
+   // Set up final signal handlers
    signal_init();
 
+   // We are up and running, allow thread to run
    core_ready = 1;
    pthread_mutex_unlock(&core_ready_m);
    pthread_cond_broadcast(&core_ready_c);
 
-   /// XXX: ToDo - Spawn various threads here before entering the main loop
    debug_symtab_lookup("Log", NULL);
+   Log(LOG_INFO, "Ready to accept requests.");
 
-   // Looks like everything came up OK, detach if configured to do so...
    if (dconf_get_bool("sys.daemonize", 0) == 1)
       host_detach();
 
    while (!conf.dying) {
-      // Handle profiling events
-      if (profiling_newmsg) {
+      if (profiling_newmsg) {	// profiling events
          Log(LOG_DEBUG, "profiling: %s", profiling_msg);
          profiling_newmsg = 0;
       }
-      // XXX: We will communicate with worker threads ONLY from main loop
       ev_loop(evt_loop, 0);
    }
 
-   umount(cache);
    Log(LOG_INFO, "shutting down...");
    goodbye();
    return EXIT_SUCCESS;

@@ -23,6 +23,7 @@
 #include "logger.h"
 #include "linenoise.h"
 #include "shell.h"
+#include "unix.h"
 
 static const char *prompt = "jailfs> ";
 
@@ -160,6 +161,7 @@ struct shell_cmd menu[] = {
    { "cron", "Periodic event scheduler", 1, 0, -1, NULL, cron_menu },
    { "db", "Database admin", 1, 0, -1, &cmd_help, db_menu },
    { "debug", "Built-in debugger", 1, 0, -1, &cmd_help, debug_menu },
+   { "detach", "Detach the shell", 0, 0, 0, &host_detach, NULL },
    { "help", "Display help", 0, 0, -1, &cmd_help, NULL },
    { "hooks", "Hooks management", 1, 0, -1, &cmd_help, hooks_menu },
    { "less", "Show contents of a file (with pager)", 0, 1, 1, NULL, NULL },
