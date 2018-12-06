@@ -155,7 +155,7 @@ int main(int argc, char **argv) {
          char tmppath[PATH_MAX];
          memset(tmppath, 0, sizeof(tmppath));
          snprintf(tmppath, sizeof(tmppath) - 1, "%s/.keepme", cache);
-         if (file_exist(tmppath))
+         if (file_exists(tmppath))
             unlink(tmppath);
 
          if ((rv = mount("jailfs-cache", cache, "tmpfs", 0, NULL)) != 0) {
