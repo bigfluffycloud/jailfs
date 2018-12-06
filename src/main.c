@@ -150,7 +150,14 @@ int main(int argc, char **argv) {
    if (strcasecmp("tmpfs", dconf_get_str("cache.type", NULL)) == 0) {
       if (cache != NULL) {
          int rv = -1;
-         
+
+         // If .keepme exists in cachedir (from git), remove it
+         char tmppath[PATH_MAX];
+         memset(tmppath, 0, sizeof(tmppath));
+         snprintf(tmppath, sizeof(tmppath) - 1, "%s/.keepme", cache);
+         if (file_exist(tmppath))
+            unlink(tmppath);
+
          if ((rv = mount("jailfs-cache", cache, "tmpfs", 0, NULL)) != 0) {
             Log(LOG_ERROR, "mounting tmpfs on cache-dir %s failed: %d (%s)", cache, errno, strerror(errno));
             exit(1);
