@@ -11,5 +11,13 @@
  *
  * No warranty of any kind. Good luck!
  */
-#include "dict.h"
-extern int i18n_init(void);
+#if	!defined(__PKG_DB_H)
+#define	__PKG_DB_H
+
+/* 'import' a package, called by vfs watcher */
+extern int  pkg_import(const char *path);
+
+/* 'forget' a package, called by vfs_watcher */
+extern int  pkg_forget(const char *path);
+
+#endif	// !defined(__PKG_DB_H)

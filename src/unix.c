@@ -21,12 +21,18 @@ void unlimit_fds(void) {
    setrlimit(RLIMIT_NOFILE, &rl);
 }
 
-void unix_init(void) {
+void host_init(void) {
    if (conf.log_level == LOG_DEBUG)
       Log(LOG_DEBUG, "enabling coredumps and raising fd limit");
 
    enable_coredump();
    unlimit_fds();
+}
+
+void host_detach(void) {
+   fprintf(stderr, "host_detach: Going into the background...\n");
+   Log(LOG_INFO, "host_detach: Going into the background...");
+   daemon(1, 1);
 }
 
 int	pidfile_open(const char *path) {
@@ -49,5 +55,3 @@ int	pidfile_open(const char *path) {
    Log(LOG_DEBUG, "Wrote PID file %s: %d", path, pid);
    return 0;
 }
-
-void	host_init(void) { unix_init(); }

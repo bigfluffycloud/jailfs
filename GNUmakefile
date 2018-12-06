@@ -35,7 +35,7 @@ umount:
 #	    [ "$$?" == 0 ] && umount $$i; \
 #	done
 
-test: umount
+test: ${bin} umount
 	rm -f examples/auth-dns/state/jailfs.pid
 	./jailfs examples/auth-dns
 

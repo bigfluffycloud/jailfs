@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include "conf.h"
 #include "database.h"
 #include "cron.h"
@@ -31,7 +32,9 @@
 #include "util.h"
 #include "debugger.h"
 struct conf conf;
+ThreadPool *threads_main;
 
+// Called on exit to cleanup..
 void goodbye(void) {
    char *pidfile = dconf_get_str("path.pid", NULL);
    dconf_fini();
@@ -59,6 +62,7 @@ void usage(int argc, char **argv) {
 
 int main(int argc, char **argv) {
    int         fd;
+   char *cache = NULL;
    struct fuse_args margs = FUSE_ARGS_INIT(0, NULL);
    conf.born = conf.now = time(NULL);
    umask(0);
@@ -76,6 +80,7 @@ int main(int argc, char **argv) {
       usage(argc, argv);
 
    conf.dict = dconf_load("jailfs.cf");
+   i18n_init();
 
    // open log file, if its valid, otherwise assume debug mode and use stdout 
    if ((conf.log_fp = log_open(dconf_get_str("path.log", "jailfs.log"))) == NULL)
@@ -85,12 +90,9 @@ int main(int argc, char **argv) {
    pkg_init();
    inode_init();
 
-   if (dconf_get_bool("sys.daemonize", 0) == 1) {
-      fprintf(stdout, "going bg, bye!\n");
-      /*
-       * XXX: add daemon crud 
-       */
-   }
+
+   Log(LOG_INFO, "jailfs: Package filesystem %s starting up...", VERSION);
+   Log(LOG_INFO, "Copyright (C) 2012-2018 bigfluffy.cloud -- See LICENSE in distribution package for terms of use");
 
    // Create our PID file...
    if (pidfile_open(dconf_get_str("path.pid", "borked.pid"))) {
@@ -98,17 +100,15 @@ int main(int argc, char **argv) {
       return 1;
    }
 
-   Log(LOG_INFO, "jailfs: Package filesystem %s starting up...", VERSION);
-   Log(LOG_INFO, "Copyright (C) 2012-2018 bigfluffy.cloud -- See LICENSE in distribution package for terms of use");
-
    if (conf.log_level == LOG_DEBUG) {
       Log(LOG_WARNING, "Log level is set to DEBUG. Please use info or lower in production");
-      Log(LOG_WARNING, "You can always toggle individual components (debug.*) to adjust the output");
+      Log(LOG_WARNING, "You can disable uninteresting debug sources by setting config:[general]/debug.* to false");
    }
 
    // Start cron
    if (conf.log_level == LOG_DEBUG)
       Log(LOG_DEBUG, "starting periodic task scheduler (cron)");
+
    cron_init();
 
    // Figure out where we're supposed to build this jail
@@ -144,10 +144,28 @@ int main(int argc, char **argv) {
       vfs_dir_walk();
 
    Log(LOG_INFO, "jail at %s/%s is now ready!", get_current_dir_name(), conf.mountpoint);
-
+  
+   // Caching support
+   cache = dconf_get_str("path.cache", NULL);
+   if (strcasecmp("tmpfs", dconf_get_str("cache.type", NULL)) == 0) {
+      if (cache != NULL) {
+         int rv = -1;
+         
+         if ((rv = mount("jailfs-cache", cache, "tmpfs", 0, NULL)) != 0) {
+            Log(LOG_ERROR, "mounting tmpfs on cache-dir %s failed: %d (%s)", cache, errno, strerror(errno));
+            exit(1);
+         }
+      }
+   }
    /// XXX: ToDo - Spawn various threads here before entering the main loop
-
    debug_symtab_lookup("Log", NULL);
+
+   Log(LOG_INFO, "Ready to accept requests.");
+
+   // Looks like everything came up OK, detach if configured to do so...
+   if (dconf_get_bool("sys.daemonize", 0) == 1) {
+      host_detach();
+   }
 
    // Main loop
    while (!conf.dying) {

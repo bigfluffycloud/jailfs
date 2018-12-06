@@ -27,3 +27,8 @@ dict *i18n_load(const char *path) {
 
      return rv;
 }
+
+int i18n_init(void) {
+    Log(LOG_INFO, "Loading internationalization (i18n) support...");
+    return 0;
+}

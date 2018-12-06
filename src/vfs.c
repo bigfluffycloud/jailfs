@@ -23,6 +23,7 @@
 #include "logger.h"
 #include "memory.h"
 #include "pkg.h"
+#include "pkg_db.h"
 #include "util.h"
 #define	__VFS_C
 #include "vfs.h"

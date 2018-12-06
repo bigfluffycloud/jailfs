@@ -11,5 +11,7 @@
  *
  * No warranty of any kind. Good luck!
  */
-#include "dict.h"
-extern int i18n_init(void);
+/* src/control.c:
+ *	Provides control API socket warden can use
+ *  to manage the process.
+ */

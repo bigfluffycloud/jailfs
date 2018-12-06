@@ -15,6 +15,7 @@ jailfs_objs += .obj/main.o
 jailfs_objs += .obj/mimetypes.o
 jailfs_objs += .obj/module.o
 jailfs_objs += .obj/pkg.o
+jailfs_objs += .obj/pkg_db.o
 jailfs_objs += .obj/profiling.o
 jailfs_objs += .obj/shell.o
 jailfs_objs += .obj/signals.o
