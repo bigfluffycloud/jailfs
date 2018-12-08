@@ -15,7 +15,7 @@ struct shell_cmd {
     const char *cmd;
     const char *desc;	// Description
     const int color;	// Color code (for linenoise)
-    const int bold;	// bold text?
+    const int bold;	// bold text
     const int submenu;	// 0 for false, 1 for true
     const int min_args,
               max_args;
@@ -23,6 +23,6 @@ struct shell_cmd {
     struct shell_cmd *menu;
 };
 
-// Set up the shell
-extern int shell_init(void);
+// Set up & tear down the shell thread
 extern void *thread_shell_init(void *data);
+extern void *thread_shell_fini(void *data);

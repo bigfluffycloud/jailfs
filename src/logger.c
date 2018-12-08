@@ -77,7 +77,6 @@ static inline const int LogLevel(const char *name) {
    do {
       if (strcmp(lp->str, name) == 0)
          return lp->level;
-      printf(".");
       lp++;
    } while(lp->str != NULL);
    return -1;
@@ -180,6 +179,8 @@ static void log_close(void) {
 void *thread_logger_init(void *data) {
    log_open(dconf_get_str("path.log", "file://jailfs.log"));
 
+   // Logger should remain running even after conf.dying is set.
+   // We will (hopefully) be the last thing to shut down before main thread exits.
    while(1) {
       // XXX: Check for new log events & dispatch as needed
       pthread_yield();

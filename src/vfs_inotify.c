@@ -171,7 +171,7 @@ int vfs_watch_init(void) {
     * add all the paths in the config file 
     */
    memcpy(buf, dconf_get_str("path.pkg", "/pkg"), PATH_MAX);
-   if (strchr(buf, ":") == NULL) {
+   if (strchr(buf, ':') == NULL) {
       for (p = strtok(buf, ":\n"); p; p = strtok(NULL, ":\n")) {
          vfs_watch_add(p);
          Log(LOG_INFO, "inotify watcher started for %s", p);

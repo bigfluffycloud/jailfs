@@ -101,7 +101,7 @@ void vfs_fuse_fini(void) {
 }
 
 void vfs_fuse_init(void) {
-   Log(LOG_DEBUG, "mountpoint: %s", conf.mountpoint);
+   Log(LOG_DEBUG, "mountpoint: %s/%s", get_current_dir_name(), conf.mountpoint);
 
    if ((vfs_fuse_chan = fuse_mount(conf.mountpoint, &vfs_fuse_args)) == NULL) {
       Log(LOG_EMERG, "FUSE: mount error");

@@ -27,12 +27,6 @@ void host_init(void) {
    unlimit_fds();
 }
 
-void host_detach(void) {
-   fprintf(stderr, "host_detach: Going into the background...\n");
-   Log(LOG_INFO, "host_detach: Going into the background...");
-   daemon(1, 1);
-}
-
 int	pidfile_open(const char *path) {
    FILE *fp = NULL;
    pid_t pid = 0;

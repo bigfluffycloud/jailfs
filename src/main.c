@@ -37,30 +37,31 @@
 
 ThreadPool *threads_main;
 
+// These threads need to come up in a specific order, unlike modules...
 struct ThreadCreator {
    char *name;
    void (*init)(void *);
    void (*fini)(void *);
 } threads[] = {
    {
-      .name = "db",
-//      .init = &thread_db_init,
-//      .fini = &thread_db_fini,
-   },
-   {
       .name = "logger",
       .init = &thread_logger_init,
       .fini = &thread_logger_fini,
    },
    {
-      .name = "shell",
-      .init = &thread_shell_init,
-//      .fini = &thread_shell_fini,
+      .name = "db",
+//      .init = &thread_db_init,
+//      .fini = &thread_db_fini,
    },
    {
       .name = "vfs",
-//      .init = &thread_vfs_init,
-//      .fini = &thread_vfs_fini,
+      .init = &thread_vfs_init,
+      .fini = &thread_vfs_fini,
+   },
+   {
+      .name = "shell",
+      .init = &thread_shell_init,
+      .fini = &thread_shell_fini,
    },
    {
       .name = NULL
@@ -109,7 +110,6 @@ int main(int argc, char **argv) {
    int         fd;
    int i, thr_cnt = 0;
    char *cache = NULL;
-   struct fuse_args margs = FUSE_ARGS_INIT(0, NULL);
 
    // XXX: Parses commandline arguments (should be minimal)
    //
@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
    dlink_init();				// Doubly linked lists
    pkg_init();					// Package utilities
    inode_init();				// Initialize inode crud
-   Log(LOG_INFO, "jailfs: Package filesystem %s starting up...", VERSION);
+   Log(LOG_INFO, "jailfs: container filesystem %s starting up...", VERSION);
    Log(LOG_INFO, "Copyright (C) 2012-2018 bigfluffy.cloud -- See LICENSE in distribution package for terms of use");
 
    if (pidfile_open(dconf_get_str("path.pid", NULL))) {
@@ -150,26 +150,6 @@ int main(int argc, char **argv) {
       Log(LOG_WARNING, "Log level is set to DEBUG. Please use info or lower in production");
       Log(LOG_WARNING, "You can disable uninteresting debug sources by setting config:[general]/debug.* to false");
    }
-
-   // Figure out where we're supposed to build this jail
-   if (!conf.mountpoint)
-      conf.mountpoint = dconf_get_str("path.mountpoint", "chroot/");
-
-   // XXX: TODO: We need to unlink mountpoint/.keepme if it exist before calling fuse...
-
-   // only way to make gcc happy...argh;) -bk 
-   vfs_fuse_args = margs;
-
-   /*
-    * The fuse_mount() options get modified, so we always rebuild it 
-    */
-   if ((fuse_opt_add_arg(&vfs_fuse_args, argv[0]) == -1 ||
-        fuse_opt_add_arg(&vfs_fuse_args, "-o") == -1 ||
-        fuse_opt_add_arg(&vfs_fuse_args, "nonempty,allow_other") == -1))
-      Log(LOG_ERR, "Failed to set FUSE options.");
-
-   umount(conf.mountpoint);
-   vfs_fuse_init();
    mimetype_init();
 
    Log(LOG_INFO, "Opening database %s", dconf_get_str("path.db", ":memory"));
@@ -229,6 +209,9 @@ int main(int argc, char **argv) {
    list_iter_p m_cur = list_iterator(Modules, FRONT);
    Module *mod;
    do {
+     if (mod == NULL)
+        continue;
+
      Log(LOG_INFO, "Module @ %x", mod);
    } while ((mod = list_next(m_cur)));
 
@@ -241,10 +224,6 @@ int main(int argc, char **argv) {
    pthread_mutex_unlock(&core_ready_m);
    pthread_cond_broadcast(&core_ready_c);
    Log(LOG_INFO, "Ready to accept requests.");
-
-   // Detach from the console, if configured to do so...
-   if (dconf_get_bool("sys.daemonize", 0) == 1)
-      host_detach();
 
    // Main loop for libev
    while (!conf.dying) {

@@ -59,6 +59,9 @@ extern BlockHeap *vfs_watch_heap;
 extern u_int32_t vfs_root_inode;
 extern dlink_list vfs_watch_list;
 
+extern void *thread_vfs_init(void *data);
+extern void *thread_vfs_fini(void *data);
+
 #include "vfs_fuse.h"
 #include "vfs_inode.h"
 #include "vfs_inotify.h"

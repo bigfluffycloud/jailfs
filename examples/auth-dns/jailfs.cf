@@ -12,7 +12,6 @@
 jailname=auth-dns
 i18n.lang=en_US
 path.i18n=../../i18n
-sys.daemonize=false
 cache.type=tmpfs
 path.cache=cache
 path.config=config

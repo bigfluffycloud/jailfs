@@ -184,7 +184,6 @@ struct shell_cmd menu[] = {
    { "cron", "Periodic event scheduler", 36, 1, 1, 0, -1, NULL, cron_menu },
    { "db", "Database admin", 36, 1, 1, 0, -1, &cmd_help, db_menu },
    { "debug", "Built-in debugger", 36, 1, 1, 0, -1, &cmd_help, debug_menu },
-   { "detach", "Detach the shell", 36, 1, 0, 0, 0, &host_detach, NULL },
    { "help", "Display help", 36, 1, 0, 0, -1, &cmd_help, NULL },
    { "hooks", "Hooks management", 36, 1, 1, 0, -1, &cmd_help, hooks_menu },
    { "less", "Show contents of a file (with pager)", 36, 1, 0, 1, 1, NULL, NULL },
@@ -328,5 +327,10 @@ void *thread_shell_init(void *data) {
    }
 
    thread_exit((dict *)data);
+   return NULL;
+}
+
+void *thread_shell_fini(void *data) {
+   linenoiseHistorySave("state/.shell.history");	// Save history
    return NULL;
 }

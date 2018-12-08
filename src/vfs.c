@@ -13,11 +13,13 @@
  */
 #include <sys/types.h>
 #include <sys/param.h>
+#include <sys/mount.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <dirent.h>
 #include <stdarg.h>
+#include <pthread.h>
 #include "balloc.h"
 #include "conf.h"
 #include "logger.h"
@@ -121,4 +123,38 @@ vfs_lookup_reply *vfs_resolve_path(const char *path) {
           res->seq, res->status, res->pkgid, res->fileid);
     }
     return res;
+}
+
+
+void *thread_vfs_init(void *data) {
+   // Figure out where we're supposed to build this jail
+   if (!conf.mountpoint)
+      conf.mountpoint = dconf_get_str("path.mountpoint", "chroot/");
+
+   // XXX: TODO: We need to unlink mountpoint/.keepme if it exist before calling fuse...
+   struct fuse_args margs = FUSE_ARGS_INIT(0, NULL);
+   vfs_fuse_args = margs;
+   // The fuse_mount() options get modified, so we always rebuild it 
+   if ((fuse_opt_add_arg(&vfs_fuse_args, dconf_get_str("jailname", NULL)) == -1 ||
+        fuse_opt_add_arg(&vfs_fuse_args, "-o") == -1 ||
+        fuse_opt_add_arg(&vfs_fuse_args, "nonempty,allow_other") == -1))
+      Log(LOG_ERR, "Failed to set FUSE options.");
+
+   // Insure nothing is mounted on our mountpoint
+   // XXX: Someday we will support overlay mode which will work like so:
+   //	Check underlying fs, if file exists, serve it.
+   //	Check spillover - Send it.
+   //	Check packaes - Send it.
+   umount(conf.mountpoint);
+   vfs_fuse_init();
+   
+   while (!conf.dying) {
+      pthread_yield();
+      sleep(3);
+   }
+   return NULL;
+}
+
+void *thread_vfs_fini(void *data) {
+   return NULL;
 }

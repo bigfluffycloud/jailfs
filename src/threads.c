@@ -10,6 +10,8 @@
 #include "signals.h"
 #include "threads.h"
 #include "unix.h"
+#include "list.h"
+
 int core_ready = 0;
 pthread_mutex_t core_ready_m;
 pthread_cond_t core_ready_c;
