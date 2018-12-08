@@ -82,7 +82,7 @@ void vfs_inotify_evt_get(struct ev_loop *loop, ev_io * w, int revents) {
          continue;
 
       if ((ptr = vfs_watch_findnode_byfd(e->wd)) == NULL) {
-         Log(LOG_ERROR, "got watch for unregistered fd %d.. wtf?", e->wd);
+         Log(LOG_ERR, "got watch for unregistered fd %d.. wtf?", e->wd);
          return;
       }
 
@@ -113,7 +113,7 @@ vfs_watch_t *vfs_watch_add(const char *path) {
    memcpy(wh->path, path, sizeof(wh->path));
 
    if ((wh->fd = inotify_add_watch(vfs_inotify_fd, path, wh->mask)) <= 0) {
-      Log(LOG_ERROR, "failed creating vfs watcher for path %s", wh->path);
+      Log(LOG_ERR, "failed creating vfs watcher for path %s", wh->path);
       blockheap_free(vfs_watch_heap, wh);
       return NULL;
    }
@@ -129,7 +129,7 @@ int vfs_watch_remove(vfs_watch_t * watch) {
    dlink_node *ptr;
 
    if ((rv = inotify_rm_watch(watch->fd, vfs_inotify_fd)) != 0) {
-      Log(LOG_ERROR, "error removing watch for %s (fd: %d)", watch->path, watch->fd);
+      Log(LOG_ERR, "error removing watch for %s (fd: %d)", watch->path, watch->fd);
    }
 
    if ((ptr = vfs_watch_findnode(watch)) != NULL) {
@@ -150,7 +150,7 @@ int vfs_watch_init(void) {
     * Try to initialize inotify interface 
     */
    if ((vfs_inotify_fd = inotify_init()) == -1) {
-      Log(LOG_ERROR, "%s:inotify_init %d:%s", __FUNCTION__, errno, strerror(errno));
+      Log(LOG_ERR, "%s:inotify_init %d:%s", __FUNCTION__, errno, strerror(errno));
       return -2;
    }
 

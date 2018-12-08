@@ -69,13 +69,12 @@ static void signal_handler(int signal) {
    }
 }
 
-#if	0
 struct SignalMapping {
    int signum;		/* Signal number */
    int flags;		/* See man 3 sigaction */
    int blocked;		/* Signals blocked during handling */
 } SignalSet[] = {
-   { SIGHUP, SA_RESTART, NULL }
+   { SIGHUP, SA_RESTART, NULL },
    { SIGUSR1, SA_RESTART, SIGUSR1|SIGHUP },
    { SIGUSR2, SA_RESTART, SIGUSR2|SIGHUP },
    { SIGQUIT, SA_RESETHAND, SIGUSR1|SIGUSR2|SIGHUP },
@@ -87,15 +86,13 @@ struct SignalMapping {
    { SIGPIPE, SA_RESTART, SIGPIPE|SIGCHLD },
    { -1, -1, -1 },
 };
-#endif // 0
 static int signal_set[] = { SIGHUP, SIGUSR1, SIGUSR2, SIGQUIT, SIGTERM, SIGPIPE, SIGCHLD, SIGSEGV, SIGCHLD };
 
 void signal_init(void) {
    struct sigaction action, old;
    int i = 0;
 
-   if (conf.log_level == LOG_DEBUG)
-      Log(LOG_DEBUG, "setting up signal handlers");
+   Log(LOG_DEBUG, "setting up signal handlers");
    sigfillset(&action.sa_mask);
    action.sa_handler = signal_handler;
 
@@ -108,7 +105,7 @@ void signal_init(void) {
            action.sa_flags = 0;
 
         if (sigaction(signal_set[i], &action, &old) == -1)
-           Log(LOG_ERROR, "sigaction: signum:%d [%d] %s", i, errno, strerror(errno));
+           Log(LOG_ERR, "sigaction: signum:%d [%d] %s", i, errno, strerror(errno));
      }
      i++;
    } while (i < (sizeof(signal_set)/sizeof(signal_set[0])));
@@ -116,7 +113,7 @@ void signal_init(void) {
 
 int daemon_restart(void) {
    (void)execv(g_argv[0], g_argv);
-   Log(LOG_ERROR, "Couldn't restart server: (%d) %s", errno, strerror(errno));
+   Log(LOG_ERR, "Couldn't restart server: (%d) %s", errno, strerror(errno));
    exit(-1);
    return -1;
 }

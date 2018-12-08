@@ -40,20 +40,22 @@
 
 #define	JAILCONF_SIZE	16384		// should be plenty...
 
+struct conf conf;
+
 void dconf_fini(void) {
-   dict_mem_free(_DCONF_DICT);
-   _DCONF_DICT = NULL;
+   dict_mem_free(_CONF_DICT);
+   _CONF_DICT = NULL;
 }
 
 void dconf_init(const char *file) {
-   _DCONF_DICT = dconf_load(file);
+   _CONF_DICT = dconf_load(file);
 }
 
 /////////////////
 // in progress //
-#define	DCONF_SECT_KEYVAL	0x01
-#define	DCONF_SECT_DICT		0x02
-#define	DCONF_SECT_CUSTOM	0x04
+#define	CONF_SECT_KEYVAL	0x01
+#define	CONF_SECT_DICT		0x02
+#define	CONF_SECT_CUSTOM	0x04
 
 struct ConfigFile {
    char section;
@@ -72,7 +74,7 @@ dict *dconf_load(const char *file) {
    dict *cp = dict_new();
 
    if (!(fp = fopen(file, "r"))) {
-      Log(LOG_ERROR, "%s: Failed loading %s", __FUNCTION__, file);
+      Log(LOG_ERR, "%s: Failed loading %s", __FUNCTION__, file);
       fclose(fp);
       return false;
    }
@@ -196,7 +198,7 @@ int dconf_write(dict *cp, const char *file) {
    sprintf(nambuf, "%s.auto", file);
 
    if ((fp = fopen(nambuf, "w+")) == NULL || errno) {
-      Log(LOG_ERROR, "%s: fopen(%s, \"w+\") failed: %d (%s)", __FUNCTION__, nambuf, errno, strerror(errno));
+      Log(LOG_ERR, "%s: fopen(%s, \"w+\") failed: %d (%s)", __FUNCTION__, nambuf, errno, strerror(errno));
 
       if (fp)
          fclose(fp);
@@ -227,7 +229,7 @@ int dconf_write(dict *cp, const char *file) {
          fflush(fp);
       } while((mp = list_next(mod_cur)));
    } else
-     Log(LOG_ERROR, "conf_write: No Modules list");
+     Log(LOG_ERR, "conf_write: No Modules list");
 #endif
    if (errors > 0)
       fprintf(fp, "# Saved with %d errors, please review before using, autorename disabled\n", errors);
@@ -239,7 +241,7 @@ int dconf_write(dict *cp, const char *file) {
       rename(nambuf, file);
       Log(LOG_INFO, "Saved configuration as %s with no errors", file);
    } else
-      Log(LOG_ERROR, "Saving configuration had %d errors, keeping as %s", errors, nambuf);
+      Log(LOG_ERR, "Saving configuration had %d errors, keeping as %s", errors, nambuf);
 
    return true;
 }
@@ -279,10 +281,10 @@ int dconf_get_int(const char *key, const int def) {
 }
 
 char       *dconf_get_str(const char *key, const char *def) {
-   if (_DCONF_DICT == NULL || key == NULL)
+   if (_CONF_DICT == NULL || key == NULL)
       return NULL;
 
-   return (char *)dict_get(_DCONF_DICT, key, def);
+   return (char *)dict_get(_CONF_DICT, key, def);
 }
 
 time_t dconf_get_time(const char *key, const time_t def) {
@@ -290,9 +292,9 @@ time_t dconf_get_time(const char *key, const time_t def) {
 }
 
 int dconf_set(const char *key, const char *val) {
-   return dict_add(_DCONF_DICT, key, val);
+   return dict_add(_CONF_DICT, key, val);
 }
 
 void dconf_unset(const char *key) {
-   dict_del(_DCONF_DICT, key);
+   dict_del(_CONF_DICT, key);
 }

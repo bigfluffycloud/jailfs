@@ -14,14 +14,16 @@
 #if	!defined(__LOGGER)
 #define __LOGGER
 #include <stdio.h>
+#include <syslog.h>
 #define	__logger_h
 #include "conf.h"
 
-#if	!defined(__LOGGER_FP)
-extern FILE *log_fp;
-#endif
+// This is the ONLY public interface that should be used!
+extern void Log(int priority, const char *fmt, ...);
 
-extern FILE *log_open(const char *path);
-extern void log_close(FILE * fp);
-extern void Log(enum log_priority priority, const char *fmt, ...);
+// This is the logger thread, which actually writes out all log messages and
+// sends them to the shell to be displayed
+extern void *thread_logger_init(void *data);		// Startup
+extern void *thread_logger_fini(void *data);		// Shutdown
+
 #endif                                 /* !defined(__LOGGER) */

@@ -93,7 +93,7 @@ void       *db_query(enum db_query_res_type type, const char *fmt, ...) {
    pkg_inode_t *inode;
 
    if (!(buf = mem_alloc(SQL_BUFSIZE))) {
-      Log(LOG_ERROR, "%s: alloc: %d:%s", __FUNCTION__, errno, strerror(errno));
+      Log(LOG_ERR, "%s: alloc: %d:%s", __FUNCTION__, errno, strerror(errno));
       return NULL;
    }
 
@@ -172,7 +172,7 @@ int db_open(const char *path) {
 
    if (sqlite3_open(path, &sqlite_db) != SQLITE_OK) {
       sqlite3_close(sqlite_db);
-      Log(LOG_FATAL, "Error opening database %s", path);
+      Log(LOG_EMERG, "Error opening database %s", path);
       raise(SIGTERM);
    }
 

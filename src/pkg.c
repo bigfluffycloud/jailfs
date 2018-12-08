@@ -173,7 +173,7 @@ struct pkg_handle *pkg_open(const char *path) {
       t->name = str_dup(path);
 
       if ((t->fd = open(t->name, O_RDONLY)) < 0) {
-         Log(LOG_ERROR, "failed opening pkg %s, bailing...", t->name);
+         Log(LOG_ERR, "failed opening pkg %s, bailing...", t->name);
          pkg_release(t);
          return NULL;
       }
@@ -182,7 +182,7 @@ struct pkg_handle *pkg_open(const char *path) {
        * Try to acquire an exclusive lock, fail if we cant 
        */
       if (flock(t->fd, LOCK_EX | LOCK_NB) == -1) {
-         Log(LOG_ERROR, "failed locking package %s, bailing...", t->name);
+         Log(LOG_ERR, "failed locking package %s, bailing...", t->name);
          pkg_release(t);
          return NULL;
       }
@@ -245,7 +245,7 @@ struct pkg_file_mapping *pkg_map_file(const char *path, size_t len, off_t offset
    p->offset = offset;
 
    if ((p->fd = open(p->pkg, O_RDONLY)) == -1) {
-      Log(LOG_ERROR, "%s:open:%s %d:%s", __FUNCTION__, p->pkg, errno, strerror(errno));
+      Log(LOG_ERR, "%s:open:%s %d:%s", __FUNCTION__, p->pkg, errno, strerror(errno));
       pkg_unmap_file(p);
       return NULL;
    }
@@ -253,7 +253,7 @@ struct pkg_file_mapping *pkg_map_file(const char *path, size_t len, off_t offset
    if ((p->addr =
         mmap(0, len, PROT_READ | PROT_EXEC, MAP_NOSYNC | MAP_PRIVATE,
              p->fd, offset)) == MAP_FAILED) {
-      Log(LOG_ERROR, "%s:mmap: %d:%s", __FUNCTION__, errno, strerror(errno));
+      Log(LOG_ERR, "%s:mmap: %d:%s", __FUNCTION__, errno, strerror(errno));
       pkg_unmap_file(p);
    }
 
@@ -265,14 +265,14 @@ void pkg_init(void) {
        (pkg_heap =
         blockheap_create(sizeof(struct pkg_handle),
                          dconf_get_int("tuning.heap.pkg", 128), "pkg"))) {
-      Log(LOG_FATAL, "pkg_init(): block allocator failed - pkg");
+      Log(LOG_EMERG, "pkg_init(): block allocator failed - pkg");
       raise(SIGTERM);
    }
    if (!
        (file_heap =
         blockheap_create(sizeof(struct pkg_file_mapping),
                          dconf_get_int("tuning.heap.files", 128), "files"))) {
-      Log(LOG_FATAL, "pkg_init(): block allocator failed - files");
+      Log(LOG_EMERG, "pkg_init(): block allocator failed - files");
       raise(SIGTERM);
    }
 

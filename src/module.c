@@ -34,17 +34,17 @@ int module_load(const char *path) {
    void *dlptr;
 
    if (!is_file(path)) {
-      Log(LOG_ERROR, "Module %s doesn't exist, skipping", path);
+      Log(LOG_ERR, "Module %s doesn't exist, skipping", path);
       return ENOENT;
    }
 
    if ((dlptr = dlopen(path, RTLD_LAZY|RTLD_GLOBAL)) == NULL) {
-      Log(LOG_ERROR, "Failed dlopen()ing module %s: %s", path, dlerror());
+      Log(LOG_ERR, "Failed dlopen()ing module %s: %s", path, dlerror());
       return EBADF;
    }
 
    if ((tmp = (Module *)dlsym(dlptr, "module")) == NULL) {
-      Log(LOG_ERROR, "Failed finding 'module' symbol in %s: %s", path, dlerror());
+      Log(LOG_ERR, "Failed finding 'module' symbol in %s: %s", path, dlerror());
       return EBADF;
    }
 

@@ -97,12 +97,12 @@ const char *debug_symtab_lookup(const char *symbol, const char *symtab) {
     }
 
     if (file_exists(st) == 0) {
-       Log(LOG_ERROR, "symtab_lookup: Cannot find symtab: %s/%s", get_current_dir_name(), st);
+       Log(LOG_ERR, "symtab_lookup: Cannot find symtab: %s/%s", get_current_dir_name(), st);
        return NULL;
     }
 
     if (!(fp = fopen(st, "r"))) {
-       Log(LOG_ERROR, "symtab_lookup: Error reading from symtab %s: %d (%s)", st, errno, strerror(errno));
+       Log(LOG_ERR, "symtab_lookup: Error reading from symtab %s: %d (%s)", st, errno, strerror(errno));
        fclose(fp);
        return NULL;
     }

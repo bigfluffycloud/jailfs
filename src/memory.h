@@ -30,7 +30,7 @@ static __inline void *mem_alloc(size_t size) {
    register void *ptr;
 
    if ((ptr = malloc(size)) == NULL)
-      Log(LOG_ERROR, "%s:malloc %d:%s", __FUNCTION__, errno, strerror(errno));
+      Log(LOG_ERR, "%s:malloc %d:%s", __FUNCTION__, errno, strerror(errno));
 
    memset(ptr, 0, size);
 
@@ -41,7 +41,7 @@ static __inline void *mem_realloc(void *ptr, size_t size) {
    register void *nptr;
 
    if ((nptr = realloc(ptr, size)) == NULL)
-      Log(LOG_ERROR, "%s:realloc %d:%s", __FUNCTION__, errno, strerror(errno));
+      Log(LOG_ERR, "%s:realloc %d:%s", __FUNCTION__, errno, strerror(errno));
 
    return nptr;
 }
@@ -64,7 +64,7 @@ static __inline void *mem_calloc(size_t nmemb, size_t size) {
    assert(size != 0);
 
    if ((p = calloc(nmemb, size)) == NULL)
-      Log(LOG_ERROR, "%s:calloc %d:%s", __FUNCTION__, errno, strerror(errno));
+      Log(LOG_ERR, "%s:calloc %d:%s", __FUNCTION__, errno, strerror(errno));
 
    return p;
 }

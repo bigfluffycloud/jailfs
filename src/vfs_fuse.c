@@ -73,7 +73,7 @@ static void vfs_fuse_read_cb(struct ev_loop *loop, ev_io * w, int revents) {
    char       *buf;
 
    if (!(buf = mem_alloc(bufsize))) {
-      Log(LOG_FATAL, "fuse: failed to allocate read buffer\n");
+      Log(LOG_EMERG, "fuse: failed to allocate read buffer\n");
       conf.dying = 1;
       return;
    }
@@ -101,8 +101,10 @@ void vfs_fuse_fini(void) {
 }
 
 void vfs_fuse_init(void) {
+   Log(LOG_DEBUG, "mountpoint: %s", conf.mountpoint);
+
    if ((vfs_fuse_chan = fuse_mount(conf.mountpoint, &vfs_fuse_args)) == NULL) {
-      Log(LOG_FATAL, "FUSE: mount error");
+      Log(LOG_EMERG, "FUSE: mount error");
       conf.dying = 1;
       raise(SIGTERM);
    }
@@ -111,7 +113,7 @@ void vfs_fuse_init(void) {
                                           sizeof(vfs_fuse_ops), NULL)) != NULL) {
       fuse_session_add_chan(vfs_fuse_sess, vfs_fuse_chan);
    } else {
-      Log(LOG_FATAL, "FUSE: unable to create session");
+      Log(LOG_EMERG, "FUSE: unable to create session");
       conf.dying = 1;
       raise(SIGTERM);
    }

@@ -49,7 +49,7 @@ int pkg_import(const char *path) {
     * nothing gets left behind. -- For now, it's not gonna happen
     */
    if (pkg_handle_byname(path)) {
-      Log(LOG_HACK, "BUG: Active package %s was changed, ignoring...");
+      Log(LOG_CRIT, "BUG: Active package %s was changed, ignoring...");
       return EXIT_SUCCESS;
    }
 
@@ -66,7 +66,7 @@ int pkg_import(const char *path) {
    r = archive_read_open_filename(a, path, 0);
 
    if (r != ARCHIVE_OK) {
-      Log(LOG_ERROR, "package %s is not valid: libarchive returned %d", path, r);
+      Log(LOG_ERR, "package %s is not valid: libarchive returned %d", path, r);
       return -1;
    }
 
@@ -129,7 +129,7 @@ int pkg_import(const char *path) {
          ssize_t size = archive_read_data(aentry, buf, total);
 
          if (size <= 0) {
-            Log(LOG_ERROR, "archive_read_data() short read: wanted %lu, got %lu", total, size);
+            Log(LOG_ERR, "archive_read_data() short read: wanted %lu, got %lu", total, size);
             continue;
          }
 #endif
@@ -139,7 +139,7 @@ int pkg_import(const char *path) {
    archive_read_close(a);
    r = archive_read_free(a);
    if (r != ARCHIVE_OK)
-      Log(LOG_ERROR, "possible memory leak! archive_read_free() returned %d", r);
+      Log(LOG_ERR, "possible memory leak! archive_read_free() returned %d", r);
 
    db_commit();
 

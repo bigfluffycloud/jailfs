@@ -16,7 +16,7 @@
 #include "cron.h"
 #include "ev.h"
 #include "memory.h"
-
+#include "logger.h"
 struct ev_loop *evt_loop = NULL;
 
 void evt_init(void) {
@@ -54,5 +54,9 @@ int cron_init(void) {
     // Call cron once per second to update conf.now and
     // schedule any pending jobs
     evt_timer_add_periodic(cron_tick, "tick", 1);
+
+    if (conf.log_level == LOG_DEBUG)
+       Log(LOG_DEBUG, "starting periodic task scheduler (cron)");
+
     return rv;
 }

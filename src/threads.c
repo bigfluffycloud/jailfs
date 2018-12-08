@@ -19,18 +19,18 @@ ThreadPool *threadpool_init(const char *name, const char *opts) {
   int tmp;
 
   if (!(r = (ThreadPool *)mem_alloc(sizeof(ThreadPool)))) {
-     Log(LOG_ERROR, "%s: allocation failed: [%d] %s", __FUNCTION__, errno, strerror(errno));
+     Log(LOG_ERR, "%s: allocation failed: [%d] %s", __FUNCTION__, errno, strerror(errno));
      return NULL;
   }
 
   if (pthread_attr_init(&(r->pth_attr)) != 0) {
-     Log(LOG_FATAL, "%s: failed: %s (%d)", __FUNCTION__, strerror(errno), errno);
+     Log(LOG_EMERG, "%s: failed: %s (%d)", __FUNCTION__, strerror(errno), errno);
      return NULL;
   }
 
   if ((tmp = dict_getInt(conf.dict, "tuning.threads.stacksz", 0)) > 0) {
      if (pthread_attr_setstacksize(&(r->pth_attr), tmp) != 0)
-        Log(LOG_ERROR, "%s: Unable to set stack size: %s (%d)", __FUNCTION__, strerror(errno), errno);
+        Log(LOG_ERR, "%s: Unable to set stack size: %s (%d)", __FUNCTION__, strerror(errno), errno);
   }
 
   r->name = strdup(name);
@@ -51,7 +51,7 @@ Thread *thread_create(ThreadPool *pool, void *(*init)(void *), void *(*fini)(voi
   memcpy((void *)&tmp->thr_attr, &(pool->pth_attr), sizeof(tmp->thr_attr));
 
   if (pthread_create(&tmp->thr_info, &tmp->thr_attr, init, &arg) != 0) {
-     Log(LOG_ERROR, "thread creation failed: %s (%d)", strerror(errno), errno);
+     Log(LOG_ERR, "thread (%s) creation failed: %s (%d)", descr, strerror(errno), errno);
      return NULL;
   }
 
@@ -61,7 +61,7 @@ Thread *thread_create(ThreadPool *pool, void *(*init)(void *), void *(*fini)(voi
 
   /* Add to thread pool */
   list_add(pool->list, tmp, sizeof(tmp));
-  Log(LOG_DEBUG, "new thread %x created in pool %s", tmp, pool->name);
+  Log(LOG_DEBUG, "new thread %x (%s) created in pool %s", tmp, descr, pool->name);
   return tmp;
 }
 

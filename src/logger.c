@@ -18,96 +18,178 @@
 #include <string.h>
 #include "conf.h"
 #include "logger.h"
+#include "memory.h"
+#include "util.h"
 
-FILE       *log_open(const char *path) {
-   FILE       *fp;
-   char       *lvl;
+#if	!defined(LOG_EMERG)
+#warning "Your sylog.h is broken... hackery ensues..."
+#define LOG_EMERG       0       /* system is unusable */
+#define LOG_ALERT       1       /* action must be taken immediately */
+#define LOG_CRIT        2       /* critical conditions */
+#define LOG_ERR         3       /* error conditions */
+#define LOG_WARNING     4       /* warning conditions */
+#define LOG_NOTICE      5       /* normal but significant condition */
+#define LOG_INFO        6       /* informational */
+#define LOG_DEBUG       7       /* debug-level messages */
+#endif	// !defined(LOG_EMERG)
+struct log_levels {
+   char *str;
+   int level;
+};
 
-   lvl = dconf_get_str("log.level", 0);
+static struct log_levels log_levels[] = {
+   { "debug", LOG_DEBUG },
+   { "info", LOG_INFO },
+   { "notice", LOG_NOTICE },
+   { "warn", LOG_WARNING },
+   { "error", LOG_ERR },
+   { "crit", LOG_CRIT },
+   { "alert", LOG_ALERT },
+   { "emerg", LOG_EMERG },
+   { NULL, -1 },
+};
 
-   /*
-    * parse the debug level 
-    */
-   if (!strcasecmp(lvl, "debug"))
-      conf.log_level = LOG_DEBUG;
-   else if (!strcasecmp(lvl, "info"))
-      conf.log_level = LOG_INFO;
-   else if (!strcasecmp(lvl, "hack"))
-      conf.log_level = LOG_HACK;
-   else if (!strcasecmp(lvl, "warning"))
-      conf.log_level = LOG_WARNING;
-   else if (!strcasecmp(lvl, "error"))
-      conf.log_level = LOG_ERROR;
-   else if (!strcasecmp(lvl, "fatal"))
-      conf.log_level = LOG_FATAL;
+// Internal thread-local state keeping
+typedef struct {
+  enum { NONE = 0, SYSLOG, STDERR, LOGFILE, FIFO } type;
+  FILE *fp;
+} LogHndl;
+static LogHndl *mainlog;
 
-   if ((fp = fopen(path, "w")) == NULL) {
-      Log(LOG_ERROR, "Unable to open log file %s: %d (%s)", path, errno, strerror(errno));
-      return NULL;
-   }
+// Convert numeric log level to string
+static inline const char *LogName(int level) {
+   struct log_levels *lp = log_levels;
 
-   return fp;
+   do {
+      if (lp->level == level)
+         return lp->str;
+
+      lp++;
+   } while(lp->str != NULL);
+
+   return NULL;
 }
 
-void log_close(FILE * fp) {
-   if (fp != NULL) {
-      fclose(fp);
-      fp = NULL;
-   }
+// Convert string log level to integer
+static inline const int LogLevel(const char *name) {
+   struct log_levels *lp = log_levels;
+
+   do {
+      if (strcmp(lp->str, name) == 0)
+         return lp->level;
+      printf(".");
+      lp++;
+   } while(lp->str != NULL);
+   return -1;
 }
 
-void Log(enum log_priority priority, const char *fmt, ...) {
-   va_list     ap;
-   char        timestamp[64];
-   time_t      t;
-   struct tm  *tm;
-   char       *level = NULL;
-   char	      buf[1024];
+void Log(int level, const char *msg, ...) {
+   va_list ap;
+   char buf[4096];
+   time_t t;
+   struct tm *lt;
+   int max;
+   FILE *fp = stderr;
 
-   if (priority < conf.log_level) {
+   if (!msg)
+      return;   
+
+   va_start(ap, msg);
+   t = time(NULL);
+
+   if ((lt = localtime(&t)) == NULL) {
+      perror("localtime");
       return;
    }
 
-   if (!conf.log_fp)
-      conf.log_fp = stderr;
+   // If configuration isn't up yet, all messages are info priority
+   if (&conf != NULL && conf.dict != NULL)
+      max = LogLevel(dconf_get_str("log.level", "info"));
+   else
+      max = LogLevel("info");
 
-   va_start(ap, fmt);
-   t = time(NULL);
-   tm = localtime(&t);
+   if (max < level)
+      return;
 
-   switch (priority) {
-      case LOG_DEBUG:
-         level = "debug";
-         break;
-      case LOG_INFO:
-         level = "info";
-         break;
-      case LOG_WARNING:
-         level = "warn";
-         break;
-      case LOG_ERROR:
-         level = "error";
-         break;
-      case LOG_FATAL:
-         level = "fatal";
-         break;
-      case LOG_HACK:
-         level = "hack";
-         break;
-      default:
-         level = "???";
-         break;
+   if (mainlog) {
+      if (mainlog->type == syslog)
+         vsyslog(level, msg, ap);
+
+      if (mainlog->type != stderr && mainlog->fp)
+         fp = mainlog->fp;
    }
 
-   memset(buf, 0, sizeof(buf));
-   strftime(timestamp, sizeof(timestamp) - 1, "%Y/%m/%d %H:%M:%S", tm);
-   vsprintf(buf, fmt, ap);
+   vsnprintf(buf, sizeof(buf) - 1, msg, ap);
+   fprintf(fp, "%d/%02d/%02d %02d:%02d:%02d %5s: %s\n",
+      lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday, lt->tm_hour, lt->tm_min, lt->tm_sec,
+      LogName(level), buf);
 
-   if ((conf.log_fp != stderr) && dconf_get_bool("sys.daemonize", 0) == 0)
-      printf("%s %5s: %s\n", timestamp, level, buf);
-
-   fprintf(conf.log_fp, "%s %5s: %s\n", timestamp, level, buf);
-   fflush(conf.log_fp);
+   if (fp != stderr)
+      printf("%s\n", buf);
 
    va_end(ap);
+}
+
+void log_open(const char *target) {
+   if (mainlog)
+      mem_free(mainlog);
+
+   mainlog = mem_alloc(sizeof(Log));
+
+   if (strcasecmp(target, "syslog") == 0) {
+      mainlog->type = SYSLOG;
+      openlog("jailfs", LOG_NDELAY|LOG_PID, LOG_DAEMON);
+   } else if (strcasecmp(target, "stderr") == 0) {
+      mainlog->type = STDERR;
+      mainlog->fp = STDERR;
+   } else if (strncasecmp(target, "fifo://", 7) == 0) {
+      if (is_fifo(target + 7) || is_file(target + 7))
+         unlink(target + 7);
+
+      mkfifo(target+7, 0600);
+
+      if (!(mainlog->fp = fopen(target + 7, "w"))) {
+         Log(LOG_ERR, "Failed opening log fifo '%s' %s (%d)", target+7, errno, strerror(errno));
+         mainlog->fp = STDERR;
+      } else
+         mainlog->type = FIFO;
+   } else if (strncasecmp(target, "file://", 7) == 0) {
+      if (!(mainlog->fp = fopen(target + 7, "w+"))) {
+         Log(LOG_ERR, "failed opening log file '%s' %s (%d)", target+7, errno, strerror(errno));
+         mainlog->fp = STDERR;
+      } else
+         mainlog->type = LOGFILE;
+   }
+}
+
+
+static void log_close(void) {
+   if (mainlog == NULL)
+      return;
+
+   if (mainlog->type == LOGFILE || mainlog->type == FIFO)
+      fclose(mainlog->fp);
+   else if (mainlog->type == SYSLOG)
+      closelog();
+
+   mem_free(mainlog);
+   mainlog = NULL;
+}
+
+
+void *thread_logger_init(void *data) {
+   log_open(dconf_get_str("path.log", "file://jailfs.log"));
+
+   while(1) {
+      // XXX: Check for new log events & dispatch as needed
+      pthread_yield();
+      sleep(3);
+   }
+
+   return NULL;
+}
+
+void *thread_logger_fini(void *data) {
+   log_close();
+   return NULL;
 }

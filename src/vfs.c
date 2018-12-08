@@ -47,7 +47,7 @@ static void vfs_dir_walk_recurse(const char *path, int depth) {
    char        buf[PATH_MAX];
 
    if ((d = opendir(path)) == NULL) {
-      Log(LOG_ERROR, "opendir %s failed, skipping", path);
+      Log(LOG_ERR, "opendir %s failed, skipping", path);
       return;
    }
 

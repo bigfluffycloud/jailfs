@@ -35,7 +35,6 @@
 #include "module.h"
 #include "profiling.h"
 
-struct conf conf;
 ThreadPool *threads_main;
 
 struct ThreadCreator {
@@ -47,6 +46,11 @@ struct ThreadCreator {
       .name = "db",
 //      .init = &thread_db_init,
 //      .fini = &thread_db_fini,
+   },
+   {
+      .name = "logger",
+      .init = &thread_logger_init,
+      .fini = &thread_logger_fini,
    },
    {
       .name = "shell",
@@ -66,13 +70,24 @@ struct ThreadCreator {
 // Called on exit to cleanup..
 void goodbye(void) {
    char *pidfile = dconf_get_str("path.pid", NULL);
-   umount(conf.mountpoint);
-   umount(dconf_get_str("path.cache", NULL));
+   char *mp = NULL;
+   Log(LOG_INFO, "shutting down...");
+   conf.dying = true;
+
+   // Unmount the mountpoint
+   if ((mp = dconf_get_str("path.mountpoint", NULL)) != NULL)
+      umount(mp);
+
+   // Unmount the cache (if mounted)
+   if (strcasecmp("tmpfs", dconf_get_str("cache.type", NULL)) == 0) {
+      if ((mp = dconf_get_str("path.cache", NULL)) != NULL)
+         umount(mp);
+   }
+
    vfs_watch_fini();
    vfs_fuse_fini();
    inode_fini();
    dlink_fini();
-   log_close(conf.log_fp);
    dconf_fini();
 
    if (pidfile && file_exists(pidfile))
@@ -96,57 +111,45 @@ int main(int argc, char **argv) {
    char *cache = NULL;
    struct fuse_args margs = FUSE_ARGS_INIT(0, NULL);
 
-   // Lock the Big Lock until everything is running
-   pthread_mutex_lock(&core_ready_m);
-   host_init();
-
-   // Block all non-fatal signals until we are up and running
-   posix_signal_quiet();
-
-   // Set the clock
-   conf.born = conf.now = time(NULL);
-
-   // Restrict default permissions on new files
-   umask(0077);
-
-   evt_init();
-   blockheap_init();
-
+   // XXX: Parses commandline arguments (should be minimal)
+   //
    // Always require jail top-level dir (where jailfs.cf lives)
    if (argc > 1) {
       chdir(argv[1]);
    } else
       usage(argc, argv);
 
-   conf.dict = dconf_load("jailfs.cf");
-   i18n_init();
+   // Begin Fuckery!
+   pthread_mutex_lock(&core_ready_m);		// Set the Big Lock (TM)
 
-   // open log file, if its valid, otherwise assume debug mode and use stdout 
-   if ((conf.log_fp = log_open(dconf_get_str("path.log", "jailfs.log"))) == NULL)
-      conf.log_fp = stdout;
+   ///////
+   // What do we do here?
+   //////
 
-   dlink_init();
-   pkg_init();
-   inode_init();
-
+   host_init();					// Platform initialization
+   conf.born = conf.now = time(NULL);		// Set birthday and clock (cron maintains)
+   umask(0077);					// Restrict umask on new files
+   evt_init();					// Socket event handler
+   blockheap_init();				// Block heap allocator
+   conf.dict = dconf_load("jailfs.cf");		// Load config
+   cron_init();					// Periodic events
+   i18n_init();					// Load translations
+   signal_init();				// Setup POSIX siganls
+   dlink_init();				// Doubly linked lists
+   pkg_init();					// Package utilities
+   inode_init();				// Initialize inode crud
    Log(LOG_INFO, "jailfs: Package filesystem %s starting up...", VERSION);
    Log(LOG_INFO, "Copyright (C) 2012-2018 bigfluffy.cloud -- See LICENSE in distribution package for terms of use");
 
-   // Create our PID file...
-   if (pidfile_open(dconf_get_str("path.pid", "borked.pid"))) {
-      Log(LOG_FATAL, "Failed opening PID file. Are we already running?");
+   if (pidfile_open(dconf_get_str("path.pid", NULL))) {
+      Log(LOG_EMERG, "Failed opening PID file. Are we already running?");
       return 1;
    }
 
-   if (conf.log_level == LOG_DEBUG) {
+   if (strcasecmp(dconf_get_str("log.level", "debug"), "debug") == 0) {
       Log(LOG_WARNING, "Log level is set to DEBUG. Please use info or lower in production");
       Log(LOG_WARNING, "You can disable uninteresting debug sources by setting config:[general]/debug.* to false");
    }
-
-   // Start cron
-   if (conf.log_level == LOG_DEBUG)
-      Log(LOG_DEBUG, "starting periodic task scheduler (cron)");
-   cron_init();
 
    // Figure out where we're supposed to build this jail
    if (!conf.mountpoint)
@@ -163,7 +166,7 @@ int main(int argc, char **argv) {
    if ((fuse_opt_add_arg(&vfs_fuse_args, argv[0]) == -1 ||
         fuse_opt_add_arg(&vfs_fuse_args, "-o") == -1 ||
         fuse_opt_add_arg(&vfs_fuse_args, "nonempty,allow_other") == -1))
-      Log(LOG_ERROR, "Failed to set FUSE options.");
+      Log(LOG_ERR, "Failed to set FUSE options.");
 
    umount(conf.mountpoint);
    vfs_fuse_init();
@@ -196,7 +199,7 @@ int main(int argc, char **argv) {
             unlink(tmppath);
 
          if ((rv = mount("jailfs-cache", cache, "tmpfs", 0, NULL)) != 0) {
-            Log(LOG_ERROR, "mounting tmpfs on cache-dir %s failed: %d (%s)", cache, errno, strerror(errno));
+            Log(LOG_ERR, "mounting tmpfs on cache-dir %s failed: %d (%s)", cache, errno, strerror(errno));
             exit(1);
          }
       }
@@ -209,13 +212,13 @@ int main(int argc, char **argv) {
    do {
       if (threads[i].name != NULL) {
          if (!threads[i].init) {
-            Log(LOG_ERROR, "module entry %s has no init function", threads[i].name);
+            Log(LOG_ERR, "module entry %s has no init function", threads[i].name);
             i++;
             continue;
          }
 
          if (thread_create(threads_main, threads[i].init, threads[i].fini, NULL, threads[i].name) == NULL) {
-            Log(LOG_ERROR, "failed starting thread main:%s", threads[i].name);
+            Log(LOG_ERR, "failed starting thread main:%s", threads[i].name);
             abort();
          }
          Log(LOG_INFO, "started thread main:%s", threads[i].name);
@@ -229,20 +232,21 @@ int main(int argc, char **argv) {
      Log(LOG_INFO, "Module @ %x", mod);
    } while ((mod = list_next(m_cur)));
 
-   // Set up final signal handlers
-   signal_init();
 
-   // We are up and running, allow thread to run
+   // Test symbol lookup (needed for debugger) and generate log error if cannot find symtab...
+   debug_symtab_lookup("Log", NULL);
+
+   // We are in flight, allow children to begin doing stuff & things!
    core_ready = 1;
    pthread_mutex_unlock(&core_ready_m);
    pthread_cond_broadcast(&core_ready_c);
-
-   debug_symtab_lookup("Log", NULL);
    Log(LOG_INFO, "Ready to accept requests.");
 
+   // Detach from the console, if configured to do so...
    if (dconf_get_bool("sys.daemonize", 0) == 1)
       host_detach();
 
+   // Main loop for libev
    while (!conf.dying) {
       if (profiling_newmsg) {	// profiling events
          Log(LOG_DEBUG, "profiling: %s", profiling_msg);
@@ -251,7 +255,6 @@ int main(int argc, char **argv) {
       ev_loop(evt_loop, 0);
    }
 
-   Log(LOG_INFO, "shutting down...");
    goodbye();
    return EXIT_SUCCESS;
 }

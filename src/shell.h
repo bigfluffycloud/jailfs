@@ -14,6 +14,8 @@
 struct shell_cmd {
     const char *cmd;
     const char *desc;	// Description
+    const int color;	// Color code (for linenoise)
+    const int bold;	// bold text?
     const int submenu;	// 0 for false, 1 for true
     const int min_args,
               max_args;

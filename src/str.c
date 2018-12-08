@@ -27,7 +27,7 @@ char       *str_dup(const char *str) {
       return NULL;
 
    if ((ptr = strdup(str)) == NULL)
-      Log(LOG_ERROR, "%s:strdup %d:%s", __FUNCTION__, errno, strerror(errno));
+      Log(LOG_ERR, "%s:strdup %d:%s", __FUNCTION__, errno, strerror(errno));
 
    return ptr;
 }
