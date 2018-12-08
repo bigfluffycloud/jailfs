@@ -63,7 +63,7 @@ Hook *hook_add(const char *name, int flags, HookFunc *func) {
    if (tmp != NULL)
       dict_add_blob(hooks, name, (void *)tmp);
    else
-      Log(LOG_FATAL, "Failed registering hook %s");
+      Log(LOG_EMERG, "Failed registering hook %s");
 
    return tmp;
 }

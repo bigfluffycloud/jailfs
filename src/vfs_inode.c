@@ -73,7 +73,7 @@ void inode_init(void) {
        (inode_heap =
         blockheap_create(sizeof(struct pkg_inode),
                          dconf_get_int("tuning.heap.inode", 128), "pkg"))) {
-      Log(LOG_FATAL, "inode_init(): block allocator failed");
+      Log(LOG_EMERG, "inode_init(): block allocator failed");
       raise(SIGTERM);
    }
 }

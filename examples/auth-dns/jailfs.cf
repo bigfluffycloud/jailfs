@@ -28,7 +28,7 @@ path.strings=../../dbg/jailfs.strings
 path.symtab=../../dbg/jailfs.symtab
 ; This should be :memory: in production
 path.db=state/jailfs.db
-path.log=log/jailfs.log
+path.log=file://log/jailfs.log
 pkgdir.inotify=true
 pkgdir.prescan=true
 

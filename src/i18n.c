@@ -21,7 +21,7 @@ dict *i18n_load(const char *path) {
      dict *rv = dconf_load(path);
 
      if (rv == NULL) {
-        Log(LOG_FATAL, "Failed to load i18n data: %s", path);
+        Log(LOG_EMERG, "Failed to load i18n data: %s", path);
         return NULL;
      }
 

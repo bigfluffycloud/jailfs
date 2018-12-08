@@ -38,7 +38,7 @@ void dlink_init(void) {
        (node_heap =
         blockheap_create(sizeof(dlink_node),
                          dconf_get_int("tuning.heap.node", 1024), "dlink_node"))) {
-      Log(LOG_FATAL, "dlink_init(): block allocator failed");
+      Log(LOG_EMERG, "dlink_init(): block allocator failed");
       raise(SIGTERM);
    }
 }

@@ -276,7 +276,7 @@ void       *blockheap_alloc(BlockHeap * bh) {
           */
          blockheap_garbagecollect(bh);
          if (bh->freeElems == 0) {
-            Log(LOG_FATAL, "blockheap_block_new() failed and garbage collection didn't help");
+            Log(LOG_EMERG, "blockheap_block_new() failed and garbage collection didn't help");
             conf.dying = 1;
          }
       }

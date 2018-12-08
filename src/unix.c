@@ -22,9 +22,7 @@ void unlimit_fds(void) {
 }
 
 void host_init(void) {
-   if (conf.log_level == LOG_DEBUG)
-      Log(LOG_DEBUG, "enabling coredumps and raising fd limit");
-
+   Log(LOG_DEBUG, "enabling coredumps and raising fd limit");
    enable_coredump();
    unlimit_fds();
 }
@@ -45,7 +43,7 @@ int	pidfile_open(const char *path) {
    }
 
    if ((fp = fopen(path, "w")) == NULL) {
-      Log(LOG_FATAL, "pidfile_open: failed to open pid file %s: %d (%s)", path, errno, strerror(errno));
+      Log(LOG_EMERG, "pidfile_open: failed to open pid file %s: %d (%s)", path, errno, strerror(errno));
    }
 
    pid = getpid();
