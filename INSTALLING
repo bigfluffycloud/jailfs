@@ -28,3 +28,12 @@ make config world test-pkg
 ####
 # If you want to use jailfs with warden, see /opt/warden/INSTALLING!
 ####
+
+
+Debian
+------
+Try this:
+```
+ sudo apt install libev-dev libmagic-dev libfuse-dev fuse libunwind-dev libarchive-dev
+```
+to install dependencies.
