@@ -19,11 +19,11 @@
 #include <string.h>
 #include "conf.h"
 #include "database.h"
+#include "unix.h"
 #include "cron.h"
 #include "logger.h"
 #include "pkg.h"
 #include "dlink.h"
-#include "signals.h"
 #include "threads.h"
 #include "vfs.h"
 #include "mimetypes.h"
@@ -119,9 +119,9 @@ int main(int argc, char **argv) {
    Log(LOG_INFO, "jailfs: container filesystem %s starting up...", VERSION);
    Log(LOG_INFO, "Copyright (C) 2012-2018 bigfluffy.cloud -- See LICENSE in distribution package for terms of use");
 
-   if (argc > 1) {
+   if (argc > 1)
       chdir(argv[1]);
-   } else
+   else
       usage(argc, argv);
 
    // XXX: we need to clone(), etc to create a fresh namespace
@@ -154,6 +154,17 @@ int main(int argc, char **argv) {
    Log(LOG_INFO, "Opening database %s", dconf_get_str("path.db", ":memory"));
    db_open(dconf_get_str("path.db", ":memory"));
 
+   // Initialize configured modules.
+   Log(LOG_INFO, "Initializing loadable modules...");
+   list_iter_p m_cur = list_iterator(Modules, FRONT);
+   Module *mod;
+   do {
+     if (mod == NULL)
+        continue;
+
+     Log(LOG_INFO, "Module @ %x", mod);
+   } while ((mod = list_next(m_cur)));
+
    // These are defined at the top of src/main.c
    Log(LOG_INFO, "Starting core threads...");
    main_threadpool = threadpool_init("main", NULL);
@@ -174,17 +185,6 @@ int main(int argc, char **argv) {
       }
       i++;
    } while (i <= thr_cnt);
-
-
-   // Initialize configured modules.
-   list_iter_p m_cur = list_iterator(Modules, FRONT);
-   Module *mod;
-   do {
-     if (mod == NULL)
-        continue;
-
-     Log(LOG_INFO, "Module @ %x", mod);
-   } while ((mod = list_next(m_cur)));
 
    // Test symbol lookup (needed for debugger) and generate log error if cannot find symtab...
    debug_symtab_lookup("Log", NULL);

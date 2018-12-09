@@ -54,12 +54,10 @@ static int db_statement_reset(sqlite3_stmt * s) {
 /* Create database structure, etc */
 static void db_initialize(void) {
    db_begin();
-
    db_query(QUERY_NULL, "DROP TABLE IF EXISTS packages");
    db_query(QUERY_NULL, "DROP TABLE IF EXISTS files");
    db_query(QUERY_NULL, "DROP TABLE IF EXISTS spillover");
-   db_query(QUERY_NULL,
-            "CREATE TABLE packages (path TEXT, version INTEGER, id INTEGER PRIMARY KEY AUTOINCREMENT);");
+   db_query(QUERY_NULL, "CREATE TABLE packages (path TEXT, version INTEGER, id INTEGER PRIMARY KEY AUTOINCREMENT);");
    /*
     * package: <uint32_t> package which owns this file
     *    path: <char *>   file/link/directory path
@@ -76,10 +74,8 @@ static void db_initialize(void) {
     *   ctime: <time_t>   creation time
     *   inode: <uint32_t> unique node number for this object
     */
-   db_query(QUERY_NULL,
-            "CREATE TABLE files (package INTEGER, path TEXT, type TEXT, uid INTEGER, gid INTEGER, owner VARCHAR(128), grp VARCHAR(128), size INTEGER, mode INTEGER, offset INTEGER, ctime INTEGER, target INTEGER, inode INTEGER PRIMARY KEY AUTOINCREMENT);");
-   db_query(QUERY_NULL,
-            "INSERT INTO files (package, path, type, size, offset, owner, grp, mode) VALUES ('', '/', 'd', 0, 0, 0, 0, 16895);");
+   db_query(QUERY_NULL, "CREATE TABLE files (package INTEGER, path TEXT, type TEXT, uid INTEGER, gid INTEGER, owner VARCHAR(128), grp VARCHAR(128), size INTEGER, mode INTEGER, offset INTEGER, ctime INTEGER, target INTEGER, inode INTEGER PRIMARY KEY AUTOINCREMENT);");
+   db_query(QUERY_NULL, "INSERT INTO files (package, path, type, size, offset, owner, grp, mode) VALUES ('', '/', 'd', 0, 0, 0, 0, 16895);");
    db_commit();
 }
 
@@ -176,9 +172,7 @@ int db_open(const char *path) {
       raise(SIGTERM);
    }
 
-   /*
-    * create the database structure, etc 
-    */
+   // create the database structure, etc 
    db_initialize();
 
    return EXIT_SUCCESS;
@@ -193,9 +187,7 @@ void db_close(void) {
 int db_pkg_add(const char *path) {
    struct stat sb;
 
-   /*
-    * make sure the package still exists..sometimes they go away <bug://3371> 
-    */
+   // make sure the package still exists..sometimes they go away <bug://3371> 
    if (stat(path, &sb))
       return -errno;
 
@@ -211,29 +203,31 @@ int db_file_add(int pkg, const char *path, const char type,
                 uid_t uid, gid_t gid, const char *owner, const char *group,
                 size_t size, off_t offset, time_t ctime, mode_t mode,
                 const char *perm) {
-   db_query(QUERY_INT,
-            "INSERT INTO files (package, path, type, uid, gid, owner,"
-                             "grp, size, offset, mode, ctime)"
-                                "VALUES (%d, '%s', '%c', %i, %i, '%s',"
-                                        "'%s', %lu, 0, %i, %lu);",
-            pkg, path, type,
-            uid, gid, owner, group, size, offset, mode, ctime);
+   db_query(QUERY_INT, "INSERT INTO files (package, path, type, uid, gid, owner, grp, size, offset, mode, ctime)"
+                       "VALUES (%d, '%s', '%c', %i, %i, '%s', '%s', %lu, 0, %i, %lu);",
+                       pkg, path, type, uid, gid, owner, group, size, offset, mode, ctime);
    return 0;
 }
 
 int db_pkg_remove(const char *path) {
-   /*
-    * If the package already exists (upgraded?), remove all traces of it 
-    */
+   // If the package already exists (upgraded?), remove all traces of it 
    db_query(QUERY_NULL, "DELETE FROM files WHERE package IN (SELECT id FROM packages WHERE path = '%s');", path);
    db_query(QUERY_NULL, "DELETE FROM packages WHERE path = '%s';", path);
    return EXIT_SUCCESS;
 }
 
 int db_file_remove(int pkg, const char *path) {
-   /*
-    * delete any existing references to file with same path from same named pkg 
-    */
+   // delete any existing references to file with same path from same named pkg 
    db_query(QUERY_NULL, "DELETE FROM files WHERE package = '%lu' AND path = '%s';", pkg, path);
    return EXIT_SUCCESS;
+}
+
+
+void *thread_database_init(void *data) {
+    while (!conf.dying) {
+        sleep(3);
+        pthread_yield();
+    }
+
+    return NULL;
 }

@@ -31,7 +31,6 @@
 #include "module.h"
 #include "pkg.h"
 #include "profiling.h"
-#include "signals.h"
 #include "str.h"
 #include "threads.h"
 #include "timestr.h"

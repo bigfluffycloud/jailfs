@@ -7,7 +7,6 @@
 #include "dict.h"
 #include "logger.h"
 #include "memory.h"
-#include "signals.h"
 #include "threads.h"
 #include "unix.h"
 #include "list.h"

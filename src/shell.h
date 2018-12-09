@@ -11,6 +11,9 @@
  *
  * No warranty of any kind. Good luck!
  */
+#if	!defined(__SHELL_H)
+#define	__SHELL_H
+
 struct shell_cmd {
     const char *cmd;
     const char *desc;	// Description
@@ -26,3 +29,5 @@ struct shell_cmd {
 // Set up & tear down the shell thread
 extern void *thread_shell_init(void *data);
 extern void *thread_shell_fini(void *data);
+
+#endif	// !defined(__SHELL_H)

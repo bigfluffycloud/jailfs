@@ -21,7 +21,6 @@ jailfs_objs += .obj/pkg.o
 jailfs_objs += .obj/pkg_db.o
 jailfs_objs += .obj/profiling.o
 jailfs_objs += .obj/shell.o
-jailfs_objs += .obj/signals.o
 jailfs_objs += .obj/str.o
 jailfs_objs += .obj/threads.o
 jailfs_objs += .obj/timestr.o

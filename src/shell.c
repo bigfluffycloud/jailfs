@@ -101,14 +101,14 @@ struct shell_cmd {
 #define	ArrayElements(x)		(sizeof(x) / sizeof(x[0]))
 
 // Show/toggle (true/false)/set value
-struct shell_cmd menu_value[] = {
+static struct shell_cmd menu_value[] = {
    { "false", "Set false", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
    { "set", "Set value", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
    { "show", "Show state", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
    { "true", "Set true", HINT_CYAN, 1, 0, 0, 0, NULL, NULL }
 };
 
-struct shell_cmd conf_menu[] = {
+static struct shell_cmd menu_conf[] = {
    { "dump", "Dump config values", HINT_CYAN, 1, 0, 0, 0, cmd_conf_dump, NULL },
    { "load", "Load saved config file", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
    { "save", "Write config file", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
@@ -116,108 +116,108 @@ struct shell_cmd conf_menu[] = {
    { "show", "Get config value", HINT_CYAN, 1, 0, 1, 3, NULL, NULL }
 };
 
-struct shell_cmd cron_menu[] = {
+static struct shell_cmd menu_cron[] = {
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
    { "jobs", "Show scheduled events", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
    { "stop", "Stop a scheduled event", HINT_CYAN, 1, 0, 1, 1, NULL, NULL }
 };
 
-struct shell_cmd db_menu[] = {
+static struct shell_cmd menu_db[] = {
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
    { "dump", "Dump the database to .sql file", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
    { "purge", "Re-initialize the database", HINT_CYAN, 1, 0, 0, 0, NULL, NULL }
 };
 
 
-struct shell_cmd debug_menu[] = {
+static struct shell_cmd menu_debug[] = {
    { "symtab_lookup", "Lookup a symbol in the symtab", HINT_CYAN, 1, 0, 1, 2, NULL, NULL },
 };
 
-struct shell_cmd logging_menu[] = {
+static struct shell_cmd menu_logging[] = {
 };
 
-struct shell_cmd mem_gc_menu[] = {
+static struct shell_cmd menu_mem_gc[] = {
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
    { "now", "Run garbage collection now", HINT_CYAN, 1, 0, 0, 0, NULL, NULL }
 };
 
-struct shell_cmd hooks_menu[] = {
+static struct shell_cmd menu_hooks[] = {
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
    { "list", "List registered hooks", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
    { "unregister", "Unregister a hook", HINT_CYAN, 1, 0, 1, 1, NULL, NULL }
 };
 
-struct shell_cmd mem_bh_tuning_menu[] = {
+static struct shell_cmd menu_mem_bh_tuning[] = {
 };
 
-struct shell_cmd mem_bh_menu[] = {
+static struct shell_cmd menu_mem_bh[] = {
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
-   { "tuning", "Tuning knobs", HINT_CYAN, 1, 1, 0, -1, NULL, mem_bh_tuning_menu }
+   { "tuning", "Tuning knobs", HINT_CYAN, 1, 1, 0, -1, NULL, menu_mem_bh_tuning }
 };
 
-struct shell_cmd mem_menu[] = {
-   { "blockheap", "BlockHeap allocator", HINT_CYAN, 1, 1, 0, -1, NULL, mem_bh_menu },
+static struct shell_cmd menu_mem[] = {
+   { "blockheap", "BlockHeap allocator", HINT_CYAN, 1, 1, 0, -1, NULL, menu_mem_bh },
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
-   { "gc", "Garbage collector", HINT_CYAN, 1, 1, 0, -1, cmd_help, mem_gc_menu }
+   { "gc", "Garbage collector", HINT_CYAN, 1, 1, 0, -1, cmd_help, menu_mem_gc }
 };
 
-struct shell_cmd module_menu[] = {
+static struct shell_cmd menu_module[] = {
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value }
 };
 
-struct shell_cmd net_menu[] = {
+static struct shell_cmd menu_net[] = {
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value }
 };
 
-struct shell_cmd pkg_menu[] = {
+static struct shell_cmd menu_pkg[] = {
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
    { "scan", "Scan package pool and add to database", HINT_CYAN, 1, 0, 0, 0, NULL, NULL }
 };
 
-struct shell_cmd profiling_menu[] = {
+static struct shell_cmd menu_profiling[] = {
    { "enable", "show/toggle profiling status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
    { "save", "Save profiling data to disk", HINT_CYAN, 1, 0, 0, 0, NULL, NULL }
 };
 
-struct shell_cmd thread_menu[] = {
+static struct shell_cmd menu_thread[] = {
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
    { "kill", "Kill a thread", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
    { "show", "Show details about thread", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
    { "list", "List running threads", HINT_CYAN, 1, 0, 0, 0, NULL, NULL }
 };
 
-struct shell_cmd vfs_menu[] = {
+static struct shell_cmd menu_vfs[] = {
    { "debug", "Show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value }
 };
 
-struct shell_cmd main_menu[] = {
+static struct shell_cmd menu_main[] = {
    { "cd", "Change directory", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
    { "chown", "Change file/dir ownership in jail", HINT_CYAN, 1, 0, 2, -1, NULL, NULL },
    { "chmod", "Change file/dir permissions in jail", HINT_CYAN, 1, 0, 2, -1, NULL, NULL },
    { "clear", "Clear screen", HINT_CYAN, 1, 0, 0, 0, &cmd_clear, NULL },
    { "conf", "Configuration keys", HINT_CYAN, 1, 0, 0, -1, &cmd_help, NULL },
    { "cp", "Copy file in jail", HINT_CYAN, 1, 0, 1, -1, NULL, NULL },
-   { "cron", "Periodic event scheduler", HINT_CYAN, 1, 1, 0, -1, NULL, cron_menu },
-   { "db", "Database admin", HINT_CYAN, 1, 1, 0, -1, &cmd_help, db_menu },
-   { "debug", "Built-in debugger", HINT_CYAN, 1, 1, 0, -1, &cmd_help, debug_menu },
+   { "cron", "Periodic event scheduler", HINT_CYAN, 1, 1, 0, -1, NULL, menu_cron },
+   { "db", "Database admin", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_db },
+   { "debug", "Built-in debugger", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_debug },
    { "help", "Display help", HINT_CYAN, 1, 0, 0, -1, &cmd_help, NULL },
-   { "hooks", "Hooks management", HINT_CYAN, 1, 1, 0, -1, &cmd_help, hooks_menu },
+   { "hooks", "Hooks management", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_hooks },
    { "less", "Show contents of a file (with pager)", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
-   { "logging", "Log file", HINT_CYAN, 1, 1, 0, -1, &cmd_help, logging_menu },
+   { "logging", "Log file", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_logging },
    { "ls", "Display directory listing", HINT_CYAN, 1, 0, 0, 1, NULL, NULL },
-   { "memory", "Memory manager", HINT_CYAN, 1, 1, 0, -1, &cmd_help, mem_menu },
-   { "module", "Loadable module support", HINT_CYAN, 1, 1, 0, -1, &cmd_help, module_menu },
+   { "memory", "Memory manager", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_mem },
+   { "module", "Loadable module support", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_module },
    { "mv", "Move file/dir in jail", HINT_CYAN, 1, 0, 1, -1, NULL, NULL },
-   { "net", "Network", HINT_CYAN, 1, 1, 0, -1, &cmd_help, net_menu },
-   { "pkg", "Package commands", HINT_CYAN, 1, 1, 1, -1, &cmd_help, pkg_menu },
-   { "profiling", "Profiling support", HINT_CYAN, 1, 1, 0, -1, NULL, profiling_menu },
+   { "net", "Network", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_net },
+   { "pkg", "Package commands", HINT_CYAN, 1, 1, 1, -1, &cmd_help, menu_pkg },
+   { "profiling", "Profiling support", HINT_CYAN, 1, 1, 0, -1, NULL, menu_profiling },
    { "quit", "Alias to shutdown", HINT_RED, 1, 0, 0, 0, &cmd_shutdown, NULL },
    { "reload", "Reload configuration", HINT_CYAN, 1, 0, 0, 0, &cmd_reload, NULL },
    { "rm", "Remove file/directory in jail", HINT_CYAN, 1, 0, 1, -1, NULL, NULL },
-   { "thread", "Thread manager", HINT_CYAN, 1, 1, 0, -1, &cmd_help, thread_menu },
+   { "thread", "Thread manager", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_thread },
    { "shutdown", "Terminate the service", HINT_RED, 1, 0, 0, 0, &cmd_shutdown, NULL },
    { "stats", "Display statistics", HINT_CYAN, 1, 0, 0, 0, &cmd_stats, NULL },
-   { "vfs", "Virtual FileSystem (VFS)", HINT_CYAN, 1, 1, 1, -1, &cmd_help, vfs_menu }
+   { "vfs", "Virtual FileSystem (VFS)", HINT_CYAN, 1, 1, 1, -1, &cmd_help, menu_vfs }
 };
 
 static int shell_command(const char *line) {
@@ -261,14 +261,14 @@ static int shell_command(const char *line) {
 
 static void shell_completion(const char *buf, linenoiseCompletions *lc) {
    int i = 0, x = 0;
-   x = sizeof(main_menu) / sizeof(main_menu[0]);
+   x = sizeof(menu_main) / sizeof(menu_main[0]);
    i = 0;
    do {
-      if (&main_menu[i] == NULL || main_menu[i].desc == NULL)
+      if (&menu_main[i] == NULL || menu_main[i].desc == NULL)
          break;
 
-      if (strncasecmp(buf, main_menu[i].cmd, strlen(buf)) == 0) {
-         linenoiseAddCompletion(lc, main_menu[i].cmd);
+      if (strncasecmp(buf, menu_main[i].cmd, strlen(buf)) == 0) {
+         linenoiseAddCompletion(lc, menu_main[i].cmd);
          i++;
          continue;
       }
@@ -278,7 +278,7 @@ static void shell_completion(const char *buf, linenoiseCompletions *lc) {
 
 static char *shell_hints(const char *buf, int *color, int *bold) {
    int i = 0, x = 0;
-   x = sizeof(main_menu) / sizeof(main_menu[0]);
+   x = sizeof(menu_main) / sizeof(menu_main[0]);
    i = 0;
    char *msg;
 
@@ -289,13 +289,13 @@ static char *shell_hints(const char *buf, int *color, int *bold) {
    memset(msg, 0, SHELL_HINT_MAX);
 
    do {
-      if (&main_menu[i] == NULL || main_menu[i].desc == NULL)
+      if (&menu_main[i] == NULL || menu_main[i].desc == NULL)
          break;
 
-      if (strncasecmp(main_menu[i].cmd, buf, strlen(main_menu[i].cmd)) == 0) {
-         *color = main_menu[i].color;
-         *bold = main_menu[i].bold;
-         snprintf(msg, SHELL_HINT_MAX, " - %s", main_menu[i].desc);
+      if (strncasecmp(menu_main[i].cmd, buf, strlen(menu_main[i].cmd)) == 0) {
+         *color = menu_main[i].color;
+         *bold = menu_main[i].bold;
+         snprintf(msg, SHELL_HINT_MAX, " - %s", menu_main[i].desc);
          return msg;
       }
       i++;
@@ -315,21 +315,21 @@ void cmd_help(int argc, char **argv) {
 
    if (argc == 0) {
       printf("Using menu: main\n");
-      menu = &main_menu;
+      menu = &menu_main;
    }
 /*
     else {
-      x = sizeof(main_menu) / sizeof(main_menu[0]);
+      x = sizeof(menu_main) / sizeof(menu_main[0]);
       do {
-         if (&main_menu[i] == NULL || &main_menu[i].menu == NULL) {
+         if (&menu[i] == NULL || &menu_main[i].menu == NULL) {
             printf("cmd_help: Skipping menu entry # %d - scanning submenus\n", i);
             break;
          }
 
-         printf("submenu: %d<%s>: trying to match for %s\n", i, main_menu[i].cmd, argv[1]);
-         if (strcasecmp(main_menu[i].cmd, argv[1]) == 0) {
+         printf("submenu: %d<%s>: trying to match for %s\n", i, menu_main[i].cmd, argv[1]);
+         if (strcasecmp(menu_main[i].cmd, argv[1]) == 0) {
             // Set our pointer to the submenu that matched
-            menu = main_menu[i].menu;
+            menu = menu_main[i].menu;
             break;
          }
       } while (i < x);
@@ -337,13 +337,13 @@ void cmd_help(int argc, char **argv) {
       printf("submenu scan end\n");
    }
 */
-   x = sizeof(main_menu) / sizeof(main_menu[0]);
+   x = sizeof(menu_main) / sizeof(menu_main[0]);
    i = 0;
    do {
-      if (&main_menu[i] == NULL || main_menu[i].desc == NULL)
+      if (&menu_main[i] == NULL || menu_main[i].desc == NULL)
          break;
 
-      printf("%15s\t - %s\n", main_menu[i].cmd, main_menu[i].desc);
+      printf("%15s\t - %s\n", menu_main[i].cmd, menu_main[i].desc);
 
       i++;
    } while(i < x);
