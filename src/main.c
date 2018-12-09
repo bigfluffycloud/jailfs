@@ -114,6 +114,9 @@ int main(int argc, char **argv) {
    int i, thr_cnt = 0;
    // XXX: Parses commandline arguments (should be minimal)
 
+   Log(LOG_INFO, "jailfs: container filesystem %s starting up...", VERSION);
+   Log(LOG_INFO, "Copyright (C) 2012-2018 bigfluffy.cloud -- See LICENSE in distribution package for terms of use");
+
    if (argc > 1) {
       chdir(argv[1]);
    } else
@@ -134,9 +137,6 @@ int main(int argc, char **argv) {
    signal_init();				// Setup POSIX siganls
    dlink_init();				// Doubly linked lists
    pkg_init();					// Package utilities
-
-   Log(LOG_INFO, "jailfs: container filesystem %s starting up...", VERSION);
-   Log(LOG_INFO, "Copyright (C) 2012-2018 bigfluffy.cloud -- See LICENSE in distribution package for terms of use");
 
    if (pidfile_open(dconf_get_str("path.pid", NULL))) {
       Log(LOG_EMERG, "Failed opening PID file. Are we already running?");
