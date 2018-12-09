@@ -21,7 +21,7 @@ ThreadPool *threadpool_init(const char *name, const char *opts) {
   int tmp;
 
   if (!(r = (ThreadPool *)mem_alloc(sizeof(ThreadPool)))) {
-     Log(LOG_ERR, "%s: allocation failed: [%d] %s", __FUNCTION__, errno, strerror(errno));
+     Log(LOG_EMERG, "%s: allocation failed: [%d] %s", __FUNCTION__, errno, strerror(errno));
      return NULL;
   }
 
@@ -42,6 +42,20 @@ ThreadPool *threadpool_init(const char *name, const char *opts) {
 }
 
 int threadpool_destroy(ThreadPool *pool) {
+    if (pool == NULL)
+       return -1;
+
+    if (pool->list != NULL) {
+       destroy_list(pool->list);
+       pool->list = NULL;
+    }
+
+    if (pool->name != NULL) {
+       mem_free(pool->name);
+       pool->name = NULL;
+    }
+    mem_free(pool);
+
     return 0;
 }
 
@@ -57,6 +71,9 @@ Thread *thread_create(ThreadPool *pool, void *(*init)(void *), void *(*fini)(voi
      return NULL;
   }
 
+  // update refcnt
+  tmp->refcnt++;
+
   /* Set pointer to destructor (if given) */
   if (fini)
      tmp->fini = fini;
@@ -71,6 +88,8 @@ Thread *thread_shutdown(ThreadPool *pool, Thread *thr) {
    if (!pool || !thr)
       return NULL;
 
+   thr->refcnt--;
+
    /* If reference count hits 0, destroy the thread */
    /* Theory: This should reduce some cache churn by keeping
     *   the fairly heavyweight worker threads from being restarted
@@ -78,17 +97,19 @@ Thread *thread_shutdown(ThreadPool *pool, Thread *thr) {
     * ToDo: This should do more error checking
     * Side-cases:
     */
-   if (thr->refcnt == 0) {
+   if (thr->refcnt <= 0) {
       Log(LOG_DEBUG, "unallocating thread %x due to refcnt == 0", thr);
 
-     list_remove(pool->list, thr);
+      if (thr->refcnt < 0)
+         Log(LOG_DEBUG, "BUG: thread %x refcnt is negative: %d", thr->refcnt);
+
       if (thr->argv)
          mem_free(thr->argv);
 
+      list_remove(pool->list, thr);
       mem_free(thr);
       return NULL;
    }
-   thr->refcnt--;
 
    return thr;
 }

@@ -21,7 +21,7 @@
 BlockHeap  *inode_heap;
 
 #if	0
-void fill_statbuf(ext2_ino_t ino, pkg_inode_t * inode, struct stat *st) {
+static void fill_statbuf(ext2_ino_t ino, pkg_inode_t * inode, struct stat *st) {
    /*
     * st_dev 
     */
@@ -68,7 +68,7 @@ void fill_statbuf(ext2_ino_t ino, pkg_inode_t * inode, struct stat *st) {
 }
 #endif
 
-void inode_init(void) {
+void vfs_inode_init(void) {
    if (!
        (inode_heap =
         blockheap_create(sizeof(struct pkg_inode),
@@ -78,6 +78,6 @@ void inode_init(void) {
    }
 }
 
-void inode_fini(void) {
+void vfs_inode_fini(void) {
    blockheap_destroy(inode_heap);
 }

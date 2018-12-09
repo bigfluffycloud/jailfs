@@ -22,7 +22,6 @@ void unlimit_fds(void) {
 }
 
 void host_init(void) {
-   Log(LOG_DEBUG, "enabling coredumps and raising fd limit");
    enable_coredump();
    unlimit_fds();
 }

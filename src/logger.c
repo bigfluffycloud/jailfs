@@ -177,6 +177,7 @@ static void log_close(void) {
 
 
 void *thread_logger_init(void *data) {
+   thread_entry((dict *)data);
    log_open(dconf_get_str("path.log", "file://jailfs.log"));
 
    // Logger should remain running even after conf.dying is set.
@@ -192,5 +193,6 @@ void *thread_logger_init(void *data) {
 
 void *thread_logger_fini(void *data) {
    log_close();
+   thread_exit((dict *)data);
    return NULL;
 }

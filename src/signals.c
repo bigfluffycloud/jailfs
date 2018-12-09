@@ -92,7 +92,6 @@ void signal_init(void) {
    struct sigaction action, old;
    int i = 0;
 
-   Log(LOG_DEBUG, "setting up signal handlers");
    sigfillset(&action.sa_mask);
    action.sa_handler = signal_handler;
 

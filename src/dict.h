@@ -40,7 +40,7 @@ typedef enum { false = 0, true } bool;
 typedef struct _keypair_ {
     char    *key;
     char    *val;
-    /* Added by AppWorx to support a blob-type, storing only a pointer */
+    /* Added by joseph to support a blob-type, storing only a pointer */
     void    *blob;
     time_t  ts;
     /* End AppWorx changes */
@@ -95,6 +95,7 @@ extern const char *dict_get(dict *d, const char *key, const char *defval);
 
 /*
  *  @brief   Add a blob to the dictionary
+ *		- used for storing arbitrary data
  */
 extern int        dict_add_ts(dict *d, const char *key, const char *val, time_t ts);
 extern int        dict_add_blob(dict *d, const char *key, const void **ptr);

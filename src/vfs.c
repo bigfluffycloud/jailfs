@@ -127,6 +127,9 @@ vfs_lookup_reply *vfs_resolve_path(const char *path) {
 
 
 void *thread_vfs_init(void *data) {
+   char *mp = NULL;
+
+   vfs_inode_init();
    // Figure out where we're supposed to build this jail
    if (!conf.mountpoint)
       conf.mountpoint = dconf_get_str("path.mountpoint", "chroot/");
@@ -147,6 +150,14 @@ void *thread_vfs_init(void *data) {
    //	Check packaes - Send it.
    umount(conf.mountpoint);
    vfs_fuse_init();
+
+   // Add inotify watchers for paths in %{path.pkg}
+   if (dconf_get_bool("pkgdir.inotify", 0) == 1)
+      vfs_watch_init();
+
+   // Load all packages in %{path.pkg}} if enabled
+   if (dconf_get_bool("pkgdir.prescan", 0) == 1)
+      vfs_dir_walk();
    
    while (!conf.dying) {
       pthread_yield();
@@ -156,5 +167,14 @@ void *thread_vfs_init(void *data) {
 }
 
 void *thread_vfs_fini(void *data) {
+   char *mp = NULL;
+   vfs_watch_fini();
+   vfs_fuse_fini();
+   vfs_inode_fini();
+
+   // Unmount the mountpoint
+   if ((mp = dconf_get_str("path.mountpoint", NULL)) != NULL)
+      umount(mp);
+
    return NULL;
 }

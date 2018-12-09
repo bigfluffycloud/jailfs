@@ -137,8 +137,7 @@ int pkg_import(const char *path) {
    }
 
    archive_read_close(a);
-   r = archive_read_free(a);
-   if (r != ARCHIVE_OK)
+   if ((r = archive_read_free(a)) != ARCHIVE_OK)
       Log(LOG_ERR, "possible memory leak! archive_read_free() returned %d", r);
 
    db_commit();

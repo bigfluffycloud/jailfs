@@ -23,8 +23,9 @@ CONFIG_VFS_LDPRELOAD=y
 CFLAGS += -O1 -g -pipe -ansi  -std=gnu99
 CFLAGS += -I./src
 CFLAGS += -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -fPIC -D_GNU_SOURCE
-warn_noerror := -Wall -Wno-unused -Wno-strict-aliasing -ansi -std=gnu99
-warn_flags := ${warn_noerror} #-Werror
+warn_noerror := -Wall -Wno-unused -Wno-strict-aliasing
+#warn_flags := ${warn_noerror} #-Werror
+warn_flags :=
 LDFLAGS := -lxml2 -lz -lcrypto -pthread -lrt -lsqlite3 -lm -lev -lunwind -lfuse -lmagic -ldl -larchive -lbsd
 lib_ldflags += -shared -ldl
 

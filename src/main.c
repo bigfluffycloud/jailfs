@@ -34,15 +34,16 @@
 #include "debugger.h"
 #include "module.h"
 #include "profiling.h"
+#include "cache.h"
 
-ThreadPool *threads_main;
+ThreadPool *main_threadpool;
 
 // These threads need to come up in a specific order, unlike modules...
 struct ThreadCreator {
    char *name;
    void (*init)(void *);
    void (*fini)(void *);
-} threads[] = {
+} main_threads[] = {
    {
       .name = "logger",
       .init = &thread_logger_init,
@@ -52,6 +53,11 @@ struct ThreadCreator {
       .name = "db",
 //      .init = &thread_db_init,
 //      .fini = &thread_db_fini,
+   },
+   {
+      .name = "cache",
+      .init = &thread_cache_init,
+      .fini = &thread_cache_fini,
    },
    {
       .name = "vfs",
@@ -85,9 +91,6 @@ void goodbye(void) {
          umount(mp);
    }
 
-   vfs_watch_fini();
-   vfs_fuse_fini();
-   inode_fini();
    dlink_fini();
    dconf_fini();
 
@@ -109,8 +112,6 @@ void usage(int argc, char **argv) {
 int main(int argc, char **argv) {
    int         fd;
    int i, thr_cnt = 0;
-   char *cache = NULL;
-
    // XXX: Parses commandline arguments (should be minimal)
    //
    // Always require jail top-level dir (where jailfs.cf lives)
@@ -137,7 +138,6 @@ int main(int argc, char **argv) {
    signal_init();				// Setup POSIX siganls
    dlink_init();				// Doubly linked lists
    pkg_init();					// Package utilities
-   inode_init();				// Initialize inode crud
    Log(LOG_INFO, "jailfs: container filesystem %s starting up...", VERSION);
    Log(LOG_INFO, "Copyright (C) 2012-2018 bigfluffy.cloud -- See LICENSE in distribution package for terms of use");
 
@@ -154,58 +154,33 @@ int main(int argc, char **argv) {
 
    Log(LOG_INFO, "Opening database %s", dconf_get_str("path.db", ":memory"));
    db_open(dconf_get_str("path.db", ":memory"));
-
-   // Add inotify watchers for paths in %{path.pkg}
-   if (dconf_get_bool("pkgdir.inotify", 0) == 1)
-      vfs_watch_init();
-
-   // Load all packages in %{path.pkg}} if enabled
-   if (dconf_get_bool("pkgdir.prescan", 0) == 1)
-      vfs_dir_walk();
-
    Log(LOG_INFO, "jail at %s/%s is now ready!", get_current_dir_name(), conf.mountpoint);
-  
-   // Caching support
-   cache = dconf_get_str("path.cache", NULL);
-   if (strcasecmp("tmpfs", dconf_get_str("cache.type", NULL)) == 0) {
-      if (cache != NULL) {
-         int rv = -1;
 
-         // If .keepme exists in cachedir (from git), remove it
-         char tmppath[PATH_MAX];
-         memset(tmppath, 0, sizeof(tmppath));
-         snprintf(tmppath, sizeof(tmppath) - 1, "%s/.keepme", cache);
-         if (file_exists(tmppath))
-            unlink(tmppath);
-
-         if ((rv = mount("jailfs-cache", cache, "tmpfs", 0, NULL)) != 0) {
-            Log(LOG_ERR, "mounting tmpfs on cache-dir %s failed: %d (%s)", cache, errno, strerror(errno));
-            exit(1);
-         }
-      }
-   }
-
-   Log(LOG_INFO, "Starting threads...");
-   threads_main = threadpool_init("main", NULL);
-   thr_cnt = sizeof(threads)/sizeof(struct ThreadCreator) - 1;
+   //
+   // We start the threads defined in 
+   Log(LOG_INFO, "Starting core threads...");
+   main_threadpool = threadpool_init("main", NULL);
+   thr_cnt = sizeof(main_threads)/sizeof(struct ThreadCreator) - 1;
    i = 0;
    do {
-      if (threads[i].name != NULL) {
-         if (!threads[i].init) {
-            Log(LOG_ERR, "module entry %s has no init function", threads[i].name);
+      if (main_threads[i].name != NULL) {
+         if (!main_threads[i].init) {
+            Log(LOG_ERR, "module entry %s has no init function", main_threads[i].name);
             i++;
             continue;
          }
 
-         if (thread_create(threads_main, threads[i].init, threads[i].fini, NULL, threads[i].name) == NULL) {
-            Log(LOG_ERR, "failed starting thread main:%s", threads[i].name);
+         if (thread_create(main_threadpool, main_threads[i].init, main_threads[i].fini, NULL, main_threads[i].name) == NULL) {
+            Log(LOG_ERR, "failed starting thread main:%s", main_threads[i].name);
             abort();
          }
-         Log(LOG_INFO, "started thread main:%s", threads[i].name);
+         Log(LOG_INFO, "started thread main:%s", main_threads[i].name);
       }
       i++;
    } while (i <= thr_cnt);
 
+
+   // Initialize configured modules.
    list_iter_p m_cur = list_iterator(Modules, FRONT);
    Module *mod;
    do {
@@ -214,7 +189,6 @@ int main(int argc, char **argv) {
 
      Log(LOG_INFO, "Module @ %x", mod);
    } while ((mod = list_next(m_cur)));
-
 
    // Test symbol lookup (needed for debugger) and generate log error if cannot find symtab...
    debug_symtab_lookup("Log", NULL);

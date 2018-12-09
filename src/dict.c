@@ -436,7 +436,10 @@ int dict_dump(dict *d, FILE *out) {
        if (rank < 0)
           break;
 
-       if (fprintf(out, "%s [%lu]: %s\n", key, ts, val ? val : "UNDEF") < 0)
+//       if (fprintf(out, "#%s:ts=%lu\n", key, ts) < 0)
+//          errors++;
+
+       if (fprintf(out, "%s=%s\n", key, val ? val : "UNDEF") < 0)
           errors++;
     }
 

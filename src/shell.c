@@ -21,6 +21,7 @@
  */
 #include <signal.h>
 #include <string.h>
+#include "memory.h"
 #include "logger.h"
 #include "linenoise.h"
 #include "shell.h"
@@ -65,6 +66,11 @@ void cmd_stats(int argc, char *argv) {
    printf("stats requested by user:\n");
 }
 
+void cmd_conf_dump(int argc, char *argv) {
+   printf("Dumping configuration:\n");
+   dict_dump(conf.dict, stdout);
+}
+
 ///////////
 // Menus //
 ///////////
@@ -93,7 +99,7 @@ struct shell_cmd menu_value[] = {
 };
 
 struct shell_cmd conf_menu[] = {
-   { "list", "List config values", 36, 1, 0, 0, 0, NULL, NULL },
+   { "dump", "Dump config values", 36, 1, 0, 0, 0, cmd_conf_dump, NULL },
    { "load", "Load saved config file", 36, 1, 0, 1, 1, NULL, NULL },
    { "save", "Write config file", 36, 1, 0, 1, 1, NULL, NULL },
    { "set", "Set config value", 36, 1, 0, 3, 3, NULL, NULL },
@@ -174,7 +180,7 @@ struct shell_cmd vfs_menu[] = {
    { "debug", "Show/toggle debugging status", 36, 1, 1, 0, 1, NULL, menu_value }
 };
 
-struct shell_cmd menu[] = {
+struct shell_cmd main_menu[] = {
    { "cd", "Change directory", 36, 1, 0, 1, 1, NULL, NULL },
    { "chown", "Change file/dir ownership in jail", 36, 1, 0, 2, -1, NULL, NULL },
    { "chmod", "Change file/dir permissions in jail", 36, 1, 0, 2, -1, NULL, NULL },
@@ -205,30 +211,39 @@ struct shell_cmd menu[] = {
 };
 
 int shell_command(const char *line) {
-   char *args[128];
+   char *args[32], *last_p = NULL, *p = NULL;
+   char *tmp;
    int i = 0, x = 0;
 
    if (line == NULL)
       return -1;
 
-   // Is this necessary in modern times? Yes...
+   tmp = mem_alloc(strlen(line));
+   memset(tmp, 0, sizeof(tmp));
    memset(args, 0, sizeof(args));
-   args[i] = &line;
+   memcpy(tmp, args, sizeof(tmp));
 
-   // XXX: I *hate* strtok...
-   strtok(line, " \n");
-   do {
-      args[i] = strtok(NULL, " \n");
-      i++;
-   } while (args[i] != NULL);
-
+   args[0] = dconf_get_str("jailname", NULL);
+/*
+   strtok(tmp, " ");
+   while ((p = strtok(NULL, " ")) != NULL) {
+      if (p != NULL) {
+         i++;
+         args[i] = p;
+      } else
+         break;
+   }
+*/
+   // We need to break up the command line here into args & i
    if (strncasecmp(line, "help", 4) == 0) {
       cmd_help(i, &args);
    } else if (strcasecmp(line, "shutdown") == 0 || strcasecmp(line, "quit") == 0) {
       cmd_shutdown(i, &args);
    } else if (strcasecmp(line, "user") == 0) {
-      fprintf(stdout, "User error: replace user\nGoodbye!\n");
+      printf("User error: replace user\nGoodbye!\n");
       cmd_shutdown(i, &args);
+   } else if (strcasecmp(line, "conf dump") == 0) {
+      cmd_conf_dump(i, &args);
    }
 
    return 0;
@@ -260,35 +275,50 @@ char *shell_hints(const char *buf, int *color, int *bold) {
 
 
 void cmd_help(int argc, char *argv) {
-   struct shell_cmd *cmd = NULL;
+   struct shell_cmd *menu = NULL;
    int i = 0;
    int x = 0;
 
-   x = sizeof(menu) / sizeof(menu[0]);
-
-   Log(LOG_DEBUG, "Found %d entries in menu 'main'", x);
-   while(i < x) {
-      cmd = &menu[i];
-
-      if (cmd == NULL || cmd->desc == NULL) {				// Empty rows are useless
-         Log(LOG_DEBUG, "Skipping entry # %d", i);
-         break;
-      }
-
-      if (cmd->desc != NULL)
-         fprintf(stdout, "%12s\t - %s\n", cmd[i].cmd, cmd[i].desc);
-      i++;
+   if (argc == 0) {
+      printf("Using menu: main\n");
+      menu = &main_menu;
    }
+/*
+    else {
+      x = sizeof(main_menu) / sizeof(main_menu[0]);
+      do {
+         if (&main_menu[i] == NULL || &main_menu[i].menu == NULL) {
+            printf("cmd_help: Skipping menu entry # %d - scanning submenus\n", i);
+            break;
+         }
+
+         printf("submenu: %d<%s>: trying to match for %s\n", i, main_menu[i].cmd, argv[1]);
+         if (strcasecmp(main_menu[i].cmd, argv[1]) == 0) {
+            // Set our pointer to the submenu that matched
+            menu = main_menu[i].menu;
+            break;
+         }
+      } while (i < x);
+      printf("Found %d entries in menu\n", x);
+      printf("submenu scan end\n");
+   }
+*/
+   x = sizeof(main_menu) / sizeof(main_menu[0]);
+   i = 0;
+   do {
+      if (&main_menu[i] == NULL || main_menu[i].desc == NULL)
+         break;
+
+      printf("%15s\t - %s\n", main_menu[i].cmd, main_menu[i].desc);
+
+      i++;
+   } while(i < x);
    return;
 }
 
 //
 // Initialize the shell/debugger thread
 //
-int shell_init(void) {
-   return 0;
-}
-
 void *thread_shell_init(void *data) {
    char *line;
 
@@ -298,10 +328,13 @@ void *thread_shell_init(void *data) {
    linenoiseSetMultiLine(1);
    linenoiseSetCompletionCallback(shell_completion);
    linenoiseSetHintsCallback(shell_hints);
+   linenoiseHistorySetMaxLen(dconf_get_int("shell.history-length", 100));
    linenoiseHistoryLoad("state/.shell.history");
 
-   fprintf(stdout, "jailfs shell starting. You are managing jail '%s'\n\n", dconf_get_str("jailname", NULL));
-   fprintf(stdout, "Try 'help' for a list of available commands or 'shutdown' to halt the service\nTab completion is enabled.\n\n");
+   // Try to avoid our console prompt being spammed by startup text
+   sleep(1);
+   printf("jailfs shell starting. You are managing jail '%s'\n\n", dconf_get_str("jailname", NULL));
+   printf("Try 'help' for a list of available commands or 'shutdown' to halt the service\nTab completion is enabled.\n\n");
 
    // As long as the dying flag has not been set, we continue to run
    while (!conf.dying) {
@@ -325,12 +358,13 @@ void *thread_shell_init(void *data) {
       }
       free(line);
    }
-
-   thread_exit((dict *)data);
    return NULL;
 }
 
+// Shell destructor
 void *thread_shell_fini(void *data) {
    linenoiseHistorySave("state/.shell.history");	// Save history
+
+   thread_exit((dict *)data);
    return NULL;
 }

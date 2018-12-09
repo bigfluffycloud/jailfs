@@ -1,10 +1,1 @@
 We need to use errno more and add more error checking.
-
-Probably should try to modify dictionary to be type-generic
-	* If we do this, why not use it for package cache?
-		- This should reduce some of the mess which
-		  overhead of the cache versus using dlists. -jm
-		  - I still think the cache will be a win either way -jld
-
-Alternatives to using SQL for the the internal database?
-	- We can still store persistant DB on disk with sqlite

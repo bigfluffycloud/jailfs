@@ -1,30 +1,26 @@
-* Add support for shell via a socket for detached processes
-   Something like ./jailfs examples/auth-dns -c
-
 * Fix inotify to remove packages & files if deleted
-* (jm) Feature/6 - Add support for cpio and squashfs image based packages.
 * (jm) Feature/3 - Allow persistence of the database (right now we clobber
                    and rescan the pkgdir on startup.
-* (jm) BUG/10    - Ensure even on unclean exit, we umount before dying...
 * (jm) Feature/6 - unwind/profiling support from appworx/apxd
-* (jm) Feature/4 - Code cleanup
-
-Work on a library (LD_PRELOAD) method.
-	* Needs read-only package database and a daemon to fill it
-	* Needs way to disable inotify, etc
-	* Needs way to disable fuse build
-	* Add a pass-through mode
-		- Try pkgdb
-			[noent] try spillover
-				[noent] try real fs
-	* Add in-place decompression (at least libz)
-		- To file
-		- To buffer
-
-
----
-Merge the hooks and loadable module support from appworx here
 
 * De-duplicate some of the lists & trees code.
 * Make sure EVERYTHING is using BlockHeap allocator
   - Can we replace malloc()/free() with wrappers which log?
+
+When a package is added
+-----------------------
+* Scan archive, adding list of it's files/permissions/etc to the database
+
+When a file is requested
+------------------------
+* look up what archive owns it.
+	Resolver order:
+		Overlays (fs-etc templates) as readonly
+		$jail/pkg/*.spill (read-only from jail)
+		$jail/pkg/*.pkg
+		$top/pkg/*.pkg
+
+* check the cache to see if it's cached in memory or on disk
+	- Yes? Provide COW mapped file to FUSE
+	- No? Extract the file to cache and provide COW mapped file to FUSE
+
