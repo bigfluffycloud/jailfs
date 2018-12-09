@@ -43,7 +43,7 @@
 struct conf conf;
 
 void dconf_fini(void) {
-   dict_mem_free(_CONF_DICT);
+   dict_free(_CONF_DICT);
    _CONF_DICT = NULL;
 }
 
