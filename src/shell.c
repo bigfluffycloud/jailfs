@@ -23,6 +23,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "memory.h"
+#include "balloc.h"
 #include "logger.h"
 #include "linenoise.h"
 #include "shell.h"
@@ -30,16 +31,23 @@
 #include "conf.h"
 #include "threads.h"
 
-/* linenoie colour codes:
-       red = 31
-       green = 32
-       yellow = 33
-       blue = 34
-       magenta = 35
-       cyan = 36
-       white = 37;
- */
 
+//
+// Shell hints stuff
+//
+#define	HINT_RED	31
+#define	HINT_GREEN	32
+#define	HINT_YELLOW	33
+#define	HINT_BLUE	34
+#define	HINT_MAGENTA	35
+#define	HINT_CYAN	36
+#define	HINT_WHITE	37
+
+#define	SHELL_HINT_MAX	120
+static BlockHeap *shell_hints_heap = NULL;
+
+
+// Shell prompt
 static const char *shell_prompt = "jailfs> ";
 
 // Use the signal handler to properly shut don the system (SIGTERM/11)
@@ -94,122 +102,122 @@ struct shell_cmd {
 
 // Show/toggle (true/false)/set value
 struct shell_cmd menu_value[] = {
-   { "false", "Set false", 36, 1, 0, 0, 0, NULL, NULL },
-   { "set", "Set value", 36, 1, 0, 1, 1, NULL, NULL },
-   { "show", "Show state", 36, 1, 0, 0, 0, NULL, NULL },
-   { "true", "Set true", 36, 1, 0, 0, 0, NULL, NULL }
+   { "false", "Set false", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
+   { "set", "Set value", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
+   { "show", "Show state", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
+   { "true", "Set true", HINT_CYAN, 1, 0, 0, 0, NULL, NULL }
 };
 
 struct shell_cmd conf_menu[] = {
-   { "dump", "Dump config values", 36, 1, 0, 0, 0, cmd_conf_dump, NULL },
-   { "load", "Load saved config file", 36, 1, 0, 1, 1, NULL, NULL },
-   { "save", "Write config file", 36, 1, 0, 1, 1, NULL, NULL },
-   { "set", "Set config value", 36, 1, 0, 3, 3, NULL, NULL },
-   { "show", "Get config value", 36, 1, 0, 1, 3, NULL, NULL }
+   { "dump", "Dump config values", HINT_CYAN, 1, 0, 0, 0, cmd_conf_dump, NULL },
+   { "load", "Load saved config file", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
+   { "save", "Write config file", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
+   { "set", "Set config value", HINT_CYAN, 1, 0, 3, 3, NULL, NULL },
+   { "show", "Get config value", HINT_CYAN, 1, 0, 1, 3, NULL, NULL }
 };
 
 struct shell_cmd cron_menu[] = {
-   { "debug", "show/toggle debugging status", 36, 1, 1, 0, 1, NULL, menu_value },
-   { "jobs", "Show scheduled events", 36, 1, 0, 0, 0, NULL, NULL },
-   { "stop", "Stop a scheduled event", 36, 1, 0, 1, 1, NULL, NULL }
+   { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
+   { "jobs", "Show scheduled events", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
+   { "stop", "Stop a scheduled event", HINT_CYAN, 1, 0, 1, 1, NULL, NULL }
 };
 
 struct shell_cmd db_menu[] = {
-   { "debug", "show/toggle debugging status", 36, 1, 1, 0, 1, NULL, menu_value },
-   { "dump", "Dump the database to .sql file", 36, 1, 0, 0, 0, NULL, NULL },
-   { "purge", "Re-initialize the database", 36, 1, 0, 0, 0, NULL, NULL }
+   { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
+   { "dump", "Dump the database to .sql file", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
+   { "purge", "Re-initialize the database", HINT_CYAN, 1, 0, 0, 0, NULL, NULL }
 };
 
 
 struct shell_cmd debug_menu[] = {
-   { "symtab_lookup", "Lookup a symbol in the symtab", 36, 1, 0, 1, 2, NULL, NULL },
+   { "symtab_lookup", "Lookup a symbol in the symtab", HINT_CYAN, 1, 0, 1, 2, NULL, NULL },
 };
 
 struct shell_cmd logging_menu[] = {
 };
 
 struct shell_cmd mem_gc_menu[] = {
-   { "debug", "show/toggle debugging status", 36, 1, 1, 0, 1, NULL, menu_value },
-   { "now", "Run garbage collection now", 36, 1, 0, 0, 0, NULL, NULL }
+   { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
+   { "now", "Run garbage collection now", HINT_CYAN, 1, 0, 0, 0, NULL, NULL }
 };
 
 struct shell_cmd hooks_menu[] = {
-   { "debug", "show/toggle debugging status", 36, 1, 1, 0, 1, NULL, menu_value },
-   { "list", "List registered hooks", 36, 1, 0, 0, 0, NULL, NULL },
-   { "unregister", "Unregister a hook", 36, 1, 0, 1, 1, NULL, NULL }
+   { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
+   { "list", "List registered hooks", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
+   { "unregister", "Unregister a hook", HINT_CYAN, 1, 0, 1, 1, NULL, NULL }
 };
 
 struct shell_cmd mem_bh_tuning_menu[] = {
 };
 
 struct shell_cmd mem_bh_menu[] = {
-   { "debug", "show/toggle debugging status", 36, 1, 1, 0, 1, NULL, menu_value },
-   { "tuning", "Tuning knobs", 36, 1, 1, 0, -1, NULL, mem_bh_tuning_menu }
+   { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
+   { "tuning", "Tuning knobs", HINT_CYAN, 1, 1, 0, -1, NULL, mem_bh_tuning_menu }
 };
 
 struct shell_cmd mem_menu[] = {
-   { "blockheap", "BlockHeap allocator", 36, 1, 1, 0, -1, NULL, mem_bh_menu },
-   { "debug", "show/toggle debugging status", 36, 1, 1, 0, 1, NULL, menu_value },
-   { "gc", "Garbage collector", 36, 1, 1, 0, -1, cmd_help, mem_gc_menu }
+   { "blockheap", "BlockHeap allocator", HINT_CYAN, 1, 1, 0, -1, NULL, mem_bh_menu },
+   { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
+   { "gc", "Garbage collector", HINT_CYAN, 1, 1, 0, -1, cmd_help, mem_gc_menu }
 };
 
 struct shell_cmd module_menu[] = {
-   { "debug", "show/toggle debugging status", 36, 1, 1, 0, 1, NULL, menu_value }
+   { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value }
 };
 
 struct shell_cmd net_menu[] = {
-   { "debug", "show/toggle debugging status", 36, 1, 1, 0, 1, NULL, menu_value }
+   { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value }
 };
 
 struct shell_cmd pkg_menu[] = {
-   { "debug", "show/toggle debugging status", 36, 1, 1, 0, 1, NULL, menu_value },
-   { "scan", "Scan package pool and add to database", 36, 1, 0, 0, 0, NULL, NULL }
+   { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
+   { "scan", "Scan package pool and add to database", HINT_CYAN, 1, 0, 0, 0, NULL, NULL }
 };
 
 struct shell_cmd profiling_menu[] = {
-   { "enable", "show/toggle profiling status", 36, 1, 1, 0, 1, NULL, menu_value },
-   { "save", "Save profiling data to disk", 36, 1, 0, 0, 0, NULL, NULL }
+   { "enable", "show/toggle profiling status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
+   { "save", "Save profiling data to disk", HINT_CYAN, 1, 0, 0, 0, NULL, NULL }
 };
 
 struct shell_cmd thread_menu[] = {
-   { "debug", "show/toggle debugging status", 36, 1, 1, 0, 1, NULL, menu_value },
-   { "kill", "Kill a thread", 36, 1, 0, 1, 1, NULL, NULL },
-   { "show", "Show details about thread", 36, 1, 0, 1, 1, NULL, NULL },
-   { "list", "List running threads", 36, 1, 0, 0, 0, NULL, NULL }
+   { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
+   { "kill", "Kill a thread", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
+   { "show", "Show details about thread", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
+   { "list", "List running threads", HINT_CYAN, 1, 0, 0, 0, NULL, NULL }
 };
 
 struct shell_cmd vfs_menu[] = {
-   { "debug", "Show/toggle debugging status", 36, 1, 1, 0, 1, NULL, menu_value }
+   { "debug", "Show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value }
 };
 
 struct shell_cmd main_menu[] = {
-   { "cd", "Change directory", 36, 1, 0, 1, 1, NULL, NULL },
-   { "chown", "Change file/dir ownership in jail", 36, 1, 0, 2, -1, NULL, NULL },
-   { "chmod", "Change file/dir permissions in jail", 36, 1, 0, 2, -1, NULL, NULL },
-   { "clear", "Clear screen", 36, 1, 0, 0, 0, &cmd_clear, NULL },
-   { "conf", "Configuration keys", 36, 1, 0, 0, -1, &cmd_help, NULL },
-   { "cp", "Copy file in jail", 36, 1, 0, 1, -1, NULL, NULL },
-   { "cron", "Periodic event scheduler", 36, 1, 1, 0, -1, NULL, cron_menu },
-   { "db", "Database admin", 36, 1, 1, 0, -1, &cmd_help, db_menu },
-   { "debug", "Built-in debugger", 36, 1, 1, 0, -1, &cmd_help, debug_menu },
-   { "help", "Display help", 36, 1, 0, 0, -1, &cmd_help, NULL },
-   { "hooks", "Hooks management", 36, 1, 1, 0, -1, &cmd_help, hooks_menu },
-   { "less", "Show contents of a file (with pager)", 36, 1, 0, 1, 1, NULL, NULL },
-   { "logging", "Log file", 36, 1, 1, 0, -1, &cmd_help, logging_menu },
-   { "ls", "Display directory listing", 36, 1, 0, 0, 1, NULL, NULL },
-   { "memory", "Memory manager", 36, 1, 1, 0, -1, &cmd_help, mem_menu },
-   { "module", "Loadable module support", 36, 1, 1, 0, -1, &cmd_help, module_menu },
-   { "mv", "Move file/dir in jail", 36, 1, 0, 1, -1, NULL, NULL },
-   { "net", "Network", 36, 1, 1, 0, -1, &cmd_help, net_menu },
-   { "pkg", "Package commands", 36, 1, 1, 1, -1, &cmd_help, pkg_menu },
-   { "profiling", "Profiling support", 36, 1, 1, 0, -1, NULL, profiling_menu },
-   { "quit", "Alias to shutdown", 31, 1, 0, 0, 0, &cmd_shutdown, NULL },
-   { "reload", "Reload configuration", 36, 1, 0, 0, 0, &cmd_reload, NULL },
-   { "rm", "Remove file/directory in jail", 36, 1, 0, 1, -1, NULL, NULL },
-   { "thread", "Thread manager", 36, 1, 1, 0, -1, &cmd_help, thread_menu },
-   { "shutdown", "Terminate the service", 31, 1, 0, 0, 0, &cmd_shutdown, NULL },
-   { "stats", "Display statistics", 36, 1, 0, 0, 0, &cmd_stats, NULL },
-   { "vfs", "Virtual FileSystem (VFS)", 36, 1, 1, 1, -1, &cmd_help, vfs_menu }
+   { "cd", "Change directory", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
+   { "chown", "Change file/dir ownership in jail", HINT_CYAN, 1, 0, 2, -1, NULL, NULL },
+   { "chmod", "Change file/dir permissions in jail", HINT_CYAN, 1, 0, 2, -1, NULL, NULL },
+   { "clear", "Clear screen", HINT_CYAN, 1, 0, 0, 0, &cmd_clear, NULL },
+   { "conf", "Configuration keys", HINT_CYAN, 1, 0, 0, -1, &cmd_help, NULL },
+   { "cp", "Copy file in jail", HINT_CYAN, 1, 0, 1, -1, NULL, NULL },
+   { "cron", "Periodic event scheduler", HINT_CYAN, 1, 1, 0, -1, NULL, cron_menu },
+   { "db", "Database admin", HINT_CYAN, 1, 1, 0, -1, &cmd_help, db_menu },
+   { "debug", "Built-in debugger", HINT_CYAN, 1, 1, 0, -1, &cmd_help, debug_menu },
+   { "help", "Display help", HINT_CYAN, 1, 0, 0, -1, &cmd_help, NULL },
+   { "hooks", "Hooks management", HINT_CYAN, 1, 1, 0, -1, &cmd_help, hooks_menu },
+   { "less", "Show contents of a file (with pager)", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
+   { "logging", "Log file", HINT_CYAN, 1, 1, 0, -1, &cmd_help, logging_menu },
+   { "ls", "Display directory listing", HINT_CYAN, 1, 0, 0, 1, NULL, NULL },
+   { "memory", "Memory manager", HINT_CYAN, 1, 1, 0, -1, &cmd_help, mem_menu },
+   { "module", "Loadable module support", HINT_CYAN, 1, 1, 0, -1, &cmd_help, module_menu },
+   { "mv", "Move file/dir in jail", HINT_CYAN, 1, 0, 1, -1, NULL, NULL },
+   { "net", "Network", HINT_CYAN, 1, 1, 0, -1, &cmd_help, net_menu },
+   { "pkg", "Package commands", HINT_CYAN, 1, 1, 1, -1, &cmd_help, pkg_menu },
+   { "profiling", "Profiling support", HINT_CYAN, 1, 1, 0, -1, NULL, profiling_menu },
+   { "quit", "Alias to shutdown", HINT_RED, 1, 0, 0, 0, &cmd_shutdown, NULL },
+   { "reload", "Reload configuration", HINT_CYAN, 1, 0, 0, 0, &cmd_reload, NULL },
+   { "rm", "Remove file/directory in jail", HINT_CYAN, 1, 0, 1, -1, NULL, NULL },
+   { "thread", "Thread manager", HINT_CYAN, 1, 1, 0, -1, &cmd_help, thread_menu },
+   { "shutdown", "Terminate the service", HINT_RED, 1, 0, 0, 0, &cmd_shutdown, NULL },
+   { "stats", "Display statistics", HINT_CYAN, 1, 0, 0, 0, &cmd_stats, NULL },
+   { "vfs", "Virtual FileSystem (VFS)", HINT_CYAN, 1, 1, 1, -1, &cmd_help, vfs_menu }
 };
 
 static int shell_command(const char *line) {
@@ -277,10 +285,8 @@ static char *shell_hints(const char *buf, int *color, int *bold) {
    if (strlen(buf) < 2)
       return NULL;
 
-   // This should be done in a blockheap so the blocks can be reused....
-   // XXX: Convert to BlockHeap
-   msg = mem_alloc(200);
-   memset(msg, 0, sizeof(msg));
+   msg = blockheap_alloc(shell_hints_heap);
+   memset(msg, 0, SHELL_HINT_MAX);
 
    do {
       if (&main_menu[i] == NULL || main_menu[i].desc == NULL)
@@ -289,7 +295,7 @@ static char *shell_hints(const char *buf, int *color, int *bold) {
       if (strncasecmp(main_menu[i].cmd, buf, strlen(main_menu[i].cmd)) == 0) {
          *color = main_menu[i].color;
          *bold = main_menu[i].bold;
-         snprintf(msg, 199, " - %s", main_menu[i].desc);
+         snprintf(msg, SHELL_HINT_MAX, " - %s", main_menu[i].desc);
          return msg;
       }
       i++;
@@ -299,7 +305,7 @@ static char *shell_hints(const char *buf, int *color, int *bold) {
 }
 
 static void shell_hints_free(const char *buf) {
-    mem_free(buf);
+    blockheap_free(shell_hints_heap, buf);
 }
 
 void cmd_help(int argc, char **argv) {
@@ -351,6 +357,7 @@ void *thread_shell_init(void *data) {
    char *line;
 
    thread_entry((dict *)data);
+   shell_hints_heap = blockheap_create(SHELL_HINT_MAX, 32, "shell hints");
 
    // Configure the input widget appropriately
    linenoiseSetMultiLine(1);
@@ -388,7 +395,7 @@ void *thread_shell_init(void *data) {
 // Shell destructor
 void *thread_shell_fini(void *data) {
    linenoiseHistorySave("state/.shell.history");	// Save history
-
+   blockheap_destroy(shell_hints_heap);
    thread_exit((dict *)data);
    return NULL;
 }
