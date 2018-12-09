@@ -21,12 +21,14 @@
  */
 #include <signal.h>
 #include <string.h>
+#include <unistd.h>
 #include "memory.h"
 #include "logger.h"
 #include "linenoise.h"
 #include "shell.h"
 #include "unix.h"
 #include "conf.h"
+#include "threads.h"
 
 /* linenoie colour codes:
        red = 31
@@ -48,25 +50,25 @@ void cmd_shutdown(int argc, char *argv) {
 }
 
 // Prototype for help function
-void cmd_help(int argc, char *argv);
+void cmd_help(int argc, char **argv);
 
 // Clear the screen via linenoise
-void cmd_clear(int argc, char *argv) {
+void cmd_clear(int argc, char **argv) {
    linenoiseClearScreen();
    return;
 }
 
 // Use the signal handler to trigger a config reload (SIGHUP/1)
-void cmd_reload(int argc, char *argv) {
+void cmd_reload(int argc, char **argv) {
    raise(SIGHUP);
    return;
 }
 
-void cmd_stats(int argc, char *argv) {
+void cmd_stats(int argc, char **argv) {
    printf("stats requested by user:\n");
 }
 
-void cmd_conf_dump(int argc, char *argv) {
+void cmd_conf_dump(int argc, char **argv) {
    printf("Dumping configuration:\n");
    dict_dump(conf.dict, stdout);
 }
@@ -274,7 +276,7 @@ char *shell_hints(const char *buf, int *color, int *bold) {
 }
 
 
-void cmd_help(int argc, char *argv) {
+void cmd_help(int argc, char **argv) {
    struct shell_cmd *menu = NULL;
    int i = 0;
    int x = 0;
@@ -344,17 +346,12 @@ void *thread_shell_init(void *data) {
          continue;
 
       // Shell commands (local) start with / and are not sent to main process
-      if (line[0] != '\0' && line[0] != '/') {
+      if (line[0] != '\0') {
          // Dispatch it to the command interpreter
          if (shell_command(line) != -1) {
             linenoiseHistoryAdd(line);				// Add to history
             linenoiseHistorySave("state/.shell.history");	// Save history
          }
-      } else if (!strncmp(line, "/historylen", 11)) {
-         int len = atoi(line + 11);
-         linenoiseHistorySetMaxLen(len);
-      } else if (line[0] == '/') {
-         printf("Unrecognized command: %s\n", line);
       }
       free(line);
    }

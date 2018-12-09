@@ -100,7 +100,7 @@ void goodbye(void) {
    exit(EXIT_SUCCESS);
 }
 
-void usage(int argc, char **argv) {
+static void usage(int argc, char **argv) {
    printf("Usage: %s <jaildir> [action]\n", basename(argv[0]));
    printf("Compose a chroot jail based on a shared package pool.\n\n");
    printf("Options:\n");
@@ -113,20 +113,16 @@ int main(int argc, char **argv) {
    int         fd;
    int i, thr_cnt = 0;
    // XXX: Parses commandline arguments (should be minimal)
-   //
-   // Always require jail top-level dir (where jailfs.cf lives)
+
    if (argc > 1) {
       chdir(argv[1]);
    } else
       usage(argc, argv);
 
+   // XXX: we need to clone(), etc to create a fresh namespace
+
    // Begin Fuckery!
    pthread_mutex_lock(&core_ready_m);		// Set the Big Lock (TM)
-
-   ///////
-   // What do we do here?
-   //////
-
    host_init();					// Platform initialization
    conf.born = conf.now = time(NULL);		// Set birthday and clock (cron maintains)
    umask(0077);					// Restrict umask on new files
@@ -138,6 +134,7 @@ int main(int argc, char **argv) {
    signal_init();				// Setup POSIX siganls
    dlink_init();				// Doubly linked lists
    pkg_init();					// Package utilities
+
    Log(LOG_INFO, "jailfs: container filesystem %s starting up...", VERSION);
    Log(LOG_INFO, "Copyright (C) 2012-2018 bigfluffy.cloud -- See LICENSE in distribution package for terms of use");
 
@@ -154,10 +151,8 @@ int main(int argc, char **argv) {
 
    Log(LOG_INFO, "Opening database %s", dconf_get_str("path.db", ":memory"));
    db_open(dconf_get_str("path.db", ":memory"));
-   Log(LOG_INFO, "jail at %s/%s is now ready!", get_current_dir_name(), conf.mountpoint);
 
-   //
-   // We start the threads defined in 
+   // These are defined at the top of src/main.c
    Log(LOG_INFO, "Starting core threads...");
    main_threadpool = threadpool_init("main", NULL);
    thr_cnt = sizeof(main_threads)/sizeof(struct ThreadCreator) - 1;
@@ -165,7 +160,6 @@ int main(int argc, char **argv) {
    do {
       if (main_threads[i].name != NULL) {
          if (!main_threads[i].init) {
-            Log(LOG_ERR, "module entry %s has no init function", main_threads[i].name);
             i++;
             continue;
          }
@@ -197,6 +191,8 @@ int main(int argc, char **argv) {
    core_ready = 1;
    pthread_mutex_unlock(&core_ready_m);
    pthread_cond_broadcast(&core_ready_c);
+
+   Log(LOG_INFO, "jail at %s/%s is now ready!", get_current_dir_name(), conf.mountpoint);
    Log(LOG_INFO, "Ready to accept requests.");
 
    // Main loop for libev

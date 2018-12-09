@@ -29,6 +29,8 @@ char **g_argv = NULL;
 
 /* src/module.c */
 extern int module_dying(int signal);
+/* src/shell.c */
+extern void cmd_reload(int argc, char **argv);
 
 /*
  * Signal handling
@@ -61,6 +63,8 @@ static void signal_handler(int signal) {
       profiling_dump();
    } else if (signal == SIGUSR2) {
       profiling_toggle();
+   } else if (signal == SIGHUP) {
+      cmd_reload(0, NULL);
    } else if (signal == SIGCHLD) { /* Prevent zombies */
       while(waitpid(-1, NULL, WNOHANG) > 0)
          ;
@@ -74,7 +78,7 @@ struct SignalMapping {
    int flags;		/* See man 3 sigaction */
    int blocked;		/* Signals blocked during handling */
 } SignalSet[] = {
-   { SIGHUP, SA_RESTART, NULL },
+   { SIGHUP, SA_RESTART, 0 },
    { SIGUSR1, SA_RESTART, SIGUSR1|SIGHUP },
    { SIGUSR2, SA_RESTART, SIGUSR2|SIGHUP },
    { SIGQUIT, SA_RESETHAND, SIGUSR1|SIGUSR2|SIGHUP },
@@ -121,7 +125,8 @@ void posix_signal_quiet(void) {
    sigset_t sigset;
    int signals[] = { SIGABRT, SIGQUIT, SIGKILL, SIGTERM, SIGSYS };
    int sigign[] = { SIGCHLD, SIGPIPE, SIGHUP, SIGSTOP, SIGTSTP, SIGCONT };
-   /* these should be by debugger: SIGTRAP, SIGFPE, SIGSEGV */
+
+   /* these should be handled by debugger: SIGTRAP, SIGFPE, SIGSEGV */
    sigemptyset(&sigset);
 
    for (int i = 0; i <= (size_t)(sizeof(signals) / sizeof(signals[0])); i++)
