@@ -49,11 +49,13 @@ struct ThreadCreator {
       .init = &thread_logger_init,
       .fini = &thread_logger_fini,
    },
+/*
    {
       .name = "db",
-//      .init = &thread_db_init,
-//      .fini = &thread_db_fini,
+      .init = &thread_db_init,
+      .fini = &thread_db_fini,
    },
+*/
    {
       .name = "cache",
       .init = &thread_cache_init,
