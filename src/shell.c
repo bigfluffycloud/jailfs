@@ -53,7 +53,7 @@ void cmd_shutdown(int argc, char *argv) {
 void cmd_help(int argc, char **argv);
 
 // Clear the screen via linenoise
-void cmd_clear(int argc, char **argv) {
+static void cmd_clear(int argc, char **argv) {
    linenoiseClearScreen();
    return;
 }
@@ -64,11 +64,11 @@ void cmd_reload(int argc, char **argv) {
    return;
 }
 
-void cmd_stats(int argc, char **argv) {
+static void cmd_stats(int argc, char **argv) {
    printf("stats requested by user:\n");
 }
 
-void cmd_conf_dump(int argc, char **argv) {
+static void cmd_conf_dump(int argc, char **argv) {
    printf("Dumping configuration:\n");
    dict_dump(conf.dict, stdout);
 }
@@ -203,16 +203,16 @@ struct shell_cmd main_menu[] = {
    { "net", "Network", 36, 1, 1, 0, -1, &cmd_help, net_menu },
    { "pkg", "Package commands", 36, 1, 1, 1, -1, &cmd_help, pkg_menu },
    { "profiling", "Profiling support", 36, 1, 1, 0, -1, NULL, profiling_menu },
+   { "quit", "Alias to shutdown", 31, 1, 0, 0, 0, &cmd_shutdown, NULL },
    { "reload", "Reload configuration", 36, 1, 0, 0, 0, &cmd_reload, NULL },
    { "rm", "Remove file/directory in jail", 36, 1, 0, 1, -1, NULL, NULL },
    { "thread", "Thread manager", 36, 1, 1, 0, -1, &cmd_help, thread_menu },
    { "shutdown", "Terminate the service", 31, 1, 0, 0, 0, &cmd_shutdown, NULL },
    { "stats", "Display statistics", 36, 1, 0, 0, 0, &cmd_stats, NULL },
-   { "vfs", "Virtual FileSystem (VFS)", 36, 1, 1, 1, -1, &cmd_help, vfs_menu },
-   { "quit", NULL, 0, 0, 0, 0, 0, &cmd_shutdown, NULL }						// Unlisted alias to shutdown
+   { "vfs", "Virtual FileSystem (VFS)", 36, 1, 1, 1, -1, &cmd_help, vfs_menu }
 };
 
-int shell_command(const char *line) {
+static int shell_command(const char *line) {
    char *args[32], *last_p = NULL, *p = NULL;
    char *tmp;
    int i = 0, x = 0;
@@ -251,30 +251,56 @@ int shell_command(const char *line) {
    return 0;
 }
 
-void shell_completion(const char *buf, linenoiseCompletions *lc) {
-   // Scan through the menu and generate completions...
-   if (buf[0] == 'h') {
-      linenoiseAddCompletion(lc, "help");
-   } else if (strncasecmp(buf, "shut", 4) == 0) {
-      linenoiseAddCompletion(lc, "shutdown");
-   }
+static void shell_completion(const char *buf, linenoiseCompletions *lc) {
+   int i = 0, x = 0;
+   x = sizeof(main_menu) / sizeof(main_menu[0]);
+   i = 0;
+   do {
+      if (&main_menu[i] == NULL || main_menu[i].desc == NULL)
+         break;
+
+      if (strncasecmp(buf, main_menu[i].cmd, strlen(buf)) == 0) {
+         linenoiseAddCompletion(lc, main_menu[i].cmd);
+         i++;
+         continue;
+      }
+      i++;
+   } while(i < x);
 }
 
-char *shell_hints(const char *buf, int *color, int *bold) {
-   // Scan through the menu and provide hints...
-   if (!strcasecmp(buf, "help")) {
-      *color = 36;
-      *bold = 1;
-      return " show help messages";
-   } else if (!strcasecmp(buf, "shutdown") || !strcasecmp(buf, "quit")) {
-      *color = 31;
-      *bold = 1;
-      return " terminate the jail";
-   }
+static char *shell_hints(const char *buf, int *color, int *bold) {
+   int i = 0, x = 0;
+   x = sizeof(main_menu) / sizeof(main_menu[0]);
+   i = 0;
+   char *msg;
+
+   if (strlen(buf) < 2)
+      return NULL;
+
+   // This should be done in a blockheap so the blocks can be reused....
+   // XXX: Convert to BlockHeap
+   msg = mem_alloc(200);
+   memset(msg, 0, sizeof(msg));
+
+   do {
+      if (&main_menu[i] == NULL || main_menu[i].desc == NULL)
+         break;
+
+      if (strncasecmp(main_menu[i].cmd, buf, strlen(main_menu[i].cmd)) == 0) {
+         *color = main_menu[i].color;
+         *bold = main_menu[i].bold;
+         snprintf(msg, 199, " - %s", main_menu[i].desc);
+         return msg;
+      }
+      i++;
+   } while(i < x);
 
    return NULL;
 }
 
+static void shell_hints_free(const char *buf) {
+    mem_free(buf);
+}
 
 void cmd_help(int argc, char **argv) {
    struct shell_cmd *menu = NULL;
@@ -330,6 +356,7 @@ void *thread_shell_init(void *data) {
    linenoiseSetMultiLine(1);
    linenoiseSetCompletionCallback(shell_completion);
    linenoiseSetHintsCallback(shell_hints);
+   linenoiseSetFreeHintsCallback(shell_hints_free);
    linenoiseHistorySetMaxLen(dconf_get_int("shell.history-length", 100));
    linenoiseHistoryLoad("state/.shell.history");
 
