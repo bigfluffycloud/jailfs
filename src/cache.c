@@ -58,6 +58,8 @@ void *thread_cache_init(void *data) {
 
 // Thread destructor
 void *thread_cache_fini(void *data) {
+   dict_free(cache_dict);
+
    thread_exit((dict *)data);
    return NULL;
 }

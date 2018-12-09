@@ -314,7 +314,7 @@ dict *dict_new(void) {
 }
 
 /* Public: deallocate a dict */
-void dict_mem_free(dict * d) {
+void dict_free(dict * d) {
     int i;
     
     if (!d)
@@ -535,7 +535,7 @@ int main(int argc, char **argv) {
     printf(ALIGN, "adding", t2 - t1);
 
     t1 = epoch_double();
-    dict_mem_free(d);
+    dict_free(d);
     t2 = epoch_double();
     printf(ALIGN, "mem_free", t2 - t1);
 
