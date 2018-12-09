@@ -12,7 +12,7 @@
  * No warranty of any kind. Good luck!
  */
 #include <stdlib.h>
-//#include <bsd/string.h>
+#include <bsd/string.h>
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>

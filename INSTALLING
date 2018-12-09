@@ -34,6 +34,6 @@ Debian
 ------
 Try this:
 ```
- sudo apt install libev-dev libmagic-dev libfuse-dev fuse libunwind-dev libarchive-dev
+ sudo apt install libev-dev libmagic-dev libfuse-dev fuse libunwind-dev libarchive-dev libbsd-dev
 ```
 to install dependencies.

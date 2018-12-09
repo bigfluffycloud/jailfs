@@ -16,3 +16,6 @@
 [submodule "ext/musl"]
 	path = ext/musl
 	url = git://git.musl-libc.org/musl
+[submodule "ext/libbsd"]
+	path = ext/libbsd
+	url = https://github.com/freedesktop/libbsd.git
