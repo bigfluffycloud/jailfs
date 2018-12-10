@@ -21,19 +21,19 @@ include mk/config.mk
 #include mk/ccache.mk
 #include mk/ext.mk
 
-# Core rules
-include mk/bin.mk
-include mk/clean.mk
-include mk/debug.mk
-include mk/help.mk
-include mk/indent.mk
-include mk/release.mk
-include mk/tests.mk
-
 # Project rules
 include doc/rules.mk
 include src/rules.mk
 include tests/rules.mk
 
+# Core rules
+include mk/bin.mk
+include mk/help.mk
+include mk/indent.mk
+include mk/tests.mk
+include mk/release.mk
+include mk/clean.mk
+include mk/debug.mk
+
 # Build *everything* suitable for a release
-world: ${libs} ${bin} symtab strings
+world: ${libs} ${bin} ${debug_targets}

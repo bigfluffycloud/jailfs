@@ -10,20 +10,27 @@
 # No warranty of any kind. Good luck!
 #
 
-ifeq (${CONFIG_DEBUG}, y)
-CONFIG_STRIP_BINS=n
-CFLAGS += -DCONFIG_DEBUG
-endif
-
-symtab:
+dbg/${bin}.symtab:
 	nm -Clp ${bin} | \
 	awk '{ printf "%s %s %s\n", $$3, $$2, $$4 }' | \
 	egrep -v "(@@|__FUNCTION)" | \
 	sort -u > dbg/${bin}.symtab
 
-strings:
+dbg/${bin}.strings:
 	strings ${bin} \
 	> dbg/${bin}.strings
 
-extra_targets += symtab strings
-extra_clean += dbg/${bin}.symtab dbg/${bin}.strings
+debug_targets += dbg/${bin}.symtab
+debug_targets += dbg/${bin}.strings
+debug_clean += ${debug_targets}
+
+debug: debug-pre ${debug_targets} ${extra_debug_targets} debug-post
+
+debug-pre:
+	@echo "Building debugging data..."
+
+debug-post:
+	@echo "Finished building debugging data!"
+
+extra_target += debug
+extra_clean += ${debug_clean}
