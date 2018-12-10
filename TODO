@@ -1,12 +1,25 @@
+* Figure out how we're going to work out i18n strings
+  - Add dict_printf() to allow printing based on a dict
+    ex:
+    dict_printf(dict, "Path %{path.mountpoint:s} is not writable\n");
+    or
+    dict_snprintf(dict, buf, sizeof(buf), "Path %{path.mountpoint:s} is not writable");
+
 * Inter-thread IPC mechanism
+
 * Move as much as possible to thread/module private
+
 * Make all the BlockHeap's totally thread-private
+
 * Fix inotify to remove packages & files if deleted
+
 * (jm) Feature/3 - Allow persistence of the database (right now we clobber
                    and rescan the pkgdir on startup.
+
 * (jm) Feature/6 - unwind/profiling support from appworx/apxd
 
 * De-duplicate some of the lists & trees code.
+
 * Make sure EVERYTHING is using BlockHeap allocator
   - Can we replace malloc()/free() with wrappers which log?
 

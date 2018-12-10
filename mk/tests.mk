@@ -23,7 +23,7 @@ testpkg:
 	   fi; \
 	done
 
-clean-pkg:
+clean-pkgs:
 	rm -f pkg/*.tar
 
 test: ${bin} umount
@@ -42,7 +42,8 @@ umount:
 tests-help:
 	@echo -e "*\ttest       - Run a test session"
 	@echo -e "*\ttestpkg    - Build packages for examples"
-	@echo -e "*\tclean-pkg  - Clean out package dir"
+	@echo -e "*\tclean-pkgs - Clean out package dir"
 	@echo -e "*\tqa         - Quality Assurance mode"
 
 help_targets += tests-help
+distclean_targets += clean-pkgs

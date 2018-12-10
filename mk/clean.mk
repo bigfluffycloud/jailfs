@@ -11,12 +11,10 @@
 # No warranty of any kind. Good luck!
 #
 
-clean:
+clean: ${clean_targets}
 	${RM} ${clean_objs} ${bin} ${extra_clean} ${libs} ${lib_objs}
 
-distclean:
-	@${MAKE} clean
-	touch examples/*/{root,cache}/.keepme 
+distclean: ${distclean_targets} clean
 
 clean-help:
 	@echo -e "*\tclean      - Clean for (re)building"
