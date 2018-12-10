@@ -94,9 +94,11 @@ int main(int argc, char **argv) {
    Log(LOG_INFO, "jailfs: container filesystem %s starting up...", VERSION);
    Log(LOG_INFO, "Copyright (C) 2012-2018 bigfluffy.cloud -- See LICENSE in distribution package for terms of use");
 
-   if (argc > 1)
-      chdir(argv[1]);
-   else
+   if (argc > 1) {
+      if (chdir(argv[1])) {
+         // Ignore
+      }
+   } else
       usage(argc, argv);
 
    // XXX: we need to clone(), etc to create a fresh namespace

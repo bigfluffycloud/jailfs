@@ -21,6 +21,8 @@
 #include "ev.h"
 #include "memory.h"
 #include "logger.h"
+#include "gc.h"
+#include "timestr.h"
 struct ev_loop *evt_loop = NULL;
 
 void evt_init(void) {

@@ -52,7 +52,7 @@ struct symtab_ent {
 };
 typedef struct symtab_ent symtab_ent_t;
 
-symtab_ent_t	*debug_symtab_ent(symtab_ent_t *rv, const char *line) {
+symtab_ent_t	*debug_symtab_ent(symtab_ent_t *rv, char *line) {
     char *_name,
          *_type,
          *_file,
@@ -66,7 +66,7 @@ symtab_ent_t	*debug_symtab_ent(symtab_ent_t *rv, const char *line) {
     memset((void *)&rv, 0, sizeof(rv));
 
     // Parse the line:
-    _name = &line;
+    _name = line;
     _type = strchr(line, ' ') + 1;
     _file = strchr(_type, ' ') + 1;
     _line = strchr(_file, ':') + 1;

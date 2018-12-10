@@ -50,12 +50,12 @@ BlockHeap *shell_hints_heap = NULL;
 static const char *shell_prompt = "jailfs> ";
 
 // Use the signal handler to properly shut don the system (SIGTERM/11)
-void cmd_shutdown(int argc, char *argv) {
+void cmd_shutdown(int argc, char **argv) {
    Log(LOG_NOTICE, "shutdown command from console.");
    raise(SIGTERM);
 }
 
-static void cmd_user(int argc, char *argv) {
+static void cmd_user(int argc, char **argv) {
    printf("User error: replace user\nGoodbye!\n");
    raise(SIGTERM);
 }
@@ -249,13 +249,13 @@ static int shell_command(const char *line) {
 */
    // We need to break up the command line here into args & i then use the menus ;)
    if (strncasecmp(line, "help", 4) == 0) {
-      cmd_help(i, &args);
+      cmd_help(i, args);
    } else if (strcasecmp(line, "shutdown") == 0 || strcasecmp(line, "quit") == 0) {
-      cmd_shutdown(i, &args);
+      cmd_shutdown(i, args);
    } else if (strcasecmp(line, "user") == 0) {
-      cmd_shutdown(i, &args);
+      cmd_shutdown(i, args);
    } else if (strcasecmp(line, "conf dump") == 0) {
-      cmd_conf_dump(i, &args);
+      cmd_conf_dump(i, args);
    } else if (strcasecmp(line, "gc now") == 0) {
       printf("gc: Freed %d objects", gc_all());
    } else
@@ -331,7 +331,7 @@ static char *shell_hints(const char *buf, int *color, int *bold) {
    return NULL;
 }
 
-static void shell_hints_free(const char *buf) {
+static void shell_hints_free(char *buf) {
     blockheap_free(shell_hints_heap, buf);
 }
 
@@ -342,7 +342,7 @@ void cmd_help(int argc, char **argv) {
 
    if (argc == 0) {
       printf("Using menu: main\n");
-      menu = &menu_main;
+      menu = menu_main;
    }
 /*
     else {
@@ -390,7 +390,7 @@ void *thread_shell_init(void *data) {
    linenoiseSetMultiLine(1);
    linenoiseSetCompletionCallback(shell_completion);
    linenoiseSetHintsCallback(shell_hints);
-   linenoiseSetFreeHintsCallback(shell_hints_free);
+   linenoiseSetFreeHintsCallback((void *)shell_hints_free);
    linenoiseHistorySetMaxLen(dconf_get_int("shell.history-length", 100));
    linenoiseHistoryLoad("state/.shell.history");
 
