@@ -43,34 +43,12 @@ struct ThreadCreator {
    void (*init)(void *);
    void (*fini)(void *);
 } main_threads[] = {
-   {
-      .name = "logger",
-      .init = &thread_logger_init,
-      .fini = &thread_logger_fini,
-   },
-   {
-      .name = "db",
-      .init = &thread_db_init,
-      .fini = &thread_db_fini,
-   },
-   {
-      .name = "cache",
-      .init = &thread_cache_init,
-      .fini = &thread_cache_fini,
-   },
-   {
-      .name = "vfs",
-      .init = &thread_vfs_init,
-      .fini = &thread_vfs_fini,
-   },
-   {
-      .name = "shell",
-      .init = &thread_shell_init,
-      .fini = &thread_shell_fini,
-   },
-   {
-      .name = NULL
-   }
+  { "logger", &thread_logger_init, &thread_logger_fini },
+  { "db", &thread_db_init, &thread_db_fini },
+  { "cache", &thread_cache_init, &thread_cache_fini },
+  { "vfs", &thread_vfs_init, &thread_vfs_fini },
+  { "shell", &thread_shell_init, &thread_shell_fini },
+  { NULL, NULL, NULL }
 };
 
 // Called on exit to cleanup..

@@ -1,5 +1,5 @@
 bin := jailfs
-
+jailfs_objs += .obj/api.o
 jailfs_objs += .obj/atomicio.o
 jailfs_objs += .obj/balloc.o
 jailfs_objs += .obj/cache.o

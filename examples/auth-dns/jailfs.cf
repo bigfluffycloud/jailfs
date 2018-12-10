@@ -51,7 +51,7 @@ log.stack_unwind=true
 debug.db=false
 debug.mem=true
 debug.net=false
-debug.threads=true
+debug.threads=false
 debug.vfs=true
 debug.vfs.mime=false
 ; You probably never want to turn this to true...
@@ -60,6 +60,7 @@ debug.monothread=false
 ;;;;;;;;;;;;;;;
 ; Tuning Kobs ;
 ;;;;;;;;;;;;;;;
+tuning.heap.api-msg=512
 tuning.heap.files=8192
 tuning.heap.inode=128
 tuning.heap.node=128

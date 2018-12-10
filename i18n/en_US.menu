@@ -1,0 +1,21 @@
+[general]
+lang=en_US
+author=joseph@bigfluffy.cloud
+
+[global]
+item clear shell_clear "Clear the screen"
+
+[main]
+menu fs "File System utilities (cp/mv/rm/etc)"
+
+[fs]
+item cd shell_fs_cd "Change directory"
+item chmod shell_fs_chmod "Change permissions (modes)"
+item chown shell_f_chown "Change ownership"
+item cp shell_fs_cp "Copy"
+item less shell_fs_less "Show file contents (pager)"
+item ls shell_fs_ls "List directory"
+item mv shell_fs_mv "Move"
+item pwd shell_fs_pd "Print Working Directory"
+item rm shell_fs_rm "Remove"
+item stat shell_fs_stat "Show item stat()"
