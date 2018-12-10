@@ -6,7 +6,34 @@ author=joseph@bigfluffy.cloud
 item clear shell_clear "Clear the screen"
 
 [main]
+menu conf "Configuration"
+menu cron "Periodic events"
+menu db "Database"
+menu debug "Debugger"
 menu fs "File System utilities (cp/mv/rm/etc)"
+menu log "Event logger"
+menu hook "Event hooks"
+menu thread "Thread management"
+menu vfs "Virtual FileSystem"
+iten "gc now" shell_gc_all "Garbage collect now"
+item shutdown shell_shutdown "Shut down the jail"
+
+[conf]
+item dump shell_conf_dump "Dump configuration"
+item save shell_conf_save "Save configuration to disk"
+item get shell_conf_get "Get configuration option"
+item set shell_conf_set "Set configuration option"
+
+[cron]
+item list shell_cron_list "List scheduled timers"
+item add shell_cron_add "Add scheduled task"
+item del shell_cron_del "Delete scheduled task"
+
+[db]
+
+[debug]
+item set shell_debug_set "Set debugging toggle"
+item show shell_debug_shell "Show debugging settings"
 
 [fs]
 item cd shell_fs_cd "Change directory"
@@ -19,3 +46,14 @@ item mv shell_fs_mv "Move"
 item pwd shell_fs_pd "Print Working Directory"
 item rm shell_fs_rm "Remove"
 item stat shell_fs_stat "Show item stat()"
+
+[hook]
+
+[log]
+
+[thread]
+item debug shell_thread_debug "Debug thread"
+item list shell_thread_ls "List threads"
+item stop shell_thread_stop "Stop thread"
+
+[vfs]
