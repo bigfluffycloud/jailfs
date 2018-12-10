@@ -1,60 +1,28 @@
 #
 # GNUmakefile:
-#	Top level GNU Make recipe for building jailfs
+#	Top level Makefile for building this project with GNU make
 #
 # Copyright (C) 2018 Bigfluffy.cloud <joseph@bigfluffy.cloud>
 #
 # Distributed under a MIT license. Send bugs/patches by email or
-# on github - https://github.com/bigfluffycloud/fs-pkg/
+# on github - https://github.com/bigfluffycloud/jailfs/
 #
 # No warranty of any kind. Good luck!
 #
 
+# Redirect the common 'all' rule to 'world' and ensure it's default rule
 all: world
 
+# Include sub-makefile, where all the real magic happens
 include mk/config.mk
-include mk/distcc.mk
+#include mk/distcc.mk
 #include mk/ccache.mk
 #include mk/ext.mk
-include mk/indent.mk
 include mk/bin.mk
+include mk/debug.mk
 include mk/clean.mk
+include mk/indent.mk
 include mk/tests.mk
- 
-ifeq (${CONFIG_DEBUG}, y)
-CONFIG_STRIP_BINS=n
-CFLAGS += -DCONFIG_DEBUG
-endif
 
+# Build *everything* 
 world: ${libs} ${bin} symtab strings
-
-testpkg:
-	./scripts/testpkg.sh
-
-symtab:
-	nm -Clp ${bin} | \
-	awk '{ printf "%s %s %s\n", $$3, $$2, $$4 }' | \
-	egrep -v "(@@|__FUNCTION)" | \
-	sort -u > dbg/${bin}.symtab
-
-strings:
-	strings ${bin} \
-	> dbg/${bin}.strings
-
-umount:
-	-umount examples/auth-dns/root
-	-umount examples/auth-dns/cache
-#	-for i in examples/auth-dns/root; do \
-#	    mountpoint $$i; \
-#	    [ "$$?" == 0 ] && umount $$i; \
-#	done
-
-test: ${bin} umount
-	rm -f examples/auth-dns/state/jailfs.pid
-	./jailfs examples/auth-dns
-
-qa:
-	${MAKE} clean world testpkg test umount
-
-extra_clean += dbg/${bin}.symtab dbg/${bin}.strings
-extra_clean += $(wildcard examples/*/state/*.pid)

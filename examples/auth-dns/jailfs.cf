@@ -82,7 +82,7 @@ experimental.watchdog=false
 [modules]
 #simple_template.so
 #fs-etc.so
-#fs-pkg.so
+#jailfs.so
 
 ; This will be used by warden to manage the processes in the jail
 [jail]

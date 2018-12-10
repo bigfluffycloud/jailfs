@@ -1,3 +1,14 @@
+#
+# mk/indent.mk:
+#	Mangle^WIndent the source code to make it more readable???
+#
+# Copyright (C) 2018 Bigfluffy.cloud <joseph@bigfluffy.cloud>
+#
+# Distributed under a MIT license. Send bugs/patches by email or
+# on github - https://github.com/bigfluffycloud/jailfs/
+#
+# No warranty of any kind. Good luck!
+#
 # This is bad... We need to clean it up before someone runs this target again....
 id_blanks := -nbad -bap -nbbb -sob -hnl
 id_comments := -lc110 -fc1 -c40 -cd40 -cp40 -cdb -sc -d0 -nfc1

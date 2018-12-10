@@ -1,4 +1,4 @@
-This is a pretty old version of fs-pkg. I'm working to restore it to a
+This is a pretty old version of jailfs. I'm working to restore it to a
 usable state. Unfortunately the newest version is on a drive that will not
 spin up... So far it runs, can load packages into the database, and almost
 do basic vfs ops again!
@@ -7,7 +7,7 @@ I wrote this some years ago, abandoned it for a few years, then was asked
 to resurrect it for a project at $FormerEmployer. Unfortunately, they
 had some really horrible ideas for what it was to become. Needless to say,
 this is a clean-room reimplementation of a lot of the code, with a focus on
-stability and security. The fs-pkg shipped with $Product appears to have
+stability and security. The jailfs shipped with $Product appears to have
 grown to be quite a mess in the years since I left :O 
 
 
@@ -23,7 +23,7 @@ this more modular.
 
 The long term plan for the project is to provide a threaded,
 modular FUSE based virtual file system, allowing stacking
-file systems (fs-etc (template based /etc) on top of fs-pkg).
+file systems (fs-etc (template based /etc) on top of jailfs).
 
 pkg (archive), spillover (.spill), and etc are needed for
 release 0.1.0
@@ -39,10 +39,10 @@ Eventually adding support for archive format modules
 * make clean world
 
 # Configure it
-* joe fs-pkg.cf
+* joe jailfs.cf
 
 # Run it
-* ./fs-pkg &
+* ./jailfs &
 
 # Build a test package
 * make testpkg
@@ -63,12 +63,12 @@ $FormerEmployer.
 If you can fix them, submit a diff -u or git diff to me at
 joseph@bigfluffy.cloud
 
-If you can at least send a crash report (edit fs-pkg.cf and set the below):
+If you can at least send a crash report (edit jailfs.cf and set the below):
 
   log.level=debug
   log.stack_unwind=true
 
-Then send your log file (default is fs-pkg.log) by email.
+Then send your log file (default is jailfs.log) by email.
 
 Debug log level WILL reduce performance. stack_unwind should not have a
 noticable effect on normal operation.

@@ -1,5 +1,5 @@
 /*
- * tk/servers/fs-pkg:
+ * tk/servers/jailfs:
  *	Package filesystem. Allows mounting various package files as
  *   a read-only (optionally with spillover file) overlay filesystem
  *   via FUSE or (eventually) LD_PRELOAD library.
@@ -7,15 +7,15 @@
  * Copyright (C) 2012-2018 BigFluffy.Cloud <joseph@bigfluffy.cloud>
  *
  * Distributed under a BSD license. Send bugs/patches by email or
- * on github - https://github.com/bigfluffycloud/fs-pkg/
+ * on github - https://github.com/bigfluffycloud/jailfs/
  *
  * No warranty of any kind. Good luck!
  */
 /*
  * Here we provide a mechanism for using LD_PRELOAD to inject
- * support for fs-pkg into unmodified programs.
+ * support for jailfs into unmodified programs.
  *
- * This was kind of abandoned when we rewrote fs-pkg for ##ProductnameSanitized##...
+ * This was kind of abandoned when we rewrote jailfs for ##ProductnameSanitized##...
  *
  * I personally always preferred this to the overhead of FUSE...
  */

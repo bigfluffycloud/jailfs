@@ -50,7 +50,7 @@ fs-acl: Access Control List implementation on FUSE
    - Uses dlsym and linux debugging mechanisms to intercept
      functions. (Dynamic patching)
 fs-etc: Configuration storage and templating
-fs-pkg: Package file system
+jailfs: Package file system
    - Add deb/rpm support?
 libnoui: Library for communication with Node.js NetOS backend
    - Interfaces with the server-side of the desktop, redirecting msgs
