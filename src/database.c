@@ -24,6 +24,7 @@
 #include "logger.h"
 #include "memory.h"
 #include "util.h"
+#include "threads.h"
 #define	SQL_BUFSIZE	8192
 
 static sqlite3 *sqlite_db = NULL;
@@ -88,7 +89,7 @@ void       *db_query(enum db_query_res_type type, const char *fmt, ...) {
    void       *ret = NULL;
    pkg_inode_t *inode;
 
-   if (!(buf = mem_alloc(SQL_BUFSIZE))) {
+   if ((buf = mem_alloc(SQL_BUFSIZE)) == NULL) {
       Log(LOG_ERR, "%s: alloc: %d:%s", __FUNCTION__, errno, strerror(errno));
       return NULL;
    }
@@ -223,7 +224,7 @@ int db_file_remove(int pkg, const char *path) {
 }
 
 
-void *thread_database_init(void *data) {
+void *thread_db_init(void *data) {
     thread_entry((dict *)data);
 
     Log(LOG_INFO, "Opening database %s", dconf_get_str("path.db", ":memory"));
@@ -237,7 +238,7 @@ void *thread_database_init(void *data) {
     return NULL;
 }
 
-void *thread_database_fini(void *data) {
+void *thread_db_fini(void *data) {
    db_close();
    thread_exit((dict *)data);
    return NULL;

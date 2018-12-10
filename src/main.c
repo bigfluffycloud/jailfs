@@ -49,13 +49,11 @@ struct ThreadCreator {
       .init = &thread_logger_init,
       .fini = &thread_logger_fini,
    },
-/*
    {
       .name = "db",
       .init = &thread_db_init,
       .fini = &thread_db_fini,
    },
-*/
    {
       .name = "cache",
       .init = &thread_cache_init,
@@ -191,7 +189,7 @@ int main(int argc, char **argv) {
    pthread_mutex_unlock(&core_ready_m);
    pthread_cond_broadcast(&core_ready_c);
 
-   Log(LOG_INFO, "jail at %s/%s is now ready!", get_current_dir_name(), conf.mountpoint);
+   Log(LOG_INFO, "jail at %s/%s is now ready!", get_current_dir_name(), dconf_get_str("path.mountpoint", NULL));
    Log(LOG_INFO, "Ready to accept requests.");
 
    // Main loop for libev

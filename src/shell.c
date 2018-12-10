@@ -30,7 +30,7 @@
 #include "unix.h"
 #include "conf.h"
 #include "threads.h"
-
+#include "gc.h"
 
 //
 // Shell hints stuff
@@ -53,9 +53,12 @@ static const char *shell_prompt = "jailfs> ";
 void cmd_shutdown(int argc, char *argv) {
    Log(LOG_NOTICE, "shutdown command from console.");
    raise(SIGTERM);
-   return;
 }
 
+static void cmd_user(int argc, char *argv) {
+   printf("User error: replace user\nGoodbye!\n");
+   raise(SIGTERM);
+}
 // Prototype for help function
 void cmd_help(int argc, char **argv);
 
@@ -216,6 +219,7 @@ static struct shell_cmd menu_main[] = {
    { "thread", "Thread manager", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_thread },
    { "shutdown", "Terminate the service", HINT_RED, 1, 0, 0, 0, &cmd_shutdown, NULL },
    { "stats", "Display statistics", HINT_CYAN, 1, 0, 0, 0, &cmd_stats, NULL },
+   { "user", "Tools for users", HINT_YELLOW, 0, 0, 0, 0, &cmd_user, NULL },
    { "vfs", "Virtual FileSystem (VFS)", HINT_CYAN, 1, 1, 1, -1, &cmd_help, menu_vfs }
 };
 
@@ -243,17 +247,19 @@ static int shell_command(const char *line) {
          break;
    }
 */
-   // We need to break up the command line here into args & i
+   // We need to break up the command line here into args & i then use the menus ;)
    if (strncasecmp(line, "help", 4) == 0) {
       cmd_help(i, &args);
    } else if (strcasecmp(line, "shutdown") == 0 || strcasecmp(line, "quit") == 0) {
       cmd_shutdown(i, &args);
    } else if (strcasecmp(line, "user") == 0) {
-      printf("User error: replace user\nGoodbye!\n");
       cmd_shutdown(i, &args);
    } else if (strcasecmp(line, "conf dump") == 0) {
       cmd_conf_dump(i, &args);
-   }
+   } else if (strcasecmp(line, "gc now") == 0) {
+      gc_all();
+   } else
+      printf("Unknown command: %s\t- try help\n", line);
 
    return 0;
 }
@@ -262,6 +268,7 @@ static void shell_completion(const char *buf, linenoiseCompletions *lc) {
    int i = 0, x = 0;
    x = sizeof(menu_main) / sizeof(menu_main[0]);
    i = 0;
+
    do {
       if (&menu_main[i] == NULL || menu_main[i].desc == NULL)
          break;
@@ -273,6 +280,12 @@ static void shell_completion(const char *buf, linenoiseCompletions *lc) {
       }
       i++;
    } while(i < x);
+
+   // Extras (until we clean this mess up...)
+   if (strcasecmp(buf, "gc now") == 0)
+      linenoiseAddCompletion(lc, "gc now");
+   else if (strcasecmp(buf, "conf dump") == 0)
+      linenoiseAddCompletion(lc, "conf dump");
 }
 
 static char *shell_hints(const char *buf, int *color, int *bold) {
@@ -287,6 +300,21 @@ static char *shell_hints(const char *buf, int *color, int *bold) {
    msg = blockheap_alloc(shell_hints_heap);
    memset(msg, 0, SHELL_HINT_MAX);
 
+
+   // Static entries that will soon go away...
+   if (strncasecmp(buf, "gc now", 6) == 0) {
+      *color = HINT_YELLOW,
+      *bold = 1,
+      snprintf(msg, SHELL_HINT_MAX, " - run garbage collector now");
+      return msg;
+   } else if (strncasecmp(buf, "conf dump", 9) == 0) {
+      *color = HINT_YELLOW,
+      *bold = 1,
+      snprintf(msg, SHELL_HINT_MAX, " - dump active configuration file");
+      return msg;
+   }
+
+   // from menu_main etc
    do {
       if (&menu_main[i] == NULL || menu_main[i].desc == NULL)
          break;

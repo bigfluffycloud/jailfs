@@ -51,7 +51,7 @@ static struct log_levels log_levels[] = {
 
 // Internal thread-local state keeping
 typedef struct {
-  enum { NONE = 0, SYSLOG, STDERR, LOGFILE, FIFO } type;
+  enum { NONE = 0, SYSLOG, STDOUT, LOGFILE, FIFO } type;
   FILE *fp;
 } LogHndl;
 static LogHndl *mainlog;
@@ -88,7 +88,7 @@ void Log(int level, const char *msg, ...) {
    time_t t;
    struct tm *lt;
    int max;
-   FILE *fp = stderr;
+   FILE *fp = stdout;
 
    if (!msg)
       return;   
@@ -114,7 +114,7 @@ void Log(int level, const char *msg, ...) {
       if (mainlog->type == syslog)
          vsyslog(level, msg, ap);
 
-      if (mainlog->type != stderr && mainlog->fp)
+      if (mainlog->type != stdout && mainlog->fp)
          fp = mainlog->fp;
    }
 
@@ -123,8 +123,10 @@ void Log(int level, const char *msg, ...) {
       lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday, lt->tm_hour, lt->tm_min, lt->tm_sec,
       LogName(level), buf);
 
-   if (fp != stderr)
+   if (fp != stdout) {
       printf("%s\n", buf);
+      fflush(stdout);
+   }
 
    va_end(ap);
 }
@@ -138,9 +140,9 @@ void log_open(const char *target) {
    if (strcasecmp(target, "syslog") == 0) {
       mainlog->type = SYSLOG;
       openlog("jailfs", LOG_NDELAY|LOG_PID, LOG_DAEMON);
-   } else if (strcasecmp(target, "stderr") == 0) {
-      mainlog->type = STDERR;
-      mainlog->fp = STDERR;
+   } else if (strcasecmp(target, "stdout") == 0) {
+      mainlog->type = STDOUT;
+      mainlog->fp = STDOUT;
    } else if (strncasecmp(target, "fifo://", 7) == 0) {
       if (is_fifo(target + 7) || is_file(target + 7))
          unlink(target + 7);
@@ -149,13 +151,13 @@ void log_open(const char *target) {
 
       if (!(mainlog->fp = fopen(target + 7, "w"))) {
          Log(LOG_ERR, "Failed opening log fifo '%s' %s (%d)", target+7, errno, strerror(errno));
-         mainlog->fp = STDERR;
+         mainlog->fp = STDOUT;
       } else
          mainlog->type = FIFO;
    } else if (strncasecmp(target, "file://", 7) == 0) {
       if (!(mainlog->fp = fopen(target + 7, "w+"))) {
          Log(LOG_ERR, "failed opening log file '%s' %s (%d)", target+7, errno, strerror(errno));
-         mainlog->fp = STDERR;
+         mainlog->fp = STDOUT;
       } else
          mainlog->type = LOGFILE;
    }

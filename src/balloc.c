@@ -10,8 +10,8 @@
  * on github - https://github.com/bigfluffycloud/fs-pkg/
  *
  * No warranty of any kind. Good luck!
- */
-/*
+ *
+*
  * atheme-services: A collection of minimalist IRC services   
  * balloc.c: Block allocation of memory segments
  *
@@ -34,7 +34,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #define _BSD_SOURCE
-//#include <sys/types.h>
+#include <sys/types.h>
 #include <sys/mman.h>
 #include <string.h>
 #include "balloc.h"
