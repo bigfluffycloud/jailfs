@@ -257,7 +257,7 @@ static int shell_command(const char *line) {
    } else if (strcasecmp(line, "conf dump") == 0) {
       cmd_conf_dump(i, &args);
    } else if (strcasecmp(line, "gc now") == 0) {
-      gc_all();
+      printf("gc: Freed %d objects", gc_all());
    } else
       printf("Unknown command: %s\t- try help\n", line);
 

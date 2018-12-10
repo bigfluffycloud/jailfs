@@ -17,6 +17,6 @@
 #if	!defined(__GC_H)
 #define	__GC_H
 
-extern void gc_all(void);
+extern int gc_all(void);
 
 #endif	// !defined(__GC_H)

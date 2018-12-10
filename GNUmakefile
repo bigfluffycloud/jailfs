@@ -1,3 +1,15 @@
+#
+# GNUmakefile:
+#	Top level GNU Make recipe for building jailfs
+#
+# Copyright (C) 2018 Bigfluffy.cloud <joseph@bigfluffy.cloud>
+#
+# Distributed under a MIT license. Send bugs/patches by email or
+# on github - https://github.com/bigfluffycloud/fs-pkg/
+#
+# No warranty of any kind. Good luck!
+#
+
 all: world
 
 include mk/config.mk
@@ -7,6 +19,7 @@ include mk/distcc.mk
 include mk/indent.mk
 include mk/bin.mk
 include mk/clean.mk
+include mk/tests.mk
  
 ifeq (${CONFIG_DEBUG}, y)
 CONFIG_STRIP_BINS=n

@@ -12,6 +12,8 @@
 jailname=auth-dns
 cache.type=tmpfs
 i18n.lang=en_US
+#path.root=/jails
+#path.dns-root=%{path.root:s}/dns/
 path.cache=cache
 path.config=config
 path.i18n=../../i18n
@@ -32,6 +34,7 @@ pkgdir.inotify=true
 pkgdir.prescan=true
 ; Keep 100 lines of shell history
 shell.history-length=100
+
 ;;;;;;;;;;;
 ; Logging ;
 ;;;;;;;;;;;

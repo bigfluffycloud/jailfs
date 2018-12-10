@@ -1,7 +1,13 @@
-ifeq (${CONFIG_TOC_LIBXML2}, y)
-CFLAGS += -DCONFIG_TOC_LIBXML2
-endif
-CFLAGS += -DCONFIG_VFS_FUSE
+# mk/bin.mk:
+#	Rules for building host binaries
+#
+# Copyright (C) 2018 Bigfluffy.cloud <joseph@bigfluffy.cloud>
+#
+# Distributed under a MIT license. Send bugs/patches by email or
+# on github - https://github.com/bigfluffycloud/fs-pkg/
+#
+# No warranty of any kind. Good luck!
+#
 
 include src/rules.mk
 

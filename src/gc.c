@@ -30,7 +30,7 @@ extern BlockHeap *pkg_file_heap;
 extern BlockHeap *cache_entry_heap;
 extern BlockHeap *shell_hints_heap;
 
-void gc_all(void) {
+int gc_all(void) {
      int freed = 0;
      // XXX: Add some code to balloc:bh_garbagecollect to return freed items
      blockheap_garbagecollect(cache_entry_heap);
@@ -41,5 +41,5 @@ void gc_all(void) {
      blockheap_garbagecollect(vfs_handle_heap);
      blockheap_garbagecollect(vfs_watch_heap);
      blockheap_garbagecollect(vfs_inode_heap);
-     printf("gc: completed: %d objects freed\n", freed);
+     return 0;
 }

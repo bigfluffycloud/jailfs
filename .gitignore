@@ -7,7 +7,7 @@ jailfs
 lib/*.so
 lib/*.a
 lib/modules/*.so
-pkg/*
+pkg/*.tar
 examples/*/state/*
 examples/*/log/*
 examples/*/state/*

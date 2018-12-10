@@ -1,6 +1,6 @@
 #
-# mk/ccache.mk:
-#	Support for building with ccache
+# GNUmakefile:
+#	Top level GNU Make recipe for building jailfs
 #
 # Copyright (C) 2018 Bigfluffy.cloud <joseph@bigfluffy.cloud>
 #
@@ -9,10 +9,3 @@
 #
 # No warranty of any kind. Good luck!
 #
-CCACHE := /usr/bin/ccache
-CCACHE ?= $(which ccache)
-
-# Try to use ccache, if available
-ifeq (${CCACHE}, $(wildcard ${CCACHE}))
-CC := ${CCACHE} ${CC}
-endif
