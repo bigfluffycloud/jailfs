@@ -57,12 +57,11 @@
 #endif                                 /* !defined(MAP_NOSYNC) */
 #define	BLOCK_SIZE	10240
 
-/* private module-global stuff */
-BlockHeap *pkg_heap = NULL;            /* Block allocator heap */
-BlockHeap *pkg_file_heap = NULL;	       /* Heap for vfs_file's */
-static dlink_list pkg_list;            /* List of currently opened packages */
-
-static time_t pkg_lifetime = 0;        /* see pkg_init() for initialization */
+// private module-global stuff 
+BlockHeap *pkg_heap = NULL;            	// BlockHeap for packages
+BlockHeap *pkg_file_heap = NULL;	// BlockHeap for package files
+static dlink_list pkg_list;            	// List of currently opened packages
+static time_t pkg_lifetime = 0;        	// see pkg_init() for initialization
 
 static dlink_node *pkg_findnode(struct pkg_handle *pkg) {
    dlink_node *ptr, *tptr;
@@ -88,22 +87,16 @@ static void pkg_release(struct pkg_handle *pkg) {
    // XXX: - Free file contents cache
    // XXX: - Free all pointers/structs associated
 
-   /*
-    * If name is allocated, free it 
-    */
+   // If name is allocated, free it 
    if (pkg->name) {
       mem_free(pkg->name);
       pkg->name = NULL;
    }
 
-   /*
-    * Unlock the file 
-    */
+   // Unlock the file 
    flock(pkg->fd, LOCK_UN);
 
-   /*
-    * close handle, if exists 
-    */
+   // close handle, if exists 
    if (pkg->fd) {
       close(pkg->fd);
       pkg->fd = -1;
@@ -164,10 +157,8 @@ struct pkg_handle *pkg_open(const char *path) {
    struct pkg_handle *t;
    int         res = 0;
 
-   /*
-    * try to find an existing handle for the package
-    * If this fails, create one and cache it...
-    */
+   // try to find an existing handle for the package
+   // If this fails, create one and cache it...
    if ((t = pkg_handle_byname(path)) == NULL) {
       t = blockheap_alloc(pkg_heap);
       t->name = str_dup(path);
@@ -178,24 +169,18 @@ struct pkg_handle *pkg_open(const char *path) {
          return NULL;
       }
 
-      /*
-       * Try to acquire an exclusive lock, fail if we cant 
-       */
+      // Try to acquire an exclusive lock, fail if we cant 
       if (flock(t->fd, LOCK_EX | LOCK_NB) == -1) {
          Log(LOG_ERR, "failed locking package %s, bailing...", t->name);
          pkg_release(t);
          return NULL;
       }
 
-      /*
-       * Add handle to the cache list 
-       */
+      // Add handle to the cache list 
       dlink_add_tail_alloc(t, &pkg_list);
    }
 
-   /*
-    * Adjust last used time and reference count either way... 
-    */
+   // Adjust last used time and reference count either way... 
    t->otime = time(NULL);
    t->refcnt++;
 
