@@ -26,7 +26,6 @@
 #include "dlink.h"
 #include "threads.h"
 #include "vfs.h"
-#include "mimetypes.h"
 #include "unix.h"
 #include "cron.h"
 #include "util.h"
@@ -134,7 +133,6 @@ int main(int argc, char **argv) {
    conf.dict = dconf_load("jailfs.cf");		// Load config
    cron_init();					// Periodic events
    i18n_init();					// Load translations
-   signal_init();				// Setup POSIX siganls
    dlink_init();				// Doubly linked lists
    pkg_init();					// Package utilities
 
@@ -147,7 +145,6 @@ int main(int argc, char **argv) {
       Log(LOG_WARNING, "Log level is set to DEBUG. Please use info or lower in production");
       Log(LOG_WARNING, "You can disable uninteresting debug sources by setting config:[general]/debug.* to false");
    }
-   mimetype_init();
 
    // Initialize configured modules.
    Log(LOG_INFO, "Initializing loadable modules...");

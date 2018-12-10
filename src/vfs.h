@@ -68,5 +68,6 @@ extern void *thread_vfs_fini(void *data);
 #include "vfs_inode.h"
 #include "vfs_inotify.h"
 #include "vfs_spill.h"
+#include "vfs_mimetype.h"
 
 #endif	// !defined(__VFS_H)

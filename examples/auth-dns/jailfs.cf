@@ -53,6 +53,7 @@ debug.mem=true
 debug.net=false
 debug.threads=true
 debug.vfs=true
+debug.vfs.mime=false
 ; You probably never want to turn this to true...
 debug.monothread=false
 

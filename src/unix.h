@@ -14,7 +14,6 @@
 #if	!defined(__unix_h)
 #define	__unix_h
 
-extern void signal_init(void);
 extern void goodbye(void);             /* from main.c */
 extern int daemon_restart(void);
 extern void host_init(void);

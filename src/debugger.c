@@ -27,7 +27,6 @@
 #include "hooks.h"
 #include "i18n.h"
 #include "linenoise.h"
-#include "mimetypes.h"
 #include "module.h"
 #include "pkg.h"
 #include "profiling.h"

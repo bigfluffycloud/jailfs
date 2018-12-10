@@ -79,7 +79,10 @@ Thread *thread_create(ThreadPool *pool, void *(*init)(void *), void *(*fini)(voi
 
   /* Add to thread pool */
   list_add(pool->list, tmp, sizeof(tmp));
-  Log(LOG_DEBUG, "new thread %x (%s) created in pool %s", tmp, descr, pool->name);
+
+  if (dconf_get_bool("debug.threads", 0) == 1)
+     Log(LOG_DEBUG, "new thread %x (%s) created in pool %s", tmp, descr, pool->name);
+
   return tmp;
 }
 
@@ -97,10 +100,12 @@ Thread *thread_shutdown(ThreadPool *pool, Thread *thr) {
     * Side-cases:
     */
    if (thr->refcnt <= 0) {
-      Log(LOG_DEBUG, "unallocating thread %x due to refcnt == 0", thr);
+      if (dconf_get_bool("debug.threads", 0) == 1) {
+         Log(LOG_DEBUG, "unallocating thread %x due to refcnt == 0", thr);
 
-      if (thr->refcnt < 0)
-         Log(LOG_DEBUG, "BUG: thread %x refcnt is negative: %d", thr->refcnt);
+         if (thr->refcnt < 0)
+            Log(LOG_DEBUG, "BUG: thread %x refcnt is negative: %d", thr->refcnt);
+      }
 
       if (thr->argv)
          mem_free(thr->argv);
@@ -120,15 +125,12 @@ Thread *thread_shutdown(ThreadPool *pool, Thread *thr) {
 void thread_entry(dict *_conf) {
     /* block until main thread is read */
     pthread_mutex_lock(&core_ready_m);
+
     while (core_ready < 1)
        pthread_cond_wait(&core_ready_c, &core_ready_m);
+
     pthread_mutex_unlock(&core_ready_m);
-
-    /* Set up appworx runtime host OS dependant things */
     host_init();
-
-    /* Configure AppWorx signals */
-    signal_init();
 }
 
 void thread_exit(dict *_conf) {

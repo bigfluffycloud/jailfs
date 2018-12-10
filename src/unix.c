@@ -98,7 +98,7 @@ static struct SignalMapping SignalSet[] = {
 };
 static int signal_set[] = { SIGHUP, SIGUSR1, SIGUSR2, SIGQUIT, SIGTERM, SIGPIPE, SIGCHLD, SIGSEGV, SIGCHLD };
 
-void signal_init(void) {
+static void signal_init(void) {
    struct sigaction action, old;
    int i = 0;
 
@@ -161,6 +161,7 @@ static void unlimit_fds(void) {
 void host_init(void) {
    enable_coredump();
    unlimit_fds();
+   signal_init();
 }
 
 int	pidfile_open(const char *path) {

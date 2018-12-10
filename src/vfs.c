@@ -151,6 +151,9 @@ void *thread_vfs_init(void *data) {
    umount(conf.mountpoint);
    vfs_fuse_init();
 
+   // mime file type services
+   mimetype_init();
+
    // Add inotify watchers for paths in %{path.pkg}
    if (dconf_get_bool("pkgdir.inotify", 0) == 1)
       vfs_watch_init();

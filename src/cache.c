@@ -5,7 +5,6 @@
 #include "conf.h"
 #include "cron.h"
 #include "logger.h"
-#include "mimetypes.h"
 #include "pkg.h"
 #include "pkg_db.h"
 #include "str.h"
