@@ -30,10 +30,10 @@ include tests/rules.mk
 include mk/bin.mk
 include mk/help.mk
 include mk/indent.mk
-include mk/tests.mk
 include mk/release.mk
-include mk/clean.mk
+include mk/tests.mk
 include mk/debug.mk
+include mk/clean.mk
 
 # Build *everything* suitable for a release
 world: ${libs} ${bin} ${debug_targets}
