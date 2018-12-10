@@ -19,7 +19,7 @@ distclean:
 	touch examples/*/{root,cache}/.keepme 
 
 clean-help:
-	@echo "*\tclean      - Clean for (re)building"
-	@echo "*\tdistclean  - Clean for redistribution"
+	@echo -e "*\tclean      - Clean for (re)building"
+	@echo -e "*\tdistclean  - Clean for redistribution"
 
 help_targets += clean-help

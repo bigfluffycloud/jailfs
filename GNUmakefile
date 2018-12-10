@@ -28,12 +28,13 @@ include tests/rules.mk
 
 # Core rules
 include mk/bin.mk
-include mk/help.mk
 include mk/indent.mk
 include mk/release.mk
 include mk/tests.mk
 include mk/debug.mk
 include mk/clean.mk
+include mk/help.mk
+include mk/git.mk
 
 # Build *everything* suitable for a release
 world: ${libs} ${bin} ${debug_targets}

@@ -14,8 +14,17 @@ extra_clean += $(wildcard examples/*/state/*.db)
 extra_clean += $(wildcard examples/*/state/*.pid)
 extra_clean += $(wildcard examples/*/log/*.log)
 
+# Here we only build packages that don't exist
+# See make clean-pkg for an attempt to avoid using 'make clean'
 testpkg:
-	./scripts/testpkg.sh
+	@for i in glibc openssl pdns bash nginx; do \
+	   if [ ! -f pkg/$$i.tar ]; then \
+	      ./scripts/host2pkg $$i; \
+	   fi; \
+	done
+
+clean-pkg:
+	rm -f pkg/*.tar
 
 test: ${bin} umount
 	rm -f examples/auth-dns/state/jailfs.pid
@@ -29,3 +38,11 @@ umount:
 	# after ourselves
 	-umount examples/auth-dns/root
 	-umount examples/auth-dns/cache
+
+tests-help:
+	@echo -e "*\ttest       - Run a test session"
+	@echo -e "*\ttestpkg    - Build packages for examples"
+	@echo -e "*\tclean-pkg  - Clean out package dir"
+	@echo -e "*\tqa         - Quality Assurance mode"
+
+help_targets += tests-help

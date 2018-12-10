@@ -16,7 +16,7 @@ help-pre:
 	@echo "jailfs build system"
 	@echo ""
 	@echo "Available targets:"
-	@echo "*\tworld      - Build everything"
+	@echo -e "*\tworld      - Build everything"
 
 help-post:
 	@echo ""
