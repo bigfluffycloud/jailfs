@@ -72,3 +72,11 @@ void *thread_cache_fini(void *data) {
    thread_exit((dict *)data);
    return NULL;
 }
+
+// Request a new file name
+int cache_new_item(char *buf) {
+    if (buf == NULL)
+       return -1;
+
+    return 0;
+}

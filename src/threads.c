@@ -110,7 +110,7 @@ Thread *thread_shutdown(ThreadPool *pool, Thread *thr) {
       if (thr->argv)
          mem_free(thr->argv);
 
-      list_remove(pool->list, thr);
+      list_remove(pool->list, FRONT);
       mem_free(thr);
       return NULL;
    }

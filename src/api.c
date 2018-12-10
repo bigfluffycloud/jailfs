@@ -13,6 +13,9 @@
  *
  * src/api.c:
  *		Inter-thread API using dict objects
+ *
+ *	We try to provide a thread safe way to commnicate
+ * across threads and dispatch commands.
  */
 #include <sys/signal.h>
 #include "conf.h"
@@ -36,11 +39,29 @@ APImsg *api_create_message(const char *sender, const char *dest, const char *cmd
     memcpy(p->sender, sender, API_ADDR_MAX);
     memcpy(p->dest, dest, API_ADDR_MAX);
     memcpy(p->cmd, cmd, API_CMD_MAX);
+    p->req = dict_new();
+    p->res = dict_new();
 
     return p;
 }
 
+int api_destroy_message(APImsg *msg) {
+    dict_free(msg->req);
+    dict_free(msg->res);
+    blockheap_free(api_msg_heap, msg);
+    msg = NULL;
+    return 0;
+}
+
 int api_init(void) {
     api_msg_heap = blockheap_create(sizeof(APImsg), dconf_get_int("tuning.heap.api-msg", 512), "api messages");
+
+    return 0;
+}
+
+int api_fini(void) {
+    blockheap_destroy(api_msg_heap);
+    api_msg_heap = NULL;
+
     return 0;
 }
