@@ -9,25 +9,17 @@
 #
 # No warranty of any kind. Good luck!
 #
-
-# enable more debugging output (slower, noisier)
-CONFIG_DEBUG=y
-
-# enable gprof profiling (slower, even noisier)
+# enable gprof profiling (slower, noisy)
 CONFIG_PROFILING=n
 
 # debug block allocator? should be unneeded
 CONFIG_DEBUG_BALLOC=n
 
-# strip binaries? (debug disables, makes smaller)
+# strip binaries? (breaks debugging, makes smaller binaries)
 CONFIG_STRIP_BINS=n
 
-# strip libraries (debug disable, not recommended)
+# strip libraries (breaks debugging, makes smaller libraries)
 CONFIG_STRIP_LIBS=n
-
-# use LD_PRELOAD (doesn't support setuid)
-CONFIG_VFS_LDPRELOAD=y
-
 
 ####################
 # Compiler options #

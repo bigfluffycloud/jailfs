@@ -33,7 +33,7 @@ include mk/tests.mk
 # Project rules
 include doc/rules.mk
 include src/rules.mk
-include test/rules.mk
+include tests/rules.mk
 
 # Build *everything* suitable for a release
 world: ${libs} ${bin} symtab strings

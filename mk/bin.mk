@@ -9,7 +9,7 @@
 # No warranty of any kind. Good luck!
 #
 
-${bin}: $($(bin)_objs)
+${bin}: $(${bin}_objs)
 	@echo "[LD] ($^) => $@"
 	@${CC} -o $@ ${LDFLAGS} ${extra_libs} $^
 ifeq (${CONFIG_STRIP_BINS}, y)

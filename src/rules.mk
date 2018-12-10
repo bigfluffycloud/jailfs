@@ -1,4 +1,5 @@
 bin := jailfs
+
 jailfs_objs += .obj/atomicio.o
 jailfs_objs += .obj/balloc.o
 jailfs_objs += .obj/cache.o
@@ -34,6 +35,5 @@ jailfs_objs += .obj/vfs_inotify.o
 jailfs_objs += .obj/vfs_pathutil.o
 jailfs_objs += .obj/vfs_pkg.o
 jailfs_objs += .obj/vfs_spill.o
-
 
 clean_objs += ${jailfs_objs}
