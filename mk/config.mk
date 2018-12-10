@@ -41,7 +41,6 @@ warn_flags :=
 LDFLAGS := -lz -lcrypto -pthread -lrt -lsqlite3 -lm -lev -lunwind -lfuse -lmagic -ldl -larchive -lbsd
 lib_ldflags += -shared -ldl
 
-
 #################
 # Autoconfigure #
 #################

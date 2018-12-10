@@ -15,14 +15,25 @@ all: world
 
 # Include sub-makefile, where all the real magic happens
 include mk/config.mk
+
+# For now, this stuff is disabled as it may not even work anymore
 #include mk/distcc.mk
 #include mk/ccache.mk
 #include mk/ext.mk
+
+# Core rules
 include mk/bin.mk
-include mk/debug.mk
 include mk/clean.mk
+include mk/debug.mk
+include mk/help.mk
 include mk/indent.mk
+include mk/release.mk
 include mk/tests.mk
 
-# Build *everything* 
+# Project rules
+include doc/rules.mk
+include src/rules.mk
+include test/rules.mk
+
+# Build *everything* suitable for a release
 world: ${libs} ${bin} symtab strings

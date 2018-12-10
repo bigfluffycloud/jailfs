@@ -9,8 +9,6 @@
 # No warranty of any kind. Good luck!
 #
 
-include src/rules.mk
-
 ${bin}: $($(bin)_objs)
 	@echo "[LD] ($^) => $@"
 	@${CC} -o $@ ${LDFLAGS} ${extra_libs} $^

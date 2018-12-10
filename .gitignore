@@ -1,20 +1,27 @@
+# Leftovers from build (please do make clean!)
 .obj/*.o
 cache/*
 cache/.*
-dbg/jailfs.symtab
-dbg/jailfs.strings
 jailfs
 lib/*.so
 lib/*.a
 lib/modules/*.so
-pkg/*.tar
+dbg/jailfs.symtab
+dbg/jailfs.strings
+
+# Leftover files from runtime
 examples/*/state/*
 examples/*/log/*
 examples/*/state/*
 examples/*/pkg/*
+pkg/*
+
+# Third party sources (git submodules)
 #ext/*
 ext/libarchive/*
+ext/libbsd/*
 ext/libfuse/*
 ext/libunwind/*
 ext/linenoise/*
+ext/musl/*
 ext/sqlite/*

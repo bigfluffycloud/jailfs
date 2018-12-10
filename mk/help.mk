@@ -12,7 +12,6 @@
 
 help: help-pre $(sort ${help_targets}) help-post
 
-
 help-pre:
 	@echo "jailfs build system"
 	@echo ""

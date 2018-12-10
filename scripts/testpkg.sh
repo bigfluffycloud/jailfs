@@ -2,6 +2,6 @@
 #
 # Generate some test packages
 
-for i in glibc openssl pdns bash; do
-   ./scripts/host2pkg $i
+for i in glibc openssl pdns bash nginx; do
+   [ ! -f pkg/$i.tar ] && ./scripts/host2pkg $i
 done
