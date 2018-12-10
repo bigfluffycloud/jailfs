@@ -40,7 +40,7 @@ void vfs_fuse_getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
       sb.st_size = i->st_size;
       sb.st_uid = i->st_uid;
       sb.st_gid = i->st_gid;
-      blockheap_free(inode_heap, i);
+      blockheap_free(vfs_inode_heap, i);
    }
 
    // Did we get a valid response?
@@ -114,7 +114,7 @@ void vfs_fuse_open(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
       }
    }
 
-   blockheap_free(inode_heap, i);
+   blockheap_free(vfs_inode_heap, i);
    fuse_reply_open(req, fi);
 }
 

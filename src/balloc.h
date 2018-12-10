@@ -10,16 +10,12 @@
  * on github - https://github.com/bigfluffycloud/fs-pkg/
  *
  * No warranty of any kind. Good luck!
- */
-/*
+*
  * Copyright (C) 2005 William Pitcock, et al.
- * Rights to this code are as documented in doc/LICENSE.
- *
+ * See balloc.c for original license
  * Data structures for the block allocator.
- *
  * $Id: balloc.h 7779 2007-03-03 13:55:42Z pippijn $
  */
-
 #ifndef __BALLOC_H
 #define __BALLOC_H
 #include <sys/types.h>
@@ -56,13 +52,19 @@ struct BlockHeap {
 };
 typedef struct BlockHeap BlockHeap;
 
-extern int  blockheap_free(BlockHeap * bh, void *ptr);
-extern void *blockheap_alloc(BlockHeap * bh);
+// Allocate/free a block (ptr) from the BlocKHeap (bh)
+extern void *blockheap_alloc(BlockHeap *bh);
+extern int  blockheap_free(BlockHeap *bh, void *ptr);
 
+// Create/destroy BlockHeap objects
 extern BlockHeap *blockheap_create(size_t elemsize, int elemsperblock, const char *name);
-extern int  blockheap_destroy(BlockHeap * bh);
+extern int  blockheap_destroy(BlockHeap *bh);
 
+// Garbage collection
+extern int blockheap_garbagecollect(BlockHeap *bh);
+
+// Accessory functions
 extern void blockheap_init(void);
-extern void blockheap_usage(BlockHeap * bh, size_t * bused, size_t * bfree, size_t * bmemusage);
+extern void blockheap_usage(BlockHeap *bh, size_t *bused, size_t *bfree, size_t *bmemusage);
 
-#endif                                 /* !defined(__BALLOC_H) */
+#endif	// !defined(__BALLOC_H)

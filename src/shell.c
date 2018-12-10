@@ -44,8 +44,7 @@
 #define	HINT_WHITE	37
 
 #define	SHELL_HINT_MAX	120
-static BlockHeap *shell_hints_heap = NULL;
-
+BlockHeap *shell_hints_heap = NULL;
 
 // Shell prompt
 static const char *shell_prompt = "jailfs> ";

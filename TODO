@@ -1,3 +1,6 @@
+* Inter-thread IPC mechanism
+* Move as much as possible to thread/module private
+* Make all the BlockHeap's totally thread-private
 * Fix inotify to remove packages & files if deleted
 * (jm) Feature/3 - Allow persistence of the database (right now we clobber
                    and rescan the pkgdir on startup.
@@ -23,4 +26,5 @@ When a file is requested
 * check the cache to see if it's cached in memory or on disk
 	- Yes? Provide COW mapped file to FUSE
 	- No? Extract the file to cache and provide COW mapped file to FUSE
+
 

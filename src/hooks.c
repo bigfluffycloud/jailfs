@@ -67,3 +67,7 @@ Hook *hook_add(const char *name, int flags, HookFunc *func) {
 
    return tmp;
 }
+
+int hook_call(const char *name, void *callback()) {
+    return -ENOENT;
+}

@@ -10,13 +10,11 @@
  * on github - https://github.com/bigfluffycloud/fs-pkg/
  *
  * No warranty of any kind. Good luck!
- */
-/*
+ *
  * Dictionary based configuration lookup
  * 	Used for single-entry configurations
  *	See lconf.[ch] for list-based configuration
  *	suitable for ACLs and similar options.
- * Copyright (C) 2008-2018 bigfluffy.cloud
  *
  * This code wouldn't be possible without N. Devillard's dictionary.[ch]
  * from the iniparser package. See dict.[ch] for slightly modified version
@@ -37,7 +35,6 @@
 #include "memory.h"
 #include "module.h"
 #include "i18n.h"
-
 #define	JAILCONF_SIZE	16384		// should be plenty...
 
 struct conf conf;
@@ -81,11 +78,8 @@ dict *dconf_load(const char *file) {
 
    Modules = create_list();
 
-   //
    // This could use some cleanup... But it does work.
-   //
    // We need to use safer string functions...
-   //
    do {
       memset(buf, 0, sizeof(buf));
       char *discard = fgets(buf, sizeof(buf) - 1, fp);
@@ -96,12 +90,12 @@ dict *dconf_load(const char *file) {
       while(*skip == ' ')
         skip++;
 
-      // Delete trailing newlines
+      // Delete trailing newlines or white space
       end = buf + strlen(buf);
       do {
         *end = '\0';
         end--;
-      } while(*end == '\r' || *end == '\n');
+      } while(*end == '\r' || *end == '\n' || *end == ' ');
 
       // did we eat the whole line?
       if ((end - skip) <= 0)
@@ -216,7 +210,7 @@ int dconf_write(dict *cp, const char *file) {
 
    if (dict_dump(cp, fp) < 0)
       errors++;
-#if	0	// XXX: Rewrite this using dlink or dict?
+
    if (Modules) {
       Module *mp = NULL;
       list_iter_p mod_cur = list_iterator(Modules, FRONT);
@@ -230,7 +224,9 @@ int dconf_write(dict *cp, const char *file) {
       } while((mp = list_next(mod_cur)));
    } else
      Log(LOG_ERR, "conf_write: No Modules list");
-#endif
+
+
+   // XXX: We need to add support here for saving jailconf
    if (errors > 0)
       fprintf(fp, "# Saved with %d errors, please review before using, autorename disabled\n", errors);
 

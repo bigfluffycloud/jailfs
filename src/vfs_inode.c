@@ -18,7 +18,7 @@
 #include "vfs.h"
 #include "vfs_inode.h"
 #include "logger.h"
-BlockHeap  *inode_heap;
+BlockHeap  *vfs_inode_heap;
 
 #if	0
 static void fill_statbuf(ext2_ino_t ino, pkg_inode_t * inode, struct stat *st) {
@@ -70,7 +70,7 @@ static void fill_statbuf(ext2_ino_t ino, pkg_inode_t * inode, struct stat *st) {
 
 void vfs_inode_init(void) {
    if (!
-       (inode_heap =
+       (vfs_inode_heap =
         blockheap_create(sizeof(struct pkg_inode),
                          dconf_get_int("tuning.heap.inode", 128), "pkg"))) {
       Log(LOG_EMERG, "inode_init(): block allocator failed");
@@ -79,5 +79,5 @@ void vfs_inode_init(void) {
 }
 
 void vfs_inode_fini(void) {
-   blockheap_destroy(inode_heap);
+   blockheap_destroy(vfs_inode_heap);
 }

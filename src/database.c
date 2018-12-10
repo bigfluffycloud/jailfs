@@ -120,12 +120,13 @@ void       *db_query(enum db_query_res_type type, const char *fmt, ...) {
             ret = (void *)sqlite3_column_text(stmt, 0);
             break;
          case QUERY_INODE:
+// This breaks thread safety assumptions. We need to keep
+// a thread private BlockHeap or have a call to ask vfs for an inode
+//
+/*
             ret = (void *)blockheap_alloc(inode_heap);
             inode = (pkg_inode_t *) ret;
 
-            /*
-             * troll through the stupid db crap 
-             */
             while (i < cols) {
                const char *colname = sqlite3_column_name(stmt, i);
 
@@ -143,6 +144,7 @@ void       *db_query(enum db_query_res_type type, const char *fmt, ...) {
                   inode->st_uid = sqlite3_column_int64(stmt, i);
                i++;
             }
+*/
             break;
          default:
             break;
@@ -156,10 +158,8 @@ void       *db_query(enum db_query_res_type type, const char *fmt, ...) {
 
 #undef	SQL_BUFSIZE
 
-// XXX: TODO: thread this out
-
 /* Open the database connection */
-int db_open(const char *path) {
+static int db_open(const char *path) {
    if (sqlite_db != NULL)
       return 0;
 
@@ -178,7 +178,7 @@ int db_open(const char *path) {
    return EXIT_SUCCESS;
 }
 
-void db_close(void) {
+static void db_close(void) {
    Log(LOG_DEBUG, "Closing database");
    sqlite3_close(sqlite_db);
 }
@@ -224,10 +224,21 @@ int db_file_remove(int pkg, const char *path) {
 
 
 void *thread_database_init(void *data) {
+    thread_entry((dict *)data);
+
+    Log(LOG_INFO, "Opening database %s", dconf_get_str("path.db", ":memory"));
+    db_open(dconf_get_str("path.db", ":memory"));
+
     while (!conf.dying) {
         sleep(3);
         pthread_yield();
     }
 
     return NULL;
+}
+
+void *thread_database_fini(void *data) {
+   db_close();
+   thread_exit((dict *)data);
+   return NULL;
 }

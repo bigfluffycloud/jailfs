@@ -26,7 +26,6 @@ struct pkg_inode {
 };
 
 typedef struct pkg_inode pkg_inode_t;
-BlockHeap  *inode_heap;
 
 extern void vfs_inode_init(void);
 extern void vfs_inode_fini(void);

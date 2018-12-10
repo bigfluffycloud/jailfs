@@ -55,7 +55,9 @@ typedef struct vfs_watch vfs_watch_t;
 extern int  vfs_dir_walk(void);
 
 extern BlockHeap *vfs_handle_heap;
+extern BlockHeap *vfs_inode_heap;
 extern BlockHeap *vfs_watch_heap;
+
 extern u_int32_t vfs_root_inode;
 extern dlink_list vfs_watch_list;
 

@@ -8,6 +8,7 @@ jailfs_objs += .obj/database.o
 jailfs_objs += .obj/debugger.o
 jailfs_objs += .obj/dict.o
 jailfs_objs += .obj/dlink.o
+jailfs_objs += .obj/gc.o
 jailfs_objs += .obj/hooks.o
 jailfs_objs += .obj/jail.o
 jailfs_objs += .obj/i18n.o

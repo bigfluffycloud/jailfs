@@ -10,14 +10,7 @@
  * on github - https://github.com/bigfluffycloud/fs-pkg/
  *
  * No warranty of any kind. Good luck!
+ *
+ * src/control.h:
+ *	socket based control interface for managing via warden
  */
-#if	!defined(__unix_h)
-#define	__unix_h
-
-extern void signal_init(void);
-extern void goodbye(void);             /* from main.c */
-extern int daemon_restart(void);
-extern void host_init(void);
-extern int pidfile_open(const char *path);
-
-#endif	/* !defined(__unix_h) */

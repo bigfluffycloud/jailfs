@@ -10,8 +10,8 @@
  * on github - https://github.com/bigfluffycloud/fs-pkg/
  *
  * No warranty of any kind. Good luck!
- */
-/* src/control.c:
+ *
+ * src/control.c:
  *	Provides control API socket warden can use
  *  to manage the process.
  */

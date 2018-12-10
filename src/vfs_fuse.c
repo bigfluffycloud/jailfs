@@ -10,8 +10,8 @@
  * on github - https://github.com/bigfluffycloud/fs-pkg/
  *
  * No warranty of any kind. Good luck!
- */
-/*
+ *
+ *
  * src/vfs_fuse.c:
  *	Here we provide a FUSE based interface for presenting
  * the jail root file system.

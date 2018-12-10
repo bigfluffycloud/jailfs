@@ -34,7 +34,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #define _BSD_SOURCE
-#include <sys/types.h>
+//#include <sys/types.h>
 #include <sys/mman.h>
 #include <string.h>
 #include "balloc.h"
@@ -51,7 +51,7 @@
 #endif
 
 static int  blockheap_block_new(BlockHeap * bh);
-static int  blockheap_garbagecollect(BlockHeap *);
+int  blockheap_garbagecollect(BlockHeap *);
 static dlink_list heap_lists;
 
 #define blockheap_fail(x) _blockheap_fail(x, __FILE__, __LINE__)
@@ -80,7 +80,7 @@ static void blockheap_block_free(void *ptr, size_t size) {
  * Side Effects: Initializes the block heap
  */
 
-static void blockheap_gc(int fd, short event, void *arg) {
+void blockheap_gc(int fd, short event, void *arg) {
    dlink_node *ptr, *tptr;
 
    DLINK_FOREACH_SAFE(ptr, tptr, heap_lists.head) {
@@ -89,9 +89,9 @@ static void blockheap_gc(int fd, short event, void *arg) {
 }
 
 void blockheap_init(void) {
-   evt_timer_add_periodic(blockheap_gc, "gc.blockheap",
-                          timestr_to_time(dconf_get_str
-                                              ("tuning.timer.blockheap_gc", NULL), 60));
+   evt_timer_add_periodic(blockheap_gc,
+     "gc.blockheap",
+      timestr_to_time(dconf_get_str("tuning.timer.blockheap_gc", NULL), 60));
 }
 
 /*
@@ -111,16 +111,16 @@ static void *blockheap_block_get(size_t size) {
    return (ptr);
 }
 
-/* ************************************************************************ */
-/* FUNCTION DOCUMENTATION:                                                  */
-/*    blockheap_block_new                                                              */
-/* Description:                                                             */
-/*    Allocates a new block for addition to a blockheap                     */
-/* Parameters:                                                              */
-/*    bh (IN): Pointer to parent blockheap.                                 */
-/* Returns:                                                                 */
-/*    0 if successful, 1 if not                                             */
-/* ************************************************************************ */
+/*
+ * FUNCTION DOCUMENTATION:
+ *    blockheap_block_new
+ * Description:
+ *    Allocates a new block for addition to a blockheap
+ * Parameters:
+ *    bh (IN): Pointer to parent blockheap.
+ * Returns:
+ *    0 if successful, 1 if not
+ */
 
 static int blockheap_block_new(BlockHeap * bh) {
    MemBlock   *newblk;
@@ -128,9 +128,7 @@ static int blockheap_block_new(BlockHeap * bh) {
    unsigned long i;
    void       *offset;
 
-   /*
-    * Setup the initial data structure. 
-    */
+   // Setup the initial data structure. 
    b = (Block *) mem_calloc(1, sizeof(Block));
 
    if (b == NULL)
@@ -149,9 +147,7 @@ static int blockheap_block_new(BlockHeap * bh) {
 
    offset = b->elems;
 
-   /*
-    * Setup our blocks now 
-    */
+   // Setup our blocks now 
    for (i = 0; i < bh->elemsPerBlock; i++) {
       void       *data;
       newblk = (void *)offset;
@@ -172,35 +168,31 @@ static int blockheap_block_new(BlockHeap * bh) {
    return (0);
 }
 
-/* ************************************************************************ */
-/* FUNCTION DOCUMENTATION:                                                  */
-/*    BlockHeapCreate                                                       */
-/* Description:                                                             */
-/*   Creates a new blockheap from which smaller blocks can be allocated.    */
-/*   Intended to be used instead of multiple calls to malloc() when         */
-/*   performance is an issue.                                               */
-/* Parameters:                                                              */
-/*   elemsize (IN):  Size of the basic element to be stored                 */
-/*   elemsperblock (IN):  Number of elements to be stored in a single block */
-/*         of memory.  When the blockheap runs out of free memory, it will  */
-/*         allocate elemsize * elemsperblock more.                          */
-/*   name (IN):	Name (<= 63 bytes) of this heap                             */
-/* Returns:                                                                 */
-/*   Pointer to new BlockHeap, or NULL if unsuccessful                      */
-/* ************************************************************************ */
+/*
+ * FUNCTION DOCUMENTATION:
+ *    BlockHeapCreate
+ * Description:
+ *   Creates a new blockheap from which smaller blocks can be allocated.
+ *   Intended to be used instead of multiple calls to malloc() when
+ *   performance is an issue.
+ * Parameters:
+ *   elemsize (IN):  Size of the basic element to be stored
+ *   elemsperblock (IN):  Number of elements to be stored in a single block
+ *         of memory.  When the blockheap runs out of free memory, it will
+ *         allocate elemsize * elemsperblock more.
+ *   name (IN):	Name (<= 63 bytes) of this heap
+ * Returns:
+ *   Pointer to new BlockHeap, or NULL if unsuccessful
+ */
 BlockHeap  *blockheap_create(size_t elemsize, int elemsperblock, const char *name) {
    BlockHeap  *bh;
 
-   /*
-    * Catch idiotic requests up front 
-    */
+   // Catch idiotic requests up front 
    if ((elemsize <= 0) || (elemsperblock <= 0)) {
       blockheap_fail("Attempting to BlockHeapCreate idiotic sizes");
    }
 
-   /*
-    * Allocate our new BlockHeap 
-    */
+   // Allocate our new BlockHeap 
    bh = (BlockHeap *) mem_calloc(1, sizeof(BlockHeap));
 
    if (bh == NULL) {
@@ -209,9 +201,7 @@ BlockHeap  *blockheap_create(size_t elemsize, int elemsperblock, const char *nam
    }
 
    if ((elemsize % sizeof(void *)) != 0) {
-      /*
-       * Pad to even pointer boundary 
-       */
+      // Pad to even pointer boundary 
       elemsize += sizeof(void *);
       elemsize &= ~(sizeof(void *) - 1);
    }
@@ -222,9 +212,7 @@ BlockHeap  *blockheap_create(size_t elemsize, int elemsperblock, const char *nam
    bh->freeElems = 0;
    bh->base = NULL;
 
-   /*
-    * Be sure our malloc was successful 
-    */
+   // Be sure our malloc was successful 
    if (blockheap_block_new(bh)) {
       if (bh != NULL)
          mem_free(bh);
@@ -242,18 +230,17 @@ BlockHeap  *blockheap_create(size_t elemsize, int elemsperblock, const char *nam
    return (bh);
 }
 
-/* ************************************************************************ */
-/* FUNCTION DOCUMENTATION:                                                  */
-/*    BlockHeapAlloc                                                        */
-/* Description:                                                             */
-/*    Returns a pointer to a struct within our BlockHeap that's free for    */
-/*    the taking.                                                           */
-/* Parameters:                                                              */
-/*    bh (IN):  Pointer to the Blockheap.                                   */
-/* Returns:                                                                 */
-/*    Pointer to a structure (void *), or NULL if unsuccessful.             */
-/* ************************************************************************ */
-
+/*
+ * FUNCTION DOCUMENTATION:
+ *    BlockHeapAlloc
+ * Description:
+ *    Returns a pointer to a struct within our BlockHeap that's free for
+ *    the taking.
+ * Parameters:
+ *    bh (IN):  Pointer to the Blockheap.
+ * Returns:
+ *    Pointer to a structure (void *), or NULL if unsuccessful.
+ */
 void       *blockheap_alloc(BlockHeap * bh) {
    Block      *walker;
    dlink_node *new_node;
@@ -263,18 +250,12 @@ void       *blockheap_alloc(BlockHeap * bh) {
    }
 
    if (bh->freeElems == 0) {
-      /*
-       * Allocate new block and assign 
-       */
-      /*
-       * blockheap_block_new returns 1 if unsuccessful, 0 if not 
-       */
-
+       // Allocate new block and assign 
+       // blockheap_block_new returns 1 if unsuccessful, 0 if not 
       if (blockheap_block_new(bh)) {
-         /*
-          * That didn't work..try to garbage collect 
-          */
+         // That didn't work..try to garbage collect 
          blockheap_garbagecollect(bh);
+
          if (bh->freeElems == 0) {
             Log(LOG_EMERG, "blockheap_block_new() failed and garbage collection didn't help");
             conf.dying = 1;
@@ -297,17 +278,17 @@ void       *blockheap_alloc(BlockHeap * bh) {
    return NULL;
 }
 
-/* ************************************************************************ */
-/* FUNCTION DOCUMENTATION:                                                  */
-/*    BlockHeapFree                                                         */
-/* Description:                                                             */
-/*    Returns an element to the free pool, does not free()                  */
-/* Parameters:                                                              */
-/*    bh (IN): Pointer to BlockHeap containing element                      */
-/*    ptr (in):  Pointer to element to be "freed"                           */
-/* Returns:                                                                 */
-/*    0 if successful, 1 if element not contained within BlockHeap.         */
-/* ************************************************************************ */
+/*
+ * FUNCTION DOCUMENTATION:
+ *    BlockHeapFree
+ * Description:
+ *    Returns an element to the free pool, does not free()
+ * Parameters:
+ *    bh (IN): Pointer to BlockHeap containing element
+ *    ptr (in):  Pointer to element to be "freed"
+ * Returns:
+ *    0 if successful, 1 if element not contained within BlockHeap.
+ */
 int blockheap_free(BlockHeap * bh, void *ptr) {
    Block      *block;
    struct MemBlock *memblock;
@@ -334,11 +315,8 @@ int blockheap_free(BlockHeap * bh, void *ptr) {
       conf.dying = 1;
    }
 
-   /*
-    * Just in case... 
-    */
+   // just in case...
    memset(ptr, 0, bh->elemSize);
-
    block = memblock->block;
    bh->freeElems++;
    dlink_move(&memblock->self, &block->used_list, &block->free_list);
@@ -346,28 +324,26 @@ int blockheap_free(BlockHeap * bh, void *ptr) {
    return (0);
 }
 
-/* ************************************************************************ */
-/* FUNCTION DOCUMENTATION:                                                  */
-/*    BlockHeapGarbageCollect                                               */
-/* Description:                                                             */
-/*    Performs garbage collection on the block heap.  Any blocks that are   */
-/*    completely unallocated are removed from the heap.  Garbage collection */
-/*    will never remove the root node of the heap.                          */
-/* Parameters:                                                              */
-/*    bh (IN):  Pointer to the BlockHeap to be cleaned up                   */
-/* Returns:                                                                 */
-/*   0 if successful, 1 if bh == NULL                                       */
-/* ************************************************************************ */
-static int blockheap_garbagecollect(BlockHeap * bh) {
+/*
+ * FUNCTION DOCUMENTATION:
+ *    BlockHeapGarbageCollect
+ * Description:
+ *    Performs garbage collection on the block heap.  Any blocks that are
+ *    completely unallocated are removed from the heap.  Garbage collection
+ *    will never remove the root node of the heap.
+ * Parameters:
+ *    bh (IN):  Pointer to the BlockHeap to be cleaned up
+ * Returns:
+ *   0 if successful, 1 if bh == NULL
+ */
+int blockheap_garbagecollect(BlockHeap * bh) {
    Block      *walker, *last;
    if (bh == NULL) {
       return (1);
    }
 
    if (bh->freeElems < bh->elemsPerBlock || bh->blocksAllocated == 1) {
-      /*
-       * There couldn't possibly be an entire free block.  Return. 
-       */
+      // There couldn't possibly be an entire free block.  Return. 
       return (0);
    }
 
@@ -398,16 +374,16 @@ static int blockheap_garbagecollect(BlockHeap * bh) {
    return (0);
 }
 
-/* ************************************************************************ */
-/* FUNCTION DOCUMENTATION:                                                  */
-/*    BlockHeapDestroy                                                      */
-/* Description:                                                             */
-/*    Completely free()s a BlockHeap.  Use for cleanup.                     */
-/* Parameters:                                                              */
-/*    bh (IN):  Pointer to the BlockHeap to be destroyed.                   */
-/* Returns:                                                                 */
-/*   0 if successful, 1 if bh == NULL                                       */
-/* ************************************************************************ */
+/*
+ * FUNCTION DOCUMENTATION:
+ *    BlockHeapDestroy
+ * Description:
+ *    Completely free()s a BlockHeap.  Use for cleanup.
+ * Parameters:
+ *    bh (IN):  Pointer to the BlockHeap to be destroyed.
+ * Returns:
+ *   0 if successful, 1 if bh == NULL
+ */
 int blockheap_destroy(BlockHeap * bh) {
    Block      *walker, *next;
 
@@ -444,13 +420,6 @@ void blockheap_usage(BlockHeap * bh, size_t * bused, size_t * bfree, size_t * bm
       *bfree = freem;
    if (bmemusage != NULL)
       *bmemusage = memusage;
-   Log(LOG_INFO,
-       "Block Heap Allocator statistics: heap=%s used=%lu free=%lu memusage=%lu",
+   Log(LOG_INFO, "Block Heap Allocator statistics: heap=%s used=%lu free=%lu memusage=%lu",
        bh->name, used, freem, memusage);
 }
-
-/* vim:cinoptions=>s,e0,n0,f0,{0,}0,^0,=s,ps,t0,c3,+s,(2s,us,)20,*30,gs,hs
- * vim:ts=8
- * vim:sw=8
- * vim:noexpandtab
- */

@@ -31,11 +31,11 @@
 #include "dlink.h"
 #include "logger.h"
 int         dlink_count = 0;
-BlockHeap  *node_heap;
+BlockHeap  *dlink_node_heap;
 
 void dlink_init(void) {
    if (!
-       (node_heap =
+       (dlink_node_heap =
         blockheap_create(sizeof(dlink_node),
                          dconf_get_int("tuning.heap.node", 1024), "dlink_node"))) {
       Log(LOG_EMERG, "dlink_init(): block allocator failed");
@@ -44,12 +44,12 @@ void dlink_init(void) {
 }
 
 void dlink_fini(void) {
-   blockheap_destroy(node_heap);
+   blockheap_destroy(dlink_node_heap);
 }
 
 dlink_node *dlink_create(void) {
    dlink_node *m;
-   m = (dlink_node *) blockheap_alloc(node_heap);
+   m = (dlink_node *) blockheap_alloc(dlink_node_heap);
    m->data = m->next = m->prev = NULL;
 
    dlink_count++;
@@ -60,7 +60,7 @@ dlink_node *dlink_create(void) {
 /* XXX - macro? */
 void dlink_free(dlink_node * m) {
    dlink_count--;
-   blockheap_free(node_heap, m);
+   blockheap_free(dlink_node_heap, m);
 }
 
 void dlink_add(void *data, dlink_node * m, dlink_list * list) {

@@ -151,9 +151,6 @@ int main(int argc, char **argv) {
    }
    mimetype_init();
 
-   Log(LOG_INFO, "Opening database %s", dconf_get_str("path.db", ":memory"));
-   db_open(dconf_get_str("path.db", ":memory"));
-
    // Initialize configured modules.
    Log(LOG_INFO, "Initializing loadable modules...");
    list_iter_p m_cur = list_iterator(Modules, FRONT);

@@ -81,7 +81,9 @@ struct SignalMapping {
    int signum;		/* Signal number */
    int flags;		/* See man 3 sigaction */
    int blocked;		/* Signals blocked during handling */
-} SignalSet[] = {
+};
+
+static struct SignalMapping SignalSet[] = {
    { SIGHUP, SA_RESTART, 0 },
    { SIGUSR1, SA_RESTART, SIGUSR1|SIGHUP },
    { SIGUSR2, SA_RESTART, SIGUSR2|SIGHUP },
@@ -119,13 +121,15 @@ void signal_init(void) {
 }
 
 int daemon_restart(void) {
-   (void)execv(g_argv[0], g_argv);
-   Log(LOG_ERR, "Couldn't restart server: (%d) %s", errno, strerror(errno));
+   if (g_argc != -1 && g_argv != NULL) {
+      (void)execv(g_argv[0], g_argv);
+      Log(LOG_ERR, "Couldn't restart server: (%d) %s", errno, strerror(errno));
+   }
    exit(-1);
-   return -1;
+   return -1;		// not reached
 }
 
-void posix_signal_quiet(void) {
+static void posix_signal_quiet(void) {
    sigset_t sigset;
    int signals[] = { SIGABRT, SIGQUIT, SIGKILL, SIGTERM, SIGSYS };
    int sigign[] = { SIGCHLD, SIGPIPE, SIGHUP, SIGSTOP, SIGTSTP, SIGCONT };
@@ -142,14 +146,14 @@ void posix_signal_quiet(void) {
        signal(sigign[i], SIG_IGN);
 }
 
-struct rlimit rl;
-
-void enable_coredump(void) {
+static void enable_coredump(void) {
+   struct rlimit rl;
    rl.rlim_max = RLIM_INFINITY;
    setrlimit(RLIMIT_CORE, &rl);
 }
 
-void unlimit_fds(void) {
+static void unlimit_fds(void) {
+   struct rlimit rl;
    rl.rlim_max = RLIM_INFINITY;
    setrlimit(RLIMIT_NOFILE, &rl);
 }

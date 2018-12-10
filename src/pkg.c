@@ -58,8 +58,8 @@
 #define	BLOCK_SIZE	10240
 
 /* private module-global stuff */
-static BlockHeap *pkg_heap = NULL;            /* Block allocator heap */
-static BlockHeap *file_heap = NULL;	       /* Heap for vfs_file's */
+BlockHeap *pkg_heap = NULL;            /* Block allocator heap */
+BlockHeap *pkg_file_heap = NULL;	       /* Heap for vfs_file's */
 static dlink_list pkg_list;            /* List of currently opened packages */
 
 static time_t pkg_lifetime = 0;        /* see pkg_init() for initialization */
@@ -231,14 +231,14 @@ void pkg_unmap_file(struct pkg_file_mapping *p) {
    if (p->fd > 0)
       close(p->fd);
 
-   blockheap_free(file_heap, p);
+   blockheap_free(pkg_file_heap, p);
    p = NULL;
 }
 
 struct pkg_file_mapping *pkg_map_file(const char *path, size_t len, off_t offset) {
    struct pkg_file_mapping *p;
 
-   p = blockheap_alloc(file_heap);
+   p = blockheap_alloc(pkg_file_heap);
 
    p->pkg = str_dup(path);
    p->len = len;
@@ -269,7 +269,7 @@ void pkg_init(void) {
       raise(SIGTERM);
    }
    if (!
-       (file_heap =
+       (pkg_file_heap =
         blockheap_create(sizeof(struct pkg_file_mapping),
                          dconf_get_int("tuning.heap.files", 128), "files"))) {
       Log(LOG_EMERG, "pkg_init(): block allocator failed - files");

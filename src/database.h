@@ -49,9 +49,6 @@ struct db_connector {
 #endif	// Future stuff?
 
 extern void *db_query(enum db_query_res_type type, const char *fmt, ...);
-extern int  db_open(const char *path);
-extern void db_close(void);
-extern void db_close(void);
 extern int  db_pkg_add(const char *path);
 extern int  db_file_add(int pkg, const char *path, const char type,
                         uid_t uid, gid_t gid, const char *owner, const char *group,
@@ -62,5 +59,8 @@ extern int  db_file_remove(int pkg, const char *path);
 extern void db_begin(void);
 extern void db_commit(void);
 extern void db_rollback(void);
+
+extern void *thread_db_init(void *data);
+extern void *thread_db_fini(void *data);
 
 #endif	// !defined(__DB_H)

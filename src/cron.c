@@ -10,10 +10,14 @@
  * on github - https://github.com/bigfluffycloud/fs-pkg/
  *
  * No warranty of any kind. Good luck!
+ *
+ * src/cron.c:
+ *	Periodic event handler support
  */
 #include <time.h>
 #include <stdlib.h>
 #include "cron.h"
+#include "conf.h"
 #include "ev.h"
 #include "memory.h"
 #include "logger.h"
@@ -43,9 +47,17 @@ static void cron_tick(int fd, short event, void *arg) {
    // Update the global time reference (reduces syscalls...)
    conf.now = time(NULL);
 
+   // Garbage collect
+   if (conf.now % (timestr_to_time(dconf_get_str("tuning.timer.global_gc", NULL), 60)) == 1) {
+      // XXX: Store before stats.
+      // Force garbage collection of all BlockHeaps
+      gc_all();
+      // XXX: Log before/after stats
+   }
+
    // XXX: Determine if cron jobs are ready to run
    // XXX: Schedule them to be ran soon
-   // XXX: Run pending jobs, if CPU load allows
+   // XXX: Run pending jobs, if CPU load allows, else reschedule
 }
 
 int cron_init(void) {
