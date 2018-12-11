@@ -13,7 +13,8 @@
 # Redirect the common 'all' rule to 'world' and ensure it's default rule
 all: world
 
-# Include sub-makefile, where all the real magic happens
+# Include sub-makefiles, where all the real magic happens
+include mk/version.mk
 include mk/config.mk
 
 # For now, this stuff is disabled as it may not even work anymore

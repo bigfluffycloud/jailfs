@@ -67,6 +67,13 @@ void *thread_cache_init(void *data) {
 
 // Thread destructor
 void *thread_cache_fini(void *data) {
+   char *mp = NULL;
+
+   if (strcasecmp("tmpfs", dconf_get_str("cache.type", NULL)) == 0) {
+      if ((mp = dconf_get_str("path.cache", NULL)) != NULL)
+         umount(mp);
+   }
+
    dict_free(cache_dict);
    blockheap_destroy(cache_entry_heap);
    thread_exit((dict *)data);

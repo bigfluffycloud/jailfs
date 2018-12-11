@@ -11,12 +11,13 @@
  *
  * No warranty of any kind. Good luck!
  */
-#define	VERSION "0.0.2"
-#include <sys/mount.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/mount.h>
+// This is sloppy.. We need to clean up the headers...
+
 #include "conf.h"
 #include "database.h"
 #include "unix.h"
@@ -35,14 +36,16 @@
 #include "profiling.h"
 #include "cache.h"
 #include "api.h"
+#include "i18n.h"
 
+BlockHeap  *main_heap;
 ThreadPool *main_threadpool;
 
 // These threads need to come up in a specific order, unlike modules...
 struct ThreadCreator {
    char *name;
-   void (*init)(void *);
-   void (*fini)(void *);
+   void *(*init)(void *);
+   void *(*fini)(void *);
 } main_threads[] = {
   { "logger", thread_logger_init, thread_logger_fini },
   { "db", thread_db_init, thread_db_fini },
@@ -58,16 +61,6 @@ void goodbye(void) {
    char *mp = NULL;
    Log(LOG_INFO, "shutting down...");
    conf.dying = true;
-
-   // Unmount the mountpoint
-   if ((mp = dconf_get_str("path.mountpoint", NULL)) != NULL)
-      umount(mp);
-
-   // Unmount the cache (if mounted)
-   if (strcasecmp("tmpfs", dconf_get_str("cache.type", NULL)) == 0) {
-      if ((mp = dconf_get_str("path.cache", NULL)) != NULL)
-         umount(mp);
-   }
 
    dlink_fini();
    dconf_fini();
@@ -92,7 +85,7 @@ int main(int argc, char **argv) {
    int i, thr_cnt = 0;
    // XXX: Parses commandline arguments (should be minimal)
 
-   Log(LOG_INFO, "jailfs: container filesystem %s starting up...", VERSION);
+   Log(LOG_INFO, "jailfs: container filesystem %s starting up...", PKG_VERSION);
    Log(LOG_INFO, "Copyright (C) 2012-2018 bigfluffy.cloud -- See LICENSE in distribution package for terms of use");
 
    if (argc > 1) {
@@ -129,14 +122,14 @@ int main(int argc, char **argv) {
    }
 
    // Initialize configured modules.
-   Log(LOG_INFO, "Initializing loadable modules...");
+   Log(LOG_INFO, "Loading plugins...");
    list_iter_p m_cur = list_iterator(Modules, FRONT);
    Module *mod;
    do {
      if (mod == NULL)
         continue;
 
-     Log(LOG_INFO, "Module @ %x", mod);
+     Log(LOG_INFO, "Plugin @ 0x%x", mod);
    } while ((mod = list_next(m_cur)));
 
    // These are defined at the top of src/main.c

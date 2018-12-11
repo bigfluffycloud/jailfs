@@ -181,6 +181,6 @@ int	pidfile_open(const char *path) {
    fprintf(fp, "%i\n", pid);
    fflush(fp);
    fclose(fp);
-   Log(LOG_DEBUG, "Wrote PID file %s: %d", path, pid);
+   Log(LOG_INFO, "Wrote pid file %s: %d", path, pid);
    return 0;
 }

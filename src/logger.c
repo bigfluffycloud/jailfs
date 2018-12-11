@@ -142,7 +142,7 @@ void log_open(const char *target) {
       openlog("jailfs", LOG_NDELAY|LOG_PID, LOG_DAEMON);
    } else if (strcasecmp(target, "stdout") == 0) {
       mainlog->type = STDOUT;
-      mainlog->fp = STDOUT;
+      mainlog->fp = stdout;
    } else if (strncasecmp(target, "fifo://", 7) == 0) {
       if (is_fifo(target + 7) || is_file(target + 7))
          unlink(target + 7);
