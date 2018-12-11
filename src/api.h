@@ -28,13 +28,23 @@
 #define	API_F_SECURITY		0x0008	// Security restriction denied request
 
 struct API_Message {
-   char 	sender[API_ADDR_MAX];
-   char 	dest[API_ADDR_MAX];
-   char 	cmd[API_CMD_MAX];   
+   char 	sender[API_ADDR_MAX];	// (port/secret) Address of sender
+   char 	dest[API_ADDR_MAX];	// (port/secret) Address of destination
+   char 	cmd[API_CMD_MAX];   	// API_F_* flags
    u_int32_t	flags;
-   dict		*req,
-   		*res;
+   u_int8_t	priority;		// Request priority (0 = minimal; 255 = critical)
+
+   dict		*req,			// Request data
+   		*res;			// Response data
 };
 typedef struct API_Message APImsg;
+
+// Called by the main thread
+extern int api_master_init(void);
+extern int api_master_fini(void);
+
+// Called by all normal threads
+extern int api_init(void);
+extern int api_fini(void);
 
 #endif	// !defined(__API_H)

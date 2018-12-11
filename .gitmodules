@@ -19,3 +19,6 @@
 [submodule "ext/libbsd"]
 	path = ext/libbsd
 	url = https://github.com/freedesktop/libbsd.git
+[submodule "ext/nosqlite"]
+	path = ext/nosqlite
+	url = https://github.com/aaashun/nosqlite.git

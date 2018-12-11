@@ -22,6 +22,7 @@
 #include "memory.h"
 #include "logger.h"
 #include "balloc.h"
+#include "hooks.h"
 #include "api.h"
 
 static BlockHeap *api_msg_heap = NULL;
@@ -53,15 +54,35 @@ int api_destroy_message(APImsg *msg) {
     return 0;
 }
 
-int api_init(void) {
+//////////////////////////
+// main thread (master) //
+//////////////////////////
+int api_master_init(void) {
     api_msg_heap = blockheap_create(sizeof(APImsg), dconf_get_int("tuning.heap.api-msg", 512), "api messages");
 
     return 0;
 }
 
-int api_fini(void) {
+int api_master_fini(void) {
     blockheap_destroy(api_msg_heap);
     api_msg_heap = NULL;
 
+    return 0;
+}
+
+///////////////////////
+// All other threads //
+///////////////////////
+int api_init(void) {
+    // Do stuff and things
+
+    // Return success
+    return 0;
+}
+
+int api_fini(void) {
+    // Do stuff and things
+
+    // Return success
     return 0;
 }

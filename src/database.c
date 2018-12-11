@@ -115,7 +115,7 @@ void       *db_query(enum db_query_res_type type, const char *fmt, ...) {
          case QUERY_NULL:
             return (void *)0;
          case QUERY_INT:
-            ret = (void *)sqlite3_column_int(stmt, 0);
+            ret = (int)sqlite3_column_int(stmt, 0);
             break;
          case QUERY_CHAR:
             ret = (void *)sqlite3_column_text(stmt, 0);

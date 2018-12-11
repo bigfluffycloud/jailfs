@@ -1,24 +1,26 @@
+--- Redesign database to be a generic storage system
+	- Flat file
+	- sqlite (rewrite!)
+	- nosqlite (ext/nosqlite)
+	- in-memory (dict based?)
+
+!!! Thread safety stuff. Add locks to (most) structures. !!!
+	* Move as much as possible to thread/module private (static)
+	* Make all the BlockHeap's totally thread-private
+
+!!! Only allow API messages between threads !!!
+	* Inter-thread IPC mechanism (api.[ch])
+
 * Figure out how we're going to work out i18n strings
   - Add dict_printf() to allow printing based on a dict
     ex:
-    dict_printf(dict, "Path %{path.mountpoint:s} is not writable\n");
+   	 dict_printf(dict, "Path %{path.mountpoint:s} is not writable\n");
     or
-    dict_snprintf(dict, buf, sizeof(buf), "Path %{path.mountpoint:s} is not writable");
-
-* Inter-thread IPC mechanism
-
-* Move as much as possible to thread/module private
-
-* Make all the BlockHeap's totally thread-private
+    	dict_snprintf(dict, buf, sizeof(buf), "Path %{path.mountpoint:s} is not writable");
 
 * Fix inotify to remove packages & files if deleted
 
-* (jm) Feature/3 - Allow persistence of the database (right now we clobber
-                   and rescan the pkgdir on startup.
-
-* (jm) Feature/6 - unwind/profiling support from appworx/apxd
-
-* De-duplicate some of the lists & trees code.
++++ Work on the debugger & profiling stuff +++
 
 * Make sure EVERYTHING is using BlockHeap allocator
   - Can we replace malloc()/free() with wrappers which log?
@@ -31,13 +33,11 @@ When a file is requested
 ------------------------
 * look up what archive owns it.
 	Resolver order:
-		Overlays (fs-etc templates) as readonly
-		$jail/pkg/*.spill (read-only from jail)
+		Overlays (fs-etc templates, etc) as readonly
+		$jail/pkg/*.spill
 		$jail/pkg/*.pkg
 		$top/pkg/*.pkg
 
 * check the cache to see if it's cached in memory or on disk
 	- Yes? Provide COW mapped file to FUSE
 	- No? Extract the file to cache and provide COW mapped file to FUSE
-
-

@@ -34,6 +34,7 @@
 #include "module.h"
 #include "profiling.h"
 #include "cache.h"
+#include "api.h"
 
 ThreadPool *main_threadpool;
 
@@ -43,11 +44,11 @@ struct ThreadCreator {
    void (*init)(void *);
    void (*fini)(void *);
 } main_threads[] = {
-  { "logger", &thread_logger_init, &thread_logger_fini },
-  { "db", &thread_db_init, &thread_db_fini },
-  { "cache", &thread_cache_init, &thread_cache_fini },
-  { "vfs", &thread_vfs_init, &thread_vfs_fini },
-  { "shell", &thread_shell_init, &thread_shell_fini },
+  { "logger", thread_logger_init, thread_logger_fini },
+  { "db", thread_db_init, thread_db_fini },
+  { "cache", thread_cache_init, thread_cache_fini },
+  { "vfs", thread_vfs_init, thread_vfs_fini },
+  { "shell", thread_shell_init, thread_shell_fini },
   { NULL, NULL, NULL }
 };
 
@@ -110,6 +111,7 @@ int main(int argc, char **argv) {
    umask(0077);					// Restrict umask on new files
    evt_init();					// Socket event handler
    blockheap_init();				// Block heap allocator
+   api_master_init();				// Initialize MASTER thread
    conf.dict = dconf_load("jailfs.cf");		// Load config
    cron_init();					// Periodic events
    i18n_init();					// Load translations
