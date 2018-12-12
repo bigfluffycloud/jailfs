@@ -1,4 +1,6 @@
 bin := jailfs
+#bin += warden
+
 jailfs_objs += .obj/api.o
 jailfs_objs += .obj/atomicio.o
 jailfs_objs += .obj/balloc.o
@@ -36,5 +38,6 @@ jailfs_objs += .obj/vfs_mimetype.o
 jailfs_objs += .obj/vfs_pathutil.o
 jailfs_objs += .obj/vfs_pkg.o
 jailfs_objs += .obj/vfs_spillover.o
+warden_objs += .obj/warden.o
 
-clean_objs += ${jailfs_objs}
+clean_objs += ${jailfs_objs} ${warden_objs}

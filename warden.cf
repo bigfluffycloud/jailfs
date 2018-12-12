@@ -1,0 +1,32 @@
+; You can use ; for a comment
+# or even #
+// or C C++ comments
+/* Or C comments - but they MUST begin as the first non-white space on a
+ * line for the parser to undertand!
+ */
+
+[general]
+; This needs to point to your jailfs BINARY
+path.jailfs=../jailfs/jailfs
+
+; This needs to point to your jail ROOT directory
+path.jails=../jailfs/examples
+
+; Where do you want warden to log to? file or :syslog:
+path.log=warden.log
+
+; sqlite storage -- use :memory: 
+path.db=:memory:
+
+
+# Configure all your jails here, one per line.
+#
+# An instance of jailfs will be started for each as
+# jailfs-%{jailname} in ps/top.
+# 
+# Then we will run ./init.sh start as warden-init-%{jailname}
+# and respawn it if it dies.
+#
+[jails]
+auth-dns
+syslog-master
