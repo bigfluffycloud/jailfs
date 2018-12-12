@@ -329,7 +329,7 @@ static int shell_command(const char *line) {
          break;
    }
 
-   // We need to break up the command line here into args & i then use the menus ;)
+   // Command that apply in all menus:
    if (strncasecmp(line, "help", 4) == 0) {
       cmd_help(i, args);
    } else if (strcasecmp(line, "conf dump") == 0) {
@@ -340,7 +340,7 @@ static int shell_command(const char *line) {
       shell_level_set("main");
    } else if (strcasecmp(line, "shutdown") == 0 || strcasecmp(line, "quit") == 0) {
       cmd_shutdown(i, args);
-   } else {
+   } else {	// Attempt to render the menu..
       menu = shell_get_menu(line);
 
       do {
@@ -350,13 +350,20 @@ static int shell_command(const char *line) {
          // Does this entry match our command?
          if (strcasecmp(menu[i].cmd, line) == 0) {
             if (menu[i].menu != NULL) {
-               shell_level_set(line);
+               if (menu[i].menu == menu_value) {
+                  // XXX: Handle debug stanzas - We don't cd to the menu...
+                  printf("XXX: Not yet implemented\n");
+               } else {
+                  shell_level_set(line);
+               }
                return 0;
-            } else {
+            } else if (menu[i].handler != NULL) {
                menu[i].handler(i, args);
                return 0;
+            } else {
+               printf("That option %s is not yet implemented...\n", line);
+               return 0;
             }
-            break;
          }
          i++;
       } while(1);
