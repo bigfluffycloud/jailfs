@@ -294,3 +294,8 @@ int dconf_set(const char *key, const char *val) {
 void dconf_unset(const char *key) {
    dict_del(_CONF_DICT, key);
 }
+
+void conf_reload(void) {
+   // Reload config
+   Log(LOG_INFO, "conf_reload stub called");
+}

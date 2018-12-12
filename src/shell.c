@@ -145,7 +145,7 @@ static struct shell_cmd menu_conf[] = {
 
 static struct shell_cmd menu_cron[] = {
    { "back", "Go back to top-level", HINT_GREEN, 0, 0, 0, 0, cmd_back, NULL },
-   { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
+   { "debug", "show/toggle debugging status", HINT_RED, 0, 1, 0, 1, NULL, menu_value },
    { "jobs", "Show scheduled events", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
    { "stop", "Stop a scheduled event", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
    { .cmd = NULL, .desc = NULL, .menu = NULL },
@@ -153,7 +153,7 @@ static struct shell_cmd menu_cron[] = {
 
 static struct shell_cmd menu_db[] = {
    { "back", "Go back to top-level", HINT_GREEN, 0, 0, 0, 0, cmd_back, NULL },
-   { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
+   { "debug", "show/toggle debugging status", HINT_RED, 0, 1, 0, 1, NULL, menu_value },
    { "dump", "Dump the database to .sql file", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
    { "purge", "Re-initialize the database", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
    { .cmd = NULL, .desc = NULL, .menu = NULL },
@@ -175,8 +175,8 @@ static struct shell_cmd menu_vfs[] = {
    { "debug", "Show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
    { "less", "Show contents of a file (with pager)", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
    { "ls", "Display directory listing", HINT_CYAN, 1, 0, 0, 1, NULL, NULL },
-   { "mv", "Move file/dir in jail", HINT_CYAN, 1, 0, 1, -1, NULL, NULL },
-   { "rm", "Remove file/directory in jail", HINT_CYAN, 1, 0, 1, -1, NULL, NULL },
+   { "mv", "Move file/dir in jail", HINT_RED, 0, 0, 1, -1, NULL, NULL },
+   { "rm", "Remove file/directory in jail", HINT_RED, 0, 0, 1, -1, NULL, NULL },
    { .cmd = NULL, .desc = NULL, .menu = NULL },
 };
 
@@ -194,9 +194,9 @@ static struct shell_cmd menu_mem_gc[] = {
 
 static struct shell_cmd menu_hooks[] = {
    { "back", "Go back to top-level", HINT_GREEN, 0, 0, 0, 0, cmd_back, NULL },
-   { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
+   { "debug", "show/toggle debugging status", HINT_RED, 0, 1, 0, 1, NULL, menu_value },
    { "list", "List registered hooks", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
-   { "unregister", "Unregister a hook", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
+   { "unregister", "Unregister a hook", HINT_RED, 0, 0, 1, 1, NULL, NULL },
    { .cmd = NULL, .desc = NULL, .menu = NULL },
 };
 
@@ -249,7 +249,7 @@ static struct shell_cmd menu_profiling[] = {
 static struct shell_cmd menu_thread[] = {
    { "back", "Go back to top-level", HINT_GREEN, 0, 0, 0, 0, cmd_back, NULL },
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
-   { "kill", "Kill a thread", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
+   { "kill", "Kill a thread", HINT_RED, 0, 0, 1, 1, NULL, NULL },
    { "show", "Show details about thread", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
    { "list", "List running threads", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
    { .cmd = NULL, .desc = NULL, .menu = NULL },
@@ -361,7 +361,7 @@ static int shell_command(const char *line) {
                menu[i].handler(i, args);
                return 0;
             } else {
-               printf("That option %s is not yet implemented...\n", line);
+               printf("That option '%s %s' is not yet implemented...\n", shell_level, line);
                return 0;
             }
          }

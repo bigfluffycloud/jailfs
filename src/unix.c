@@ -33,8 +33,8 @@ char **g_argv = NULL;
 
 /* src/module.c */
 extern int module_dying(int signal);
-/* src/shell.c */
-extern void cmd_reload(int argc, char **argv);
+/* src/conf.c */
+extern void conf_reload(void);
 
 /*
  * Signal handling
@@ -68,7 +68,7 @@ static void signal_handler(int signal) {
    } else if (signal == SIGUSR2) {
       profiling_toggle();
    } else if (signal == SIGHUP) {
-      cmd_reload(0, NULL);
+      conf_reload();
    } else if (signal == SIGCHLD) { /* Prevent zombies */
       while(waitpid(-1, NULL, WNOHANG) > 0)
          ;
