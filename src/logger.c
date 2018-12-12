@@ -16,10 +16,12 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <unistd.h>
 #include "conf.h"
 #include "logger.h"
 #include "memory.h"
 #include "util.h"
+#include "threads.h"
 
 #if	!defined(LOG_EMERG)
 #warning "Your sylog.h is broken... hackery ensues..."
@@ -111,10 +113,10 @@ void Log(int level, const char *msg, ...) {
       return;
 
    if (mainlog) {
-      if (mainlog->type == syslog)
+      if (mainlog->type == SYSLOG)
          vsyslog(level, msg, ap);
 
-      if (mainlog->type != stdout && mainlog->fp)
+      if (mainlog->type != STDOUT && mainlog->fp)
          fp = mainlog->fp;
    }
 
@@ -151,13 +153,13 @@ void log_open(const char *target) {
 
       if (!(mainlog->fp = fopen(target + 7, "w"))) {
          Log(LOG_ERR, "Failed opening log fifo '%s' %s (%d)", target+7, errno, strerror(errno));
-         mainlog->fp = STDOUT;
+         mainlog->fp = stdout;
       } else
          mainlog->type = FIFO;
    } else if (strncasecmp(target, "file://", 7) == 0) {
       if (!(mainlog->fp = fopen(target + 7, "w+"))) {
          Log(LOG_ERR, "failed opening log file '%s' %s (%d)", target+7, errno, strerror(errno));
-         mainlog->fp = STDOUT;
+         mainlog->fp = stdout;
       } else
          mainlog->type = LOGFILE;
    }

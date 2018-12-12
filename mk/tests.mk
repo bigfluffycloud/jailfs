@@ -38,6 +38,7 @@ umount:
 	# after ourselves
 	-umount examples/auth-dns/root
 	-umount examples/auth-dns/cache
+	-rm -f examples/auth-dns/state/jailfs.pid
 
 tests-help:
 	@echo -e "*\ttest       - Run a test session"

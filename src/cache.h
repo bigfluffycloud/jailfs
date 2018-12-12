@@ -13,6 +13,13 @@
  */
 #if	!defined(__CACHE_H)
 #define	__CACHE_H
+#include "dict.h"
+
+struct CacheItem {
+   int dirty;
+   dict *cache;
+};
+typedef struct CacheItem CacheItem_t;
 
 extern void *thread_cache_init(void *data);
 extern void *thread_cache_fini(void *data);

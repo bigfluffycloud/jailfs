@@ -60,6 +60,8 @@ int threadpool_destroy(ThreadPool *pool) {
 
 Thread *thread_create(ThreadPool *pool, void *(*init)(void *), void *(*fini)(void *), void *arg, const char *descr) {
   Thread *tmp = NULL;
+  char thrname[16];
+  int rv = -1;
 
   tmp = mem_alloc(sizeof(Thread));
   memset(tmp, 0, sizeof(Thread));
@@ -82,6 +84,13 @@ Thread *thread_create(ThreadPool *pool, void *(*init)(void *), void *(*fini)(voi
 
   if (dconf_get_bool("debug.threads", 0) == 1)
      Log(LOG_DEBUG, "new thread %x (%s) created in pool %s", tmp, descr, pool->name);
+
+  // Set up the thread name (for ps/htop/etc)
+  memset(thrname, 0, sizeof(thrname));
+  snprintf(thrname, sizeof(thrname) - 1 /* leave trailing NULL */, "%s", descr);
+
+  if ((rv = pthread_setname_np(tmp->thr_info, thrname)) != 0)
+     printf("Failed setting thread name: rv=%d (%d) %s\n", rv, errno, strerror(errno));
 
   return tmp;
 }
