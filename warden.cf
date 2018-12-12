@@ -7,10 +7,10 @@
 
 [general]
 ; This needs to point to your jailfs BINARY
-path.jailfs=../jailfs/jailfs
+path.jailfs=./jailfs
 
 ; This needs to point to your jail ROOT directory
-path.jails=../jailfs/examples
+path.jails=examples
 
 ; Where do you want warden to log to? file or :syslog:
 path.log=warden.log

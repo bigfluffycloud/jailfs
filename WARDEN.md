@@ -18,8 +18,8 @@ Example:
 ```
 [general]
 ui.detach=false
-path.jailfs=../jailfs/jailfs
-path.jails=../jailfs/examples/
+path.jailfs=./jailfs
+path.jails=examples/
 path.log=warden.log
 path.db=:memory:
 
