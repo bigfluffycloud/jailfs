@@ -37,6 +37,7 @@
 #include "cache.h"
 #include "api.h"
 #include "i18n.h"
+#include "jail.h"
 
 BlockHeap  *main_heap;
 ThreadPool *main_threadpool;
@@ -46,12 +47,14 @@ struct ThreadCreator {
    char *name;
    void *(*init)(void *);
    void *(*fini)(void *);
+   int isolated;
 } main_threads[] = {
-  { "logger", thread_logger_init, thread_logger_fini },
-  { "db", thread_db_init, thread_db_fini },
-  { "cache", thread_cache_init, thread_cache_fini },
-  { "vfs", thread_vfs_init, thread_vfs_fini },
-  { "shell", thread_shell_init, thread_shell_fini },
+  { "logger", thread_logger_init, thread_logger_fini, 0 },
+  { "db", thread_db_init, thread_db_fini, 0 },
+  { "cache", thread_cache_init, thread_cache_fini, 0 },
+  { "vfs", thread_vfs_init, thread_vfs_fini, 0 },
+  { "cell", thread_cell_init, thread_cell_fini, 1 },
+  { "shell", thread_shell_init, thread_shell_fini, 1 },
   { NULL, NULL, NULL }
 };
 
@@ -160,9 +163,6 @@ int main(int argc, char **argv) {
    core_ready = 1;
    pthread_mutex_unlock(&core_ready_m);
    pthread_cond_broadcast(&core_ready_c);
-
-   Log(LOG_INFO, "jail at %s/%s is now ready!", get_current_dir_name(), dconf_get_str("path.mountpoint", NULL));
-   Log(LOG_INFO, "Ready to accept requests.");
 
    // Main loop for libev
    while (!conf.dying) {

@@ -10,6 +10,7 @@
  */
 [general]
 jailname=auth-dns
+autorun=false
 cache.type=tmpfs
 i18n.lang=en_US
 #path.root=/jails
@@ -34,6 +35,8 @@ pkgdir.inotify=true
 pkgdir.prescan=true
 ; Keep 100 lines of shell history
 shell.history-length=100
+; This should come from [jail] section but we aren't that fancy yet...
+init.cmd=/init.sh
 
 ;;;;;;;;;;;
 ; Logging ;
@@ -49,6 +52,7 @@ log.stack_unwind=true
 ;;;;;;;;;;;;;
 ; Debugging options - Too much will slow things down badly...
 debug.db=false
+debug.jail=true
 debug.mem=true
 debug.net=false
 debug.threads=false

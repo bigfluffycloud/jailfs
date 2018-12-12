@@ -4,6 +4,11 @@
 	- nosqlite (ext/nosqlite)
 	- in-memory (dict based?)
 
+--- Add FreeBSD support
+
+* jail stuff
+   CAP_SYS_CHROOT Parent, CAP_NET_BIND_SERVICE both (if client needs)
+
 !!! Thread safety stuff. Add locks to (most) structures. !!!
 	* Move as much as possible to thread/module private (static)
 	* Make all the BlockHeap's totally thread-private

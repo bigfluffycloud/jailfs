@@ -16,5 +16,7 @@
 #define	__JAIL_H
 
 extern int jail_drop_priv(void);
+extern void *thread_cell_init(void *data);
+extern void *thread_cell_fini(void *data);
 
 #endif	// !defined(__JAIL_H)

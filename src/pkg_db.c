@@ -119,6 +119,7 @@ int pkg_import(const char *path) {
          db_file_add(pkgid, _f_name, _f_type, _f_uid, _f_gid,
                          _f_owner, _f_group, st->st_size,
                          0, time(NULL), st->st_mode, _f_perm);
+
       // XXX: Create cache entry
       // XXX: Extract file to path cache told use to use
 #if	0

@@ -52,6 +52,13 @@ BlockHeap *shell_hints_heap = NULL;
 static char shell_prompt[64];
 static char shell_level[40];
 
+
+// this is in src/kilo.c
+void cmd_edit(int argc, char **argv) {
+//   kilo_main(argv[1]);
+   kilo_main("/test.c");
+}
+
 // Use the signal handler to properly shut don the system (SIGTERM/11)
 void cmd_shutdown(int argc, char **argv) {
    Log(LOG_NOTICE, "shutdown command from console.");
@@ -62,6 +69,11 @@ static void cmd_user(int argc, char **argv) {
    printf("User error: replace user\nGoodbye!\n");
    raise(SIGTERM);
 }
+
+static void cmd_run(int argc, char **argv) {
+   printf("Starting cell!");
+}
+
 // Prototype for help function
 void cmd_help(int argc, char **argv);
 
@@ -173,6 +185,7 @@ static struct shell_cmd menu_vfs[] = {
    { "chmod", "Change file/dir permissions in jail", HINT_CYAN, 1, 0, 2, -1, NULL, NULL },
    { "cp", "Copy file in jail", HINT_CYAN, 1, 0, 1, -1, NULL, NULL },
    { "debug", "Show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
+   { "edit", "Edit the file in kilo", HINT_GREEN, 1, 0, 1, 1, cmd_edit, NULL },
    { "less", "Show contents of a file (with pager)", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
    { "ls", "Display directory listing", HINT_CYAN, 1, 0, 0, 1, NULL, NULL },
    { "mv", "Move file/dir in jail", HINT_RED, 0, 0, 1, -1, NULL, NULL },
@@ -271,6 +284,7 @@ static struct shell_cmd menu_main[] = {
    { "profiling", "Profiling support", HINT_CYAN, 1, 1, 0, -1, NULL, menu_profiling },
    { "quit", "Alias to shutdown", HINT_RED, 1, 0, 0, 0, &cmd_shutdown, NULL },
    { "reload", "Reload configuration", HINT_CYAN, 1, 0, 0, 0, &cmd_reload, NULL },
+   { "run", "Start the container (if autorun disabled)", HINT_GREEN, 1, 0, 0, 0, &cmd_run, NULL },
    { "shutdown", "Terminate the service", HINT_RED, 1, 0, 0, 0, &cmd_shutdown, NULL },
    { "stats", "Display statistics", HINT_CYAN, 1, 0, 0, 0, &cmd_stats, NULL },
    { "thread", "Thread manager", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_thread },
@@ -479,6 +493,8 @@ void *thread_shell_init(void *data) {
    linenoiseHistoryLoad("state/.shell.history");
 
    // Try to avoid our console prompt being spammed by startup text
+   sleep(1);
+   Log(LOG_INFO, "Ready to accept requests");
    sleep(1);
    printf("jailfs shell starting. You are managing jail '%s'\n\n", dconf_get_str("jailname", NULL));
    printf("Try 'help' for a list of available commands or 'shutdown' to halt the service\nTab completion is enabled.\n\n");

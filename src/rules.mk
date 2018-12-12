@@ -15,6 +15,7 @@ jailfs_objs += .obj/gc.o
 jailfs_objs += .obj/hooks.o
 jailfs_objs += .obj/jail.o
 jailfs_objs += .obj/i18n.o
+jailfs_objs += .obj/kilo.o
 jailfs_objs += .obj/linenoise.o
 jailfs_objs += .obj/list.o
 jailfs_objs += .obj/logger.o
