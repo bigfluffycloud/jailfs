@@ -350,11 +350,9 @@ static int shell_command(const char *line) {
          // Does this entry match our command?
          if (strcasecmp(menu[i].cmd, line) == 0) {
             if (menu[i].menu != NULL) {
-               printf("shell level: %s\n", line);
                shell_level_set(line);
                return 0;
             } else {
-               printf("calling cmd: %s\n", line);
                menu[i].handler(i, args);
                return 0;
             }
@@ -453,7 +451,6 @@ void cmd_help(int argc, char **argv) {
 
       i++;
    } while(1);
-   printf("%15s\t - Shut the service\n", "shutdown");
    return;
 }
 
