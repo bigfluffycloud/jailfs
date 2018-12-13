@@ -33,9 +33,9 @@ test: ${bin} umount
 qa:
 	${MAKE} clean world testpkg test umount
 
+# This ensures even if somehow the service died/got killed we clean up
+# after ourselves
 umount:
-	# This ensures even if somehow the service died/got killed we clean up
-	# after ourselves
 	-umount examples/auth-dns/root
 	-umount examples/auth-dns/cache
 	-rm -f examples/auth-dns/state/jailfs.pid

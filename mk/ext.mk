@@ -33,3 +33,19 @@ ${fuse_objdir}/%.o:${fuse_srcdir}/%.c
 	@${CC} ${libfuse_cflags} -o $@ -c $^
 
 objs += ${libfuse_obj}
+
+#######################
+# musl - a small libc #
+#######################
+musl_srcdir := ext/musl
+musl_lib := lib/libc.so
+
+lib/libc.so: ${musl/srcdir}/libc.so
+	cp -arvx ${musl_srcdir}/lib/* lib/
+
+${musl_srcdir}/libc.so:
+	-${MAKE} -C ${musl_srcdir} distclean
+	cd ${musl_srcdir}/; ./configure --prefix=/ --enable-wrapper=yes
+	${MAKE} -C ${musl_srcdir}
+
+objs += {

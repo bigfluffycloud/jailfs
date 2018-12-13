@@ -20,11 +20,14 @@
 #include <unistd.h>
 #include <sched.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 #include <signal.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
+#include <sys/utsname.h>
 #include "conf.h"
 #include "memory.h"
 #include "str.h"
@@ -42,11 +45,11 @@ static int	jail_drop_privs(void) {
 }
 
 static int	jail_chroot(const char *path) {
-    Log(LOG_INFO, "[cell] jail_chroot(): bound root to vfs at %s/%s", get_current_dir_name, path);
+    if (chdir("/")) {  /* Nothing */ }
+    Log(LOG_INFO, "[cell] jail_chroot(): bound root to vfs at %s/%s", get_current_dir_name(), path);
     
     return 0;
 }
-
 
 ////////////////////
 // Jail namespace //
@@ -54,43 +57,53 @@ static int	jail_chroot(const char *path) {
 /////
 // thread main:cell
 /////
-
 static int	jail_namespace_init(void) {
     int rv = -1;
+    char *hostname = dconf_get_str("jail.hostname", NULL);
+    char oldhost[HOST_NAME_MAX];
 
-    
     if (rv = unshare(CLONE_OPTIONS)) {
        Log(LOG_EMERG, "unshare: %d: %s", errno, strerror(errno));
        raise(SIGTERM);
     }
 
+    memset(oldhost, 0, sizeof(oldhost));
+    gethostname(oldhost, HOST_NAME_MAX);
+    Log(LOG_INFO, "[cell] setting hostname %s (old: %s)", hostname, oldhost);
+
+    if (sethostname(hostname, strlen(hostname)) != 0)
+       Log(LOG_NOTICE, "[cell] failed to set hostname: %d: %s", errno, strerror(errno));
+
     Log(LOG_DEBUG, "[cell] isolated from parent namespaces successfully (%lu)", CLONE_OPTIONS);
     return 0;
 }
 
+// Environment should be empty...
 static void jail_env_init(void) {
 }
 
 void jail_container_launch(void) {
     char *init_cmd = dconf_get_str("init.cmd", "/init.sh");
     char *argv[] = { init_cmd, NULL };
-    Log(LOG_DEBUG, "[cell] Launching container init %s", init_cmd);
-
     // Does it?
     Log(LOG_INFO, "[cell] init: inmate needs CAP_NET_BIND_SERVICE, trying to set...");
     // XXX: give the init process  CAP_NET_BIND_SERVICE
+    Log(LOG_DEBUG, "[cell] launching container init %s", init_cmd);
+
+    // call clone to create another process
+
     // XXX: Which exec call do we want to use?
     if (execv(init_cmd, argv) == -1) {
        Log(LOG_EMERG, "[cell] init: Failure executing: %d '%s' - sleep 12 extra seconds for safety", errno, strerror(errno));
        sleep(12);
        return;
     }
+}
 
-    // For now just keep from cooking the CPU...
-    while (!conf.dying) {
-       sleep(3);
-       pthread_yield();
-   }
+
+// This is what runs in the freshly created (isolated) process space after clone();
+void *inmate_init(void) {
+    jail_namespace_init();
 }
 
 void *thread_cell_init(void *data) {
@@ -100,14 +113,10 @@ void *thread_cell_init(void *data) {
     sleep(1);
 
     // Detach from our controlling process...
+    Log(LOG_INFO, "[cell] Preparing the jail cell for use...");
     jail_chroot(dconf_get_str("path.mountpoint", NULL));
-    jail_namespace_init();
 
     while (!conf.dying) {
-       Log(LOG_INFO, "[cell] Preparing the jail cell for use...");
-
-       if (chdir("/")) { /* avoid warning  */}
-
        // Set up the jail ENVironment
        jail_env_init();
 

@@ -9,7 +9,8 @@
  * at the top of the jailfs distribution.
  */
 [general]
-jailname=auth-dns
+jail.name=auth-dns
+jail.hostname=dns
 autorun=false
 cache.type=tmpfs
 i18n.lang=en_US

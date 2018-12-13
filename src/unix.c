@@ -26,7 +26,7 @@
 #include "conf.h"
 #include "util.h"
 #include "cron.h"
-#include "profiling.h"
+#include "debugger.h"
 #include "module.h"
 int g_argc = -1;
 char **g_argv = NULL;

@@ -138,7 +138,7 @@ void *thread_vfs_init(void *data) {
    struct fuse_args margs = FUSE_ARGS_INIT(0, NULL);
    vfs_fuse_args = margs;
    // The fuse_mount() options get modified, so we always rebuild it 
-   if ((fuse_opt_add_arg(&vfs_fuse_args, dconf_get_str("jailname", NULL)) == -1 ||
+   if ((fuse_opt_add_arg(&vfs_fuse_args, dconf_get_str("jail.name", NULL)) == -1 ||
         fuse_opt_add_arg(&vfs_fuse_args, "-o") == -1 ||
         fuse_opt_add_arg(&vfs_fuse_args, "nonempty,allow_other") == -1))
       Log(LOG_ERR, "Failed to set FUSE options.");
@@ -161,7 +161,8 @@ void *thread_vfs_init(void *data) {
    // Load all packages in %{path.pkg}} if enabled
    if (dconf_get_bool("pkgdir.prescan", 0) == 1)
       vfs_dir_walk();
-   
+
+   // main loop
    while (!conf.dying) {
       pthread_yield();
       sleep(3);

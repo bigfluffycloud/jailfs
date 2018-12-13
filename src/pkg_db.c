@@ -1,3 +1,19 @@
+/*
+ * tk/servers/jailfs:
+ *	Package filesystem. Allows mounting various package files as
+ *   a read-only (optionally with spillover file) overlay filesystem
+ *   via FUSE or (eventually) LD_PRELOAD library.
+ *
+ * Copyright (C) 2012-2018 BigFluffy.Cloud <joseph@bigfluffy.cloud>
+ *
+ * Distributed under a MIT license. Send bugs/patches by email or
+ * on github - https://github.com/bigfluffycloud/jailfs/
+ *
+ * No warranty of any kind. Good luck!
+ *
+ * src/pkg_db.c:
+ *	Functions to manage the packae database
+ */
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/mman.h>
@@ -23,7 +39,11 @@
 #include "str.h"
 #include "timestr.h"
 
-/* Handle vfs_watch CREATED event */
+//
+// pkg_import: Scan the contents of a package and add them to the VFS view
+//
+// XXX: We should add a 'preload' option to jailconf to cache all files in
+// XXX: important packages. - jm 12/13/18
 int pkg_import(const char *path) {
    char       *tmp = NULL;
    int         infd, outfd;
@@ -35,10 +55,6 @@ int pkg_import(const char *path) {
    char _f_type = '-';
 
    /*
-    * XXX: what do we do when an in-use package is modified?
-    * XXX: for now I'm going to create a mandatory lock on
-    * XXX: the package when it is opened, so this shouldn't happen
-    *
     * Upgrading a package should consist of replace it with
     * one with a higher version number than the old one.
     *
@@ -119,23 +135,6 @@ int pkg_import(const char *path) {
          db_file_add(pkgid, _f_name, _f_type, _f_uid, _f_gid,
                          _f_owner, _f_group, st->st_size,
                          0, time(NULL), st->st_mode, _f_perm);
-
-      // XXX: Create cache entry
-      // XXX: Extract file to path cache told use to use
-#if	0
-         size_t total = archive_entry_size(aentry);
-         char *buf = mem_alloc(total);
-
-         if (dconf_get_bool("debug.pkg", 0) == 1)
-            Log(LOG_DEBUG, "ttl: %lu, buf: %lu", total, sizeof(buf));
-
-         ssize_t size = archive_read_data(aentry, buf, total);
-
-         if (size <= 0) {
-            Log(LOG_ERR, "archive_read_data() short read: wanted %lu, got %lu", total, size);
-            continue;
-         }
-#endif
       }
    }
 

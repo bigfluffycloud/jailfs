@@ -52,7 +52,6 @@ BlockHeap *shell_hints_heap = NULL;
 static char shell_prompt[64];
 static char shell_level[40];
 
-
 // this is in src/kilo.c
 void cmd_edit(int argc, char **argv) {
 //   kilo_main(argv[1]);
@@ -332,7 +331,7 @@ static int shell_command(const char *line) {
    memset(args, 0, sizeof(args));
    memcpy(tmp, args, sizeof(tmp));
 
-   args[0] = dconf_get_str("jailname", NULL);
+   args[0] = dconf_get_str("jail.name", NULL);
 
    strtok(tmp, " ");
    while ((p = strtok(NULL, " ")) != NULL) {
@@ -418,7 +417,6 @@ static char *shell_hints(const char *buf, int *color, int *bold) {
    msg = blockheap_alloc(shell_hints_heap);
    memset(msg, 0, SHELL_HINT_MAX);
 
-
    // Static entries that will soon go away...
    if (strncasecmp(buf, "gc now", 6) == 0) {
       *color = HINT_YELLOW,
@@ -496,7 +494,7 @@ void *thread_shell_init(void *data) {
    sleep(1);
    Log(LOG_INFO, "Ready to accept requests");
    sleep(1);
-   printf("jailfs shell starting. You are managing jail '%s'\n\n", dconf_get_str("jailname", NULL));
+   printf("jailfs shell starting. You are managing jail '%s'\n\n", dconf_get_str("jail.name", NULL));
    printf("Try 'help' for a list of available commands or 'shutdown' to halt the service\nTab completion is enabled.\n\n");
    shell_level_set("main");
 

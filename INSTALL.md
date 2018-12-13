@@ -3,7 +3,7 @@ Installing this is pretty straight forward.
 We include major dependencies in ext/ via git submodule.
 
 Right now, we do NOT build these, but soon will when we
-make jail builder.
+make a jail builder and will need them..
 
 # As root or via sudo: SU=sudo
 cd /opt
@@ -28,7 +28,6 @@ make config world test-pkg
 ####
 # If you want to use jailfs with warden, see /opt/warden/INSTALLING!
 ####
-
 
 Debian
 ------

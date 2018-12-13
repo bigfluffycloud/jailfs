@@ -30,7 +30,13 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *
+ * This has been hacked up and mutilated by joseph@bigfluffy.cloud to
+ * incorporate into the linenoise based shell in jailfs ;)
  */
+// This is set by ctrl-q to return to the shell rather than exit
+static int kilo_exiting = 0;
 
 #define KILO_VERSION "0.0.1"
 
@@ -50,7 +56,7 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <fcntl.h>
-
+#include <time.h>
 /* Syntax highlight types */
 #define HL_NORMAL 0
 #define HL_NONPRINT 1
@@ -240,7 +246,7 @@ int editorReadKey(int fd) {
     int nread;
     char c, seq[3];
     while ((nread = read(fd,&c,1)) == 0);
-    if (nread == -1) exit(1);
+//    if (nread == -1) exit(1);
 
     while(1) {
         switch(c) {
@@ -1182,7 +1188,9 @@ void editorProcessKeypress(int fd) {
             quit_times--;
             return;
         }
-        exit(0);
+
+        // Set shutdown flag for the editor & return to shell:vfs> prompt
+        kilo_exiting = 1;
         break;
     case CTRL_S:        /* Ctrl-s */
         editorSave();
@@ -1243,11 +1251,9 @@ void initEditor(void) {
     E.dirty = 0;
     E.filename = NULL;
     E.syntax = NULL;
-    if (getWindowSize(STDIN_FILENO,STDOUT_FILENO,
-                      &E.screenrows,&E.screencols) == -1)
-    {
+    if (getWindowSize(STDIN_FILENO,STDOUT_FILENO, &E.screenrows,&E.screencols) == -1) {
         perror("Unable to query the screen for size (columns / rows)");
-        exit(1);
+        kilo_exiting = 1;
     }
     E.screenrows -= 2; /* Get room for status bar. */
 }
@@ -1257,11 +1263,14 @@ int kilo_main(const char *filename) {
     editorSelectSyntaxHighlight(filename);
     editorOpen(filename);
     enableRawMode(STDIN_FILENO);
-    editorSetStatusMessage(
-        "HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find");
-    while(1) {
+    editorSetStatusMessage("HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find");
+    while(kilo_exiting == 0) {
         editorRefreshScreen();
         editorProcessKeypress(STDIN_FILENO);
     }
+    // Goodbye!
+    editorAtExit();
+    kilo_exiting = 0;
+
     return 0;
 }

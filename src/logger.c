@@ -34,6 +34,7 @@
 #define LOG_INFO        6       /* informational */
 #define LOG_DEBUG       7       /* debug-level messages */
 #endif	// !defined(LOG_EMERG)
+
 struct log_levels {
    char *str;
    int level;
@@ -58,6 +59,42 @@ typedef struct {
 } LogHndl;
 static LogHndl *mainlog;
 
+//////////////////////////////////////////////////////////
+// Initial (early) log support, storing messages in memory until logfile is open
+#define	MAX_LOG_LINE	8192
+#define	MAX_EARLYLOG	16384
+static char *logger_earlylog = NULL,
+            *earlylog_p = NULL;
+
+static void *earlylog_init(size_t bufsz) {
+     if (logger_earlylog != NULL) {
+        Log(LOG_DEBUG, "earlylog_init() called twice, why?");
+        return logger_earlylog;
+     }
+
+     if ((logger_earlylog = mem_alloc(MAX_EARLYLOG)) != NULL)
+        return logger_earlylog;
+
+     return NULL;
+}
+
+static int earlylog_append(const char *line) {
+    // XXX: Add to the end of the log
+    if (earlylog_p != NULL) {
+       // Append it
+       printf("logger: %s\n", line);
+    }
+}
+
+static void earlylog_fini(void) {
+    if (logger_earlylog != NULL) {
+       memset(logger_earlylog, 0, MAX_EARLYLOG);
+       mem_free(logger_earlylog);
+    }
+    logger_earlylog = NULL;
+}
+////////////////////////////////////////////
+   
 // Convert numeric log level to string
 static inline const char *LogName(int level) {
    struct log_levels *lp = log_levels;

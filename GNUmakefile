@@ -20,7 +20,7 @@ include mk/config.mk
 # For now, this stuff is disabled as it may not even work anymore
 #include mk/distcc.mk
 #include mk/ccache.mk
-#include mk/ext.mk
+include mk/ext.mk
 
 # Project rules
 include doc/rules.mk
