@@ -24,8 +24,9 @@
 #include <unistd.h>
 #include "memory.h"
 #include "balloc.h"
-#include "logger.h"
 #include "linenoise.h"
+
+#include "logger.h"
 #include "shell.h"
 #include "unix.h"
 #include "conf.h"
