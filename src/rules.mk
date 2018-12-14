@@ -1,43 +1,60 @@
 bin := jailfs
 #bin += warden
+lsd_lib := lib/libsd.a
+lsd_lib_so := lib/libsd.so
 
+# main binary
 jailfs_objs += .obj/api.o
-jailfs_objs += .obj/atomicio.o
-jailfs_objs += .obj/balloc.o
 jailfs_objs += .obj/cache.o
 jailfs_objs += .obj/conf.o
+#jailfs_objs += .obj/control.o
 jailfs_objs += .obj/cron.o
-jailfs_objs += .obj/database.o
+#jailfs_objs += .obj/database.o
 jailfs_objs += .obj/debugger.o
-jailfs_objs += .obj/dict.o
-jailfs_objs += .obj/dlink.o
 jailfs_objs += .obj/gc.o
 jailfs_objs += .obj/hooks.o
 jailfs_objs += .obj/jail.o
 jailfs_objs += .obj/i18n.o
 jailfs_objs += .obj/kilo.o
 jailfs_objs += .obj/linenoise.o
-jailfs_objs += .obj/list.o
 jailfs_objs += .obj/logger.o
 jailfs_objs += .obj/main.o
 jailfs_objs += .obj/module.o
-jailfs_objs += .obj/pkg.o
-jailfs_objs += .obj/pkg_db.o
-jailfs_objs += .obj/scripting.o
+#jailfs_objs += .obj/pkg.o
+#jailfs_objs += .obj/pkg_db.o
+#jailfs_objs += .obj/scripting.o
 jailfs_objs += .obj/shell.o
-jailfs_objs += .obj/str.o
 jailfs_objs += .obj/threads.o
-jailfs_objs += .obj/timestr.o
-jailfs_objs += .obj/tree.o
 jailfs_objs += .obj/unix.o
 jailfs_objs += .obj/vfs.o
-jailfs_objs += .obj/vfs_fuse.o
-jailfs_objs += .obj/vfs_inode.o
-jailfs_objs += .obj/vfs_inotify.o
-jailfs_objs += .obj/vfs_mimetype.o
-jailfs_objs += .obj/vfs_pathutil.o
-jailfs_objs += .obj/vfs_pkg.o
-jailfs_objs += .obj/vfs_spillover.o
+#jailfs_objs += .obj/vfs_fuse.o
+#jailfs_objs += .obj/vfs_inode.o
+#jailfs_objs += .obj/vfs_inotify.o
+#jailfs_objs += .obj/vfs_mimetype.o
+#jailfs_objs += .obj/vfs_pathutil.o
+#jailfs_objs += .obj/vfs_pkg.o
+#jailfs_objs += .obj/vfs_spillover.o
 warden_objs += .obj/warden.o
 
-clean_objs += ${jailfs_objs} ${warden_objs}
+lsd_objs += .obj/atomicio.o
+lsd_objs += .obj/balloc.o
+lsd_objs += .obj/dict.o
+lsd_objs += .obj/dlink.o
+lsd_objs += .obj/list.o
+lsd_objs += .obj/str.o
+lsd_objs += .obj/timestr.o
+lsd_objs += .obj/tree.o
+
+
+lib/libsd.a: ${lsd_objs}
+	${AR} -cvq $@ $^
+
+lib/libsd.so: ${lsd_objs}
+	${CC} -fPIC -lbsd -lrt -pthread -shared $^ -o $@
+
+.obj/%.o:src/lsd/%.c $(wildcard src/lsd/*.h src/*.h)
+	@echo "[CC].lib $< => $@"
+	@${CC} ${warn_flags} ${CFLAGS} -fPIC -o $@ -c $<
+
+clean_objs += ${jailfs_objs} ${warden_objs} ${lsd_objs} ${lsd_lib} ${lsd_lib_so}
+libs += ${lsd_lib} ${lsd_lib_so}

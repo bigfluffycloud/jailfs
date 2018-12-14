@@ -13,7 +13,7 @@
  */
 #if	!defined(__CACHE_H)
 #define	__CACHE_H
-#include "dict.h"
+#include <lsd/dict.h>
 
 struct CacheItem {
    int dirty;

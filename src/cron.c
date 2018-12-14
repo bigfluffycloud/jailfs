@@ -14,15 +14,12 @@
  * src/cron.c:
  *	Periodic event handler support
  */
-#include <time.h>
-#include <stdlib.h>
+#include <lsd.h>
 #include "cron.h"
 #include "conf.h"
 #include "ev.h"
-#include "memory.h"
 #include "logger.h"
 #include "gc.h"
-#include "timestr.h"
 struct ev_loop *evt_loop = NULL;
 
 void evt_init(void) {

@@ -38,4 +38,4 @@ include mk/help.mk
 include mk/git.mk
 
 # Build *everything* suitable for a release
-world: ${libs} ${bin} ${debug_targets}
+world: ${libs} ${bin} ${debug_targets} ${extra_targets}

@@ -10,7 +10,7 @@
 # No warranty of any kind. Good luck!
 #
 
-release: release-pre ${release_targets} ${extra_release_targets} release-post
+release: release-pre ${release_targets} release-post
 
 release-pre:
 	@echo "Building release packages"

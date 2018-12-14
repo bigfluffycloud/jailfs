@@ -1,15 +1,21 @@
+/*
+ * tk/servers/jailfs:
+ *	Package filesystem. Allows mounting various package files as
+ *   a read-only (optionally with spillover file) overlay filesystem
+ *   via FUSE or (eventually) LD_PRELOAD library.
+ *
+ * Copyright (C) 2012-2018 BigFluffy.Cloud <joseph@bigfluffy.cloud>
+ *
+ * Distributed under a MIT license. Send bugs/patches by email or
+ * on github - https://github.com/bigfluffycloud/jailfs/
+ *
+ * No warranty of any kind. Good luck!
+ */
 /* Thread pools */
-#include <pthread.h>
-#include <sys/errno.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include "dict.h"
+#include <lsd.h>
 #include "logger.h"
-#include "memory.h"
 #include "threads.h"
 #include "unix.h"
-#include "list.h"
 
 int core_ready = 0;
 pthread_mutex_t core_ready_m;

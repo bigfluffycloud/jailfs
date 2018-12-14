@@ -5,11 +5,9 @@
  * *ALL* strings, *ALL* structs ***MUST*** be allocated
  * as we cross thread-boundaries in the MLS/DPS code
  */
-#include <errno.h>
-#include "dict.h"
+#include <lsd.h>
 #include "hooks.h"
 #include "logger.h"
-#include "memory.h"
 /* Be gentle with this, it can and will explode if you touch it wrong */
 static dict *hooks = NULL;
 

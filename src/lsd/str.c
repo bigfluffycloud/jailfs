@@ -27,7 +27,7 @@ char       *str_dup(const char *str) {
       return NULL;
 
    if ((ptr = strdup(str)) == NULL)
-      Log(LOG_ERR, "%s:strdup %d:%s", __FUNCTION__, errno, strerror(errno));
+      fprintf(stderr, "%s:strdup %d:%s\n", __FUNCTION__, errno, strerror(errno));
 
    return ptr;
 }
@@ -147,9 +147,9 @@ int str_tokenize(char *message, char **parv) {
       if (count == MAXPARA - 1) {
          /*
           * We've reached one less than our max limit
-          * ** to handle the parameter we already ripped off
+          * to handle the parameter we already ripped off
           */
-         Log(LOG_DEBUG, "DEBUG: Reached the MAXPARA limit!");
+         fprintf(stderr, "DEBUG: Reached the MAXPARA limit!\n");
          return count;
       }
       if (*next == ' ') {
@@ -213,7 +213,7 @@ int str_tokenize_generic(char delim, int size, char *message, char **parv) {
          /*
           * We've reached our limit 
           */
-         Log(LOG_DEBUG, "Reached the size limit!");
+         fprintf(stderr, "str_tokenize_generic: Reached the size limit!\n");
          return count;
       }
       if (*next == delim) {

@@ -14,15 +14,10 @@
  * src/gc.c
  * 	Garbage collection tasks managed by the main thread
  */
-#include "memory.h"
-#include "balloc.h"
+#include <lsd.h>
 #include "logger.h"
-#include "str.h"
 #include "cache.h"
-#include "dlink.h"
-#include "pkg.h"
 #include "shell.h"
-#include "vfs.h"
 
 extern BlockHeap *dlink_node_heap;
 extern BlockHeap *pkg_heap;
@@ -35,11 +30,13 @@ int gc_all(void) {
      // XXX: Add some code to balloc:bh_garbagecollect to return freed items
      blockheap_garbagecollect(cache_entry_heap);
      blockheap_garbagecollect(dlink_node_heap);
-     blockheap_garbagecollect(pkg_heap);
-     blockheap_garbagecollect(pkg_file_heap);
+//     blockheap_garbagecollect(pkg_heap);
+//     blockheap_garbagecollect(pkg_file_heap);
      blockheap_garbagecollect(shell_hints_heap);
+/*
      blockheap_garbagecollect(vfs_handle_heap);
      blockheap_garbagecollect(vfs_watch_heap);
      blockheap_garbagecollect(vfs_inode_heap);
+*/
      return 0;
 }

@@ -1,18 +1,18 @@
+/*
+ * tk/servers/jailfs:
+ *	Package filesystem. Allows mounting various package files as
+ *   a read-only (optionally with spillover file) overlay filesystem
+ *   via FUSE or (eventually) LD_PRELOAD library.
+ *
+ * Copyright (C) 2012-2018 BigFluffy.Cloud <joseph@bigfluffy.cloud>
+ *
+ * Distributed under a MIT license. Send bugs/patches by email or
+ * on github - https://github.com/bigfluffycloud/jailfs/
+ *
+ * No warranty of any kind. Good luck!
+ */
 #include <sys/mount.h>
-#include "dict.h"
-#include "memory.h"
-#include "balloc.h"
-#include "conf.h"
-#include "cron.h"
-#include "logger.h"
-#include "pkg.h"
-#include "pkg_db.h"
-#include "str.h"
-#include "timestr.h"
-#include "util.h"
-#include "vfs.h"
-#include "threads.h"
-#include "balloc.h"
+#include <lsd.h>
 
 static pthread_mutex_t cache_mutex;
 static char *cache_path = NULL;

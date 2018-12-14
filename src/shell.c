@@ -22,10 +22,8 @@
 #include <signal.h>
 #include <string.h>
 #include <unistd.h>
-#include "memory.h"
-#include "balloc.h"
+#include <lsd.h>
 #include "linenoise.h"
-
 #include "logger.h"
 #include "shell.h"
 #include "unix.h"

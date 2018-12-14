@@ -20,21 +20,9 @@
  * from the iniparser package. See dict.[ch] for slightly modified version
  * Thanks!!
  */
-#include <errno.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <signal.h>
 #include <strings.h>
-#include "dict.h"
-#include "logger.h"
-#include "dlink.h"
-#include "str.h"
-#include "conf.h"
-#include "timestr.h"
-#include "memory.h"
+#include <lsd.h>
 #include "module.h"
-#include "i18n.h"
 #define	JAILCONF_SIZE	16384		// should be plenty...
 
 struct conf conf;

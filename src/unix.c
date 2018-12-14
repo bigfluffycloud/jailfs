@@ -11,20 +11,12 @@
  *
  * No warranty of any kind. Good luck!
  */
-#include <errno.h>
-#include <sys/time.h>
-#include <sys/types.h>
 #include <sys/resource.h>
-#include <string.h>
-#include <unistd.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <sys/wait.h>
+#include <lsd.h>
 #include "logger.h"
 #include "unix.h"
 #include "conf.h"
-#include "util.h"
 #include "cron.h"
 #include "debugger.h"
 #include "module.h"

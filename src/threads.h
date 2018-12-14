@@ -14,9 +14,8 @@
 #if	!defined(__threads_h)
 #define	__threads_h
 #include <pthread.h>
-//#include "dictionary.h"
-#include "dict.h"
-#include "list.h"
+#include <lsd.h>
+
 typedef struct thread {
    pthread_t 	thr_info;
    pthread_attr_t thr_attr;

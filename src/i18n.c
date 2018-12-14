@@ -12,8 +12,8 @@
  * No warranty of any kind. Good luck!
  */
 /* i18n.c: Internationalization support using dconf */
+#include <lsd.h>
 #include "conf.h"
-#include "dict.h"
 #include "i18n.h"
 #include "logger.h"
 

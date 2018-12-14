@@ -11,7 +11,7 @@
  *
  * No warranty of any kind. Good luck!
  *
-*
+ *
  * atheme-services: A collection of minimalist IRC services   
  * balloc.c: Block allocation of memory segments
  *
@@ -57,8 +57,9 @@ static dlink_list heap_lists;
 #define blockheap_fail(x) _blockheap_fail(x, __FILE__, __LINE__)
 
 static void _blockheap_fail(const char *reason, const char *file, int line) {
-   Log(LOG_INFO, "Blockheap failure: %s (%s:%d)", reason, file, line);
-   conf.dying = 1;
+   fprintf(stderr, "Blockheap failure: %s (%s:%d)", reason, file, line);
+   
+   exit(1);
 }
 
 /*
@@ -89,9 +90,6 @@ void blockheap_gc(int fd, short event, void *arg) {
 }
 
 void blockheap_init(void) {
-   evt_timer_add_periodic(blockheap_gc,
-     "gc.blockheap",
-      timestr_to_time(dconf_get_str("tuning.timer.blockheap_gc", NULL), 60));
 }
 
 /*
@@ -196,8 +194,8 @@ BlockHeap  *blockheap_create(size_t elemsize, int elemsperblock, const char *nam
    bh = (BlockHeap *) mem_calloc(1, sizeof(BlockHeap));
 
    if (bh == NULL) {
-      Log(LOG_INFO, "Attempt to calloc() failed: (%s:%d)", __FILE__, __LINE__);
-      conf.dying = 1;
+      fprintf(stderr,"Attempt to calloc() failed: (%s:%d)\n", __FILE__, __LINE__);
+      exit(1);
    }
 
    if ((elemsize % sizeof(void *)) != 0) {
@@ -216,8 +214,8 @@ BlockHeap  *blockheap_create(size_t elemsize, int elemsperblock, const char *nam
    if (blockheap_block_new(bh)) {
       if (bh != NULL)
          mem_free(bh);
-      Log(LOG_INFO, "blockheap_block_new() failed");
-      conf.dying = 1;
+      fprintf(stderr, "blockheap_block_new() failed");
+      exit(1);
    }
 
    if (bh == NULL) {
@@ -257,8 +255,8 @@ void       *blockheap_alloc(BlockHeap * bh) {
          blockheap_garbagecollect(bh);
 
          if (bh->freeElems == 0) {
-            Log(LOG_EMERG, "blockheap_block_new() failed and garbage collection didn't help");
-            conf.dying = 1;
+            fprintf(stderr, "blockheap_block_new() failed and garbage collection didn't help\n");
+            exit(1);
          }
       }
    }
@@ -294,12 +292,12 @@ int blockheap_free(BlockHeap * bh, void *ptr) {
    struct MemBlock *memblock;
 
    if (bh == NULL) {
-      Log(LOG_DEBUG, "balloc.c:BlockHeapFree() bh == NULL");
+      fprintf(stderr, "balloc.c:BlockHeapFree() bh == NULL\n");
       return (1);
    }
 
    if (ptr == NULL) {
-      Log(LOG_DEBUG, "balloc.c:BlockHeapFree() ptr == NULL");
+      fprintf(stderr, "balloc.c:BlockHeapFree() ptr == NULL\n");
       return (1);
    }
 
@@ -420,6 +418,6 @@ void blockheap_usage(BlockHeap * bh, size_t * bused, size_t * bfree, size_t * bm
       *bfree = freem;
    if (bmemusage != NULL)
       *bmemusage = memusage;
-   Log(LOG_INFO, "Block Heap Allocator statistics: heap=%s used=%lu free=%lu memusage=%lu",
+   fprintf(stderr, "Block Heap Allocator statistics: heap=%s used=%lu free=%lu memusage=%lu\n",
        bh->name, used, freem, memusage);
 }

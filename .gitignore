@@ -1,10 +1,14 @@
 # Leftovers from build (please do make clean!)
 .obj/*.o
+.obj/*.so
 cache/*
 cache/.*
+inc/*.h
 jailfs
 lib/*.so
 lib/*.a
+lib/*.o
+lib/*.specs
 lib/modules/*.so
 dbg/jailfs.symtab
 dbg/jailfs.strings

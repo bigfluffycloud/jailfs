@@ -24,7 +24,7 @@ debug_targets += dbg/${bin}.symtab
 debug_targets += dbg/${bin}.strings
 debug_clean += ${debug_targets}
 
-debug: debug-pre ${debug_targets} ${extra_debug_targets} debug-post
+debug: debug-pre ${debug_targets} debug-post
 
 debug-pre:
 	@echo "Building debugging data..."

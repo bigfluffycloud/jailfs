@@ -11,16 +11,10 @@
  *
  * No warranty of any kind. Good luck!
  */
-#include <time.h>
-#include <errno.h>
-#include <stdio.h>
+#include <lsd.h>
 #include <stdarg.h>
-#include <string.h>
-#include <unistd.h>
 #include "conf.h"
 #include "logger.h"
-#include "memory.h"
-#include "util.h"
 #include "threads.h"
 
 #if	!defined(LOG_EMERG)

@@ -40,12 +40,13 @@ objs += ${libfuse_obj}
 musl_srcdir := ext/musl
 musl_lib := lib/libc.so
 
-lib/libc.so: ${musl/srcdir}/libc.so
+lib/libc.so: ${musl_srcdir}/libc.so
 	cp -arvx ${musl_srcdir}/lib/* lib/
 
-${musl_srcdir}/libc.so:
+ext/musl/configure: git-init git-pull
+${musl_srcdir}/libc.so: ext/musl/configure
 	-${MAKE} -C ${musl_srcdir} distclean
 	cd ${musl_srcdir}/; ./configure --prefix=/ --enable-wrapper=yes
 	${MAKE} -C ${musl_srcdir}
 
-objs += {
+libs += lib/libc.so

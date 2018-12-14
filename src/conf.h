@@ -14,12 +14,8 @@
 
 #if	!defined(__CONF_H)
 #define	__CONF_H
-#include <limits.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
-#include <time.h>
-#include "dict.h"
+#include <lsd.h>
 
 struct conf {
    char       *mountpoint;

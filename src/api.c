@@ -17,11 +17,10 @@
  *	We try to provide a thread safe way to commnicate
  * across threads and dispatch commands.
  */
-#include <sys/signal.h>
+#include <lsd.h>
 #include "conf.h"
 #include "memory.h"
 #include "logger.h"
-#include "balloc.h"
 #include "hooks.h"
 #include "api.h"
 

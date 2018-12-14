@@ -11,5 +11,9 @@
  *
  * No warranty of any kind. Good luck!
  */
-#include "dict.h"
+#if	!defined(__I18N)
+#define	__I18N
+
 extern int i18n_init(void);
+
+#endif	// !defined(__I18N)

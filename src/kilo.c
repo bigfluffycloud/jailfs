@@ -204,6 +204,8 @@ void disableRawMode(int fd) {
 /* Called at exit to avoid remaining in raw mode. */
 void editorAtExit(void) {
     disableRawMode(STDIN_FILENO);
+    linenoiseClearScreen();
+    printf("Finished editing file %s\n", E.filename);
 }
 
 /* Raw mode: 1960 magic shit. */

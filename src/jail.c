@@ -10,29 +10,16 @@
  * on github - https://github.com/bigfluffycloud/jailfs/
  *
  * No warranty of any kind. Good luck!
- */
-/*
+ *
+ *
  * src/jail.c:
  *	Code we use to restrict the processes running inside of the
  * jail. Ideally, we will be running in a clean namespace, with no
  * privileges.
  */
-#include <unistd.h>
-#include <sched.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
-#include <signal.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-#include <sys/utsname.h>
+#include <lsd.h>
 #include "conf.h"
-#include "memory.h"
-#include "str.h"
 #include "logger.h"
-#include "dict.h"
 #include "threads.h"
 
 // XXX: Detect what namespaces are enabled and use what we can
@@ -86,15 +73,15 @@ void jail_container_launch(void) {
     char *init_cmd = dconf_get_str("init.cmd", "/init.sh");
     char *argv[] = { init_cmd, NULL };
     // Does it?
-    Log(LOG_INFO, "[cell] init: inmate needs CAP_NET_BIND_SERVICE, trying to set...");
+//    Log(LOG_INFO, "[cell] init: inmate needs CAP_NET_BIND_SERVICE, trying to set...");
     // XXX: give the init process  CAP_NET_BIND_SERVICE
-    Log(LOG_DEBUG, "[cell] launching container init %s", init_cmd);
+//    Log(LOG_DEBUG, "[cell] launching container init %s", init_cmd);
 
     // call clone to create another process
 
     // XXX: Which exec call do we want to use?
     if (execv(init_cmd, argv) == -1) {
-       Log(LOG_EMERG, "[cell] init: Failure executing: %d '%s' - sleep 12 extra seconds for safety", errno, strerror(errno));
+//       Log(LOG_EMERG, "[cell] init: Failure executing: %d '%s' - sleep 12 extra seconds for safety", errno, strerror(errno));
        sleep(12);
        return;
     }
@@ -121,13 +108,13 @@ void *thread_cell_init(void *data) {
        jail_env_init();
 
        // Supervise the task
-       Log(LOG_INFO, "[cell] init: a new inmate has arrived in the cell.");
+//       Log(LOG_INFO, "[cell] init: a new inmate has arrived in the cell.");
 
        // Start the init command
        jail_container_launch();
 
        // If process unexpectedly dies, reset the container and start over...
-       Log(LOG_NOTICE, "[cell] init: inmate has died, replacing him in 3 seconds!");
+//       Log(LOG_NOTICE, "[cell] init: inmate has died, replacing him in 3 seconds!");
        sleep(3);
     }
     return NULL;

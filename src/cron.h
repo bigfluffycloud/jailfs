@@ -14,10 +14,6 @@
 #if	!defined(__CRON_H)
 #define	__CRON_H
 #include <ev.h>
-#include "dict.h"
-#include "conf.h"
-#include "logger.h"
-#include "memory.h"
 extern struct ev_loop *evt_loop;
 extern	int	cron_init(void);
 extern void evt_init(void);

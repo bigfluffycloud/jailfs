@@ -15,35 +15,18 @@
  * debugger.c:
  *	Extends the shell(.c) to add a debuggger
  */
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
 #include <sys/gmon.h>
-#include <sys/types.h>
-#include <stdio.h>
-#include <time.h>
+#include <lsd.h>
 #include "debugger.h"
 #include "logger.h"
-#include "memory.h"
 #include "conf.h"
-#include "balloc.h"
 #include "cron.h"
-#include "database.h"
-#include "dict.h"
-#include "dlink.h"
 #include "hooks.h"
 #include "i18n.h"
 #include "linenoise.h"
 #include "module.h"
-#include "pkg.h"
-#include "str.h"
 #include "threads.h"
-#include "timestr.h"
-#include "tree.h"
 #include "unix.h"
-#include "util.h"
-#include "vfs.h"
 #define	monstartup __monstartup
 
 extern void *_start,
@@ -149,14 +132,12 @@ const char *debug_symtab_lookup(const char *symbol, const char *symtab) {
 void profiling_dump(void) {
    char buf[32];
 
-#if	0
    sprintf(buf, "gmod.%lu", time(NULL));
    setenv("GMON_OUT_PREFIX", buf, 1);
    _mcleanup();
    monstartup(_start, etext);
    setenv("GMON_OUT_PREFIX", "gmon.auto", 1);
    sprintf(profiling_msg, "Reset profile, saved past profiling data to %s", buf);
-#endif
    profiling_newmsg = 1;
 }
 

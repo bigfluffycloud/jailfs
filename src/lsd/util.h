@@ -11,8 +11,9 @@
  *
  * No warranty of any kind. Good luck!
  */
-#include <sys/stat.h>
-#include <errno.h>
+#if	!defined(__LSD_UTIL_H)
+#define	__LSD_UTIL_H
+
 static __inline int is_dir(const char *path) {
    struct stat sb;
 
@@ -61,3 +62,5 @@ static int is_fifo(const char *path) {
 
    return 0;
 }
+
+#endif	// !defined(__LSD_UTIL_H)

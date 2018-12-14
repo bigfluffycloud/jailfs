@@ -20,7 +20,7 @@
 #define __BALLOC_H
 #include <sys/types.h>
 #include <stdlib.h>
-#include "dlink.h"
+#include <lsd/dlink.h>
 struct Block {
    size_t      alloc_size;
    struct Block *next;                 /* Next in our chain of blocks */
@@ -62,6 +62,7 @@ extern int  blockheap_destroy(BlockHeap *bh);
 
 // Garbage collection
 extern int blockheap_garbagecollect(BlockHeap *bh);
+extern void blockheap_gc(int fd, short event, void *arg);
 
 // Accessory functions
 extern void blockheap_init(void);

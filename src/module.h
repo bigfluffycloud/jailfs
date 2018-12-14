@@ -13,9 +13,9 @@
  */
 #if	!defined(__module_h)
 #define	__module_h
-#include "dlink.h"
-#include "dict.h"
-#include "list.h"
+#include <lsd/dlink.h>
+#include <lsd/dict.h>
+#include <lsd/list.h>
 
 #define	MODULE_MAGIC	0x49fa0000
 #define	API_VER_V1	(MODULE_MAGIC | 0x1)

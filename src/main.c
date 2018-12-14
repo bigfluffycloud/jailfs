@@ -11,31 +11,21 @@
  *
  * No warranty of any kind. Good luck!
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/mount.h>
+#include <lsd.h>
 // This is sloppy.. We need to clean up the headers...
 #include "conf.h"
-#include "database.h"
 #include "unix.h"
 #include "cron.h"
 #include "logger.h"
-#include "pkg.h"
-#include "dlink.h"
 #include "threads.h"
-#include "vfs.h"
-#include "unix.h"
 #include "cron.h"
-#include "util.h"
 #include "shell.h"
 #include "debugger.h"
 #include "module.h"
 #include "cache.h"
-#include "api.h"
 #include "i18n.h"
 #include "jail.h"
+#include "gc.h"
 
 BlockHeap  *main_heap;
 ThreadPool *main_threadpool;
@@ -48,9 +38,9 @@ struct ThreadCreator {
 } main_threads[] = {
   // The order here is sorta significant - logger must be first and shell last!
   { "logger", thread_logger_init, thread_logger_fini, 0 },
-  { "db", thread_db_init, thread_db_fini, 0 },
+//  { "db", thread_db_init, thread_db_fini, 0 },
   { "cache", thread_cache_init, thread_cache_fini, 0 },
-  { "vfs", thread_vfs_init, thread_vfs_fini, 0 },
+//  { "vfs", thread_vfs_init, thread_vfs_fini, 0 },
   { "cell", thread_cell_init, thread_cell_fini, 1 },
   // shell thread
   { "shell", thread_shell_init, thread_shell_fini, 1 },
@@ -106,12 +96,16 @@ int main(int argc, char **argv) {
    umask(0077);					// Restrict umask on new files
    evt_init();					// Socket event handler
    blockheap_init();				// Block heap allocator
-   api_master_init();				// Initialize MASTER thread
+   // Start garbage collector
+   evt_timer_add_periodic(gc_all,
+     "gc.blockheap",
+      timestr_to_time(dconf_get_str("tuning.timer.blockheap_gc", NULL), 60));
+//   api_master_init();				// Initialize MASTER thread
    conf.dict = dconf_load("jailfs.cf");		// Load config
    cron_init();					// Periodic events
    i18n_init();					// Load translations
    dlink_init();				// Doubly linked lists
-   pkg_init();					// Package utilities
+//   pkg_init();					// Package utilities
 
    if (pidfile_open(dconf_get_str("path.pid", NULL))) {
       Log(LOG_EMERG, "Failed opening PID file. Are we already running?");
