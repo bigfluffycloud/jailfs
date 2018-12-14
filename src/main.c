@@ -27,6 +27,7 @@
 #include "jail.h"
 #include "gc.h"
 #include "vfs.h"
+#include "database.h"
 BlockHeap  *main_heap;
 ThreadPool *main_threadpool;
 
@@ -39,7 +40,7 @@ struct ThreadCreator {
 } main_threads[] = {
   // The order here is sorta significant - logger must be first and shell last!
   { "logger", thread_logger_init, thread_logger_fini, 0 },
-//  { "db", thread_db_init, thread_db_fini, 0 },
+  { "db", thread_db_init, thread_db_fini, 0 },
   { "cache", thread_cache_init, thread_cache_fini, 0 },
   { "vfs", thread_vfs_init, thread_vfs_fini, 0 },
   { "cell", thread_cell_init, thread_cell_fini, 1 },

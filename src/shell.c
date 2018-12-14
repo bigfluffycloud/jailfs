@@ -57,7 +57,7 @@ void cmd_edit(int argc, char **argv) {
    kilo_main("/test.c");
 }
 
-// Use the signal handler to properly shut don the system (SIGTERM/11)
+// Use the signal handler to properly shut down the system (SIGTERM/11)
 void cmd_shutdown(int argc, char **argv) {
    Log(LOG_NOTICE, "shutdown command from console.");
    raise(SIGTERM);
@@ -90,7 +90,6 @@ static void shell_prompt_reset(void) {
 static void shell_level_set(const char *line) {
    memset(shell_level, 0, sizeof(shell_level));
    snprintf(shell_level, sizeof(shell_level) - 1, "%s", line);
-   printf("changing shell_level: %s\n", line);
    shell_prompt_reset();
 }
 
@@ -135,7 +134,6 @@ struct shell_cmd {
 
 // Show/toggle (true/false)/set value
 static struct shell_cmd menu_value[] = {
-   { "back", "Go back to top-level", HINT_GREEN, 0, 0, 0, 0, cmd_back, NULL },
    { "false", "Set false", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
    { "set", "Set value", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
    { "show", "Show state", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
@@ -144,7 +142,6 @@ static struct shell_cmd menu_value[] = {
 };
 
 static struct shell_cmd menu_conf[] = {
-   { "back", "Go back to top-level", HINT_GREEN, 0, 0, 0, 0, cmd_back, NULL },
    { "dump", "Dump config values", HINT_CYAN, 1, 0, 0, 0, cmd_conf_dump, NULL },
    { "load", "Load saved config file", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
    { "save", "Write config file", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
@@ -154,7 +151,6 @@ static struct shell_cmd menu_conf[] = {
 };
 
 static struct shell_cmd menu_cron[] = {
-   { "back", "Go back to top-level", HINT_GREEN, 0, 0, 0, 0, cmd_back, NULL },
    { "debug", "show/toggle debugging status", HINT_RED, 0, 1, 0, 1, NULL, menu_value },
    { "jobs", "Show scheduled events", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
    { "stop", "Stop a scheduled event", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
@@ -162,7 +158,6 @@ static struct shell_cmd menu_cron[] = {
 };
 
 static struct shell_cmd menu_db[] = {
-   { "back", "Go back to top-level", HINT_GREEN, 0, 0, 0, 0, cmd_back, NULL },
    { "debug", "show/toggle debugging status", HINT_RED, 0, 1, 0, 1, NULL, menu_value },
    { "dump", "Dump the database to .sql file", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
    { "purge", "Re-initialize the database", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
@@ -171,13 +166,11 @@ static struct shell_cmd menu_db[] = {
 
 
 static struct shell_cmd menu_debug[] = {
-   { "back", "Go back to top-level", HINT_GREEN, 0, 0, 0, 0, cmd_back, NULL },
    { "symtab_lookup", "Lookup a symbol in the symtab", HINT_CYAN, 1, 0, 1, 2, NULL, NULL },
    { .cmd = NULL, .desc = NULL, .menu = NULL },
 };
 
 static struct shell_cmd menu_vfs[] = {
-   { "back", "Go back to top-level", HINT_GREEN, 0, 0, 0, 0, cmd_back, NULL },
    { "cd", "Change directory", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
    { "chown", "Change file/dir ownership in jail", HINT_CYAN, 1, 0, 2, -1, NULL, NULL },
    { "chmod", "Change file/dir permissions in jail", HINT_CYAN, 1, 0, 2, -1, NULL, NULL },
@@ -192,19 +185,16 @@ static struct shell_cmd menu_vfs[] = {
 };
 
 static struct shell_cmd menu_logging[] = {
-   { "back", "Go back to top-level", HINT_GREEN, 0, 0, 0, 0, cmd_back, NULL },
    { .cmd = NULL, .desc = NULL, .menu = NULL },
 };
 
 static struct shell_cmd menu_mem_gc[] = {
-   { "back", "Go back to top-level", HINT_GREEN, 0, 0, 0, 0, cmd_back, NULL },
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
    { "now", "Run garbage collection now", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
    { .cmd = NULL, .desc = NULL, .menu = NULL },
 };
 
 static struct shell_cmd menu_hooks[] = {
-   { "back", "Go back to top-level", HINT_GREEN, 0, 0, 0, 0, cmd_back, NULL },
    { "debug", "show/toggle debugging status", HINT_RED, 0, 1, 0, 1, NULL, menu_value },
    { "list", "List registered hooks", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
    { "unregister", "Unregister a hook", HINT_RED, 0, 0, 1, 1, NULL, NULL },
@@ -212,19 +202,16 @@ static struct shell_cmd menu_hooks[] = {
 };
 
 static struct shell_cmd menu_mem_bh_tuning[] = {
-   { "back", "Go back to top-level", HINT_GREEN, 0, 0, 0, 0, cmd_back, NULL },
    { .cmd = NULL, .desc = NULL, .menu = NULL },
 };
 
 static struct shell_cmd menu_mem_bh[] = {
-   { "back", "Go back to top-level", HINT_GREEN, 0, 0, 0, 0, cmd_back, NULL },
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
    { "tuning", "Tuning knobs", HINT_CYAN, 1, 1, 0, -1, NULL, menu_mem_bh_tuning },
    { .cmd = NULL, .desc = NULL, .menu = NULL },
 };
 
 static struct shell_cmd menu_mem[] = {
-   { "back", "Go back to top-level", HINT_GREEN, 0, 0, 0, 0, cmd_back, NULL },
    { "blockheap", "BlockHeap allocator", HINT_CYAN, 1, 1, 0, -1, NULL, menu_mem_bh },
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
    { "gc", "Garbage collector", HINT_CYAN, 1, 1, 0, -1, cmd_help, menu_mem_gc },
@@ -232,33 +219,28 @@ static struct shell_cmd menu_mem[] = {
 };
 
 static struct shell_cmd menu_module[] = {
-   { "back", "Go back to top-level", HINT_GREEN, 0, 0, 0, 0, cmd_back, NULL },
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
    { .cmd = NULL, .desc = NULL, .menu = NULL },
 };
 
 static struct shell_cmd menu_net[] = {
-   { "back", "Go back to top-level", HINT_GREEN, 0, 0, 0, 0, cmd_back, NULL },
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
    { .cmd = NULL, .desc = NULL, .menu = NULL },
 };
 
 static struct shell_cmd menu_pkg[] = {
-   { "back", "Go back to top-level", HINT_GREEN, 0, 0, 0, 0, cmd_back, NULL },
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
    { "scan", "Scan package pool and add to database", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
    { .cmd = NULL, .desc = NULL, .menu = NULL },
 };
 
 static struct shell_cmd menu_profiling[] = {
-   { "back", "Go back to top-level", HINT_GREEN, 0, 0, 0, 0, cmd_back, NULL },
    { "enable", "show/toggle profiling status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
    { "save", "Save profiling data to disk", HINT_CYAN, 1, 0, 0, 0, NULL, NULL },
    { .cmd = NULL, .desc = NULL, .menu = NULL },
 };
 
 static struct shell_cmd menu_thread[] = {
-   { "back", "Go back to top-level", HINT_GREEN, 0, 0, 0, 0, cmd_back, NULL },
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
    { "kill", "Kill a thread", HINT_RED, 0, 0, 1, 1, NULL, NULL },
    { "show", "Show details about thread", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
@@ -272,7 +254,6 @@ static struct shell_cmd menu_main[] = {
    { "cron", "Periodic event scheduler", HINT_CYAN, 1, 1, 0, -1, NULL, menu_cron },
    { "db", "Database admin", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_db },
    { "debug", "Built-in debugger", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_debug },
-   { "help", "Display help", HINT_CYAN, 1, 0, 0, -1, &cmd_help, NULL },
    { "hooks", "Hooks management", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_hooks },
    { "logging", "Log file", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_logging },
    { "memory", "Memory manager", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_mem },
@@ -344,14 +325,14 @@ static int shell_command(const char *line) {
    // Command that apply in all menus:
    if (strncasecmp(line, "help", 4) == 0) {
       cmd_help(i, args);
-   } else if (strcasecmp(line, "conf dump") == 0) {
-      cmd_conf_dump(i, args);
-   } else if (strcasecmp(line, "gc now") == 0) {
-      printf("gc: Freed %d objects", gc_all());
    } else if (strcasecmp(line, "back") == 0) {
       shell_level_set("main");
    } else if (strcasecmp(line, "shutdown") == 0 || strcasecmp(line, "quit") == 0) {
       cmd_shutdown(i, args);
+   } else if (strcasecmp(line, "conf dump") == 0) {
+      cmd_conf_dump(i, args);
+   } else if (strcasecmp(line, "gc now") == 0) {
+      printf("gc: Freed %d objects", gc_all());
    } else {	// Attempt to render the menu..
       menu = shell_get_menu(line);
 
@@ -379,7 +360,7 @@ static int shell_command(const char *line) {
          }
          i++;
       } while(1);
-      printf("Unknown command: %s\t- try help\n", line);
+      printf("Unknown command, try help: %s\n", line);
    }
    return 0;
 }
@@ -399,10 +380,14 @@ static void shell_completion(const char *buf, linenoiseCompletions *lc) {
    } while(1);
 
    // Extras (until we clean this mess up...)
-   if (strcasecmp(buf, "gc now") == 0)
+   if (strncasecmp(buf, "gc now", strlen(buf)) == 0)
       linenoiseAddCompletion(lc, "gc now");
-   else if (strcasecmp(buf, "conf dump") == 0)
+   else if (strncasecmp(buf, "conf dump", strlen(buf)) == 0)
       linenoiseAddCompletion(lc, "conf dump");
+   else if (strncasecmp(buf, "back", strlen(buf)) == 0)
+      linenoiseAddCompletion(lc, "back");
+   else if (strncasecmp(buf, "help", strlen(buf)) == 0)
+      linenoiseAddCompletion(lc, "help");
 }
 
 static char *shell_hints(const char *buf, int *color, int *bold) {
@@ -426,6 +411,16 @@ static char *shell_hints(const char *buf, int *color, int *bold) {
       *color = HINT_YELLOW,
       *bold = 1,
       snprintf(msg, SHELL_HINT_MAX, " - dump active configuration file");
+      return msg;
+   } else if (strncasecmp(buf, "back", 4) == 0) {
+      *color = HINT_GREEN,
+      *bold = 1,
+      snprintf(msg, SHELL_HINT_MAX, " - go to previous menu");
+      return msg;
+   } else if (strncasecmp(buf, "help", 4) == 0) {
+      *color = HINT_GREEN,
+      *bold = 1,
+      snprintf(msg, SHELL_HINT_MAX, " - display help text");
       return msg;
    } else {
       do {
@@ -461,6 +456,12 @@ void cmd_help(int argc, char **argv) {
    menu = shell_get_menu(shell_level);
 
    printf("Menu %s help\n", shell_level);
+
+   if (menu != menu_main)
+      printf("%15s\t - go back to previous menu\n", "back");
+
+   printf("%15s\t - display help text\n", "help");
+
    do {
       if (&menu[i] == NULL || menu[i].desc == NULL)
          break;

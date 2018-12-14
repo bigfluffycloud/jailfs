@@ -75,6 +75,7 @@ tuning.heap.vfs_watch=32
 tuning.timer.blockheap_gc=60
 tuning.timer.pkg_gc=60
 tuning.timer.global_gc=60
+tuning.timer.vfs_gc=1200
 watchdog.interval=0
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -40,17 +40,13 @@
 #include <fcntl.h>
 #include <archive.h>
 #include <archive_entry.h>
-#include "atomicio.h"
-#include "balloc.h"
+#include <lsd.h>
 #include "conf.h"
 #include "database.h"
-#include "dlink.h"
 #include "cron.h"
 #include "logger.h"
-#include "memory.h"
 #include "pkg.h"
-#include "str.h"
-#include "timestr.h"
+
 /* This seems to be a BSD thing- it's not fatal if missing, so stub it */
 #if	!defined(MAP_NOSYNC)
 #define	MAP_NOSYNC	0

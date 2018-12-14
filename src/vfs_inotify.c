@@ -10,8 +10,8 @@
  * on github - https://github.com/bigfluffycloud/jailfs/
  *
  * No warranty of any kind. Good luck!
- */
-/*
+ *
+ *
  *      file: vfs_inotify.c
  *    author: joseph@bigfluffy.clud
  * copyright: 2008-2018 Big Fluffy Cloud, All rights reserved.
@@ -28,11 +28,10 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <lsd.h>
 #include "conf.h"
-#include "dlink.h"
 #include "cron.h"
 #include "logger.h"
-#include "pkg.h"
 #include "vfs.h"
 #include "vfs_inotify.h"
 

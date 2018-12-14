@@ -14,7 +14,6 @@
 #if	!defined(inode_h)
 #define	inode_h
 
-#include "balloc.h"
 struct pkg_inode {
    u_int32_t   st_ino;
    mode_t      st_mode;

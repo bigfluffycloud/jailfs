@@ -27,17 +27,13 @@
 #include <fcntl.h>
 #include <archive.h>
 #include <archive_entry.h>
-#include "atomicio.h"
-#include "balloc.h"
+#include <lsd.h>
 #include "conf.h"
 #include "database.h"
 #include "cron.h"
 #include "logger.h"
-#include "memory.h"
 #include "pkg.h"
 #include "pkg_db.h"
-#include "str.h"
-#include "timestr.h"
 
 //
 // pkg_import: Scan the contents of a package and add them to the VFS view

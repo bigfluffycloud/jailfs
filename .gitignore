@@ -3,7 +3,8 @@
 .obj/*.so
 cache/*
 cache/.*
-inc/*.h
+inc/*
+bin/*
 jailfs
 lib/*.so
 lib/*.a

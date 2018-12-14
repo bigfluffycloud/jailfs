@@ -1,3 +1,17 @@
+/*
+ * tk/servers/jailfs:
+ *	Package filesystem. Allows mounting various package files as
+ *   a read-only (optionally with spillover file) overlay filesystem
+ *   via FUSE or (eventually) LD_PRELOAD library.
+ *
+ * Copyright (C) 2012-2018 BigFluffy.Cloud <joseph@bigfluffy.cloud>
+ *
+ * Distributed under a MIT license. Send bugs/patches by email or
+ * on github - https://github.com/bigfluffycloud/jailfs/
+ *
+ * No warranty of any kind. Good luck!
+ */
+
 /* Wrapper around libmagic to support mime-type identification */
 #include "conf.h"
 #include "logger.h"
@@ -12,7 +26,7 @@ magic_t mimetype_init(void) {
 
   tmp = magic_open(flags);
   magic_load(tmp, NULL);
-  Log(LOG_INFO, "file magic (mime-type) services started succesfully");
+  Log(LOG_INFO, "[vfs] file magic (mime-type) services started succesfully");
   return tmp;
 }
 

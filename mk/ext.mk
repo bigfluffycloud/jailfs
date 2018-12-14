@@ -42,7 +42,8 @@ musl_lib := lib/libc.so
 
 lib/libc.so: ${musl_srcdir}/lib/libc.so
 	cp -arvx ${musl_srcdir}/lib/* lib/
-	cp -avrx ${musl_srcdir/obj/musl-gcc bin/
+	cp -avrx ${musl_srcdir}/obj/musl-gcc bin/
+	cp -avrx ${musl_srcdir}/include/* inc/
 
 ${musl_srcdir}/configure:
 	git submodule init; git submodule pull
@@ -58,3 +59,5 @@ musl-clean:
 libs += lib/libc.so
 
 distclean_targets += musl-clean
+extra_distclean += $(wild inc/*.h)
+extra_distclean += $(wildcard lib/*.o lib/*.so lib/*.a lib/*.specs) bin/musl-gcc

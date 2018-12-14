@@ -17,14 +17,11 @@
 #include <errno.h>
 #include <pthread.h>
 #include <sqlite3.h>
-#include "balloc.h"
+#include <lsd.h>
 #include "conf.h"
 #include "database.h"
 #include "vfs.h"
 #include "logger.h"
-#include "memory.h"
-#include "util.h"
-#include "threads.h"
 #define	SQL_BUFSIZE	8192
 
 static sqlite3 *sqlite_db = NULL;
