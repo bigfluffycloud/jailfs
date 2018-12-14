@@ -40,7 +40,9 @@ static int kilo_exiting = 0;
 
 #define KILO_VERSION "0.0.1"
 
+#undef	_BSD_SOURCE
 #define _BSD_SOURCE
+#undef	_GNU_SOURCE
 #define _GNU_SOURCE
 
 #include <termios.h>
@@ -57,6 +59,7 @@ static int kilo_exiting = 0;
 #include <stdarg.h>
 #include <fcntl.h>
 #include <time.h>
+#include <linenoise.h>
 /* Syntax highlight types */
 #define HL_NORMAL 0
 #define HL_NONPRINT 1
@@ -977,7 +980,9 @@ void editorRefreshScreen(void) {
     snprintf(buf,sizeof(buf),"\x1b[%d;%dH",E.cy+1,cx);
     abAppend(&ab,buf,strlen(buf));
     abAppend(&ab,"\x1b[?25h",6); /* Show cursor. */
-    write(STDOUT_FILENO,ab.b,ab.len);
+    if (write(STDOUT_FILENO,ab.b,ab.len)) {
+       // nothing; just stop gcc warning
+    }
     abFree(&ab);
 }
 

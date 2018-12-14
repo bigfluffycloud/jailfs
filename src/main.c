@@ -26,10 +26,11 @@
 #include "i18n.h"
 #include "jail.h"
 #include "gc.h"
-
+#include "vfs.h"
 BlockHeap  *main_heap;
 ThreadPool *main_threadpool;
 
+/// This nonsense needs moved to an API call (module_register() or likes)
 struct ThreadCreator {
    char *name;
    void *(*init)(void *);
@@ -40,7 +41,7 @@ struct ThreadCreator {
   { "logger", thread_logger_init, thread_logger_fini, 0 },
 //  { "db", thread_db_init, thread_db_fini, 0 },
   { "cache", thread_cache_init, thread_cache_fini, 0 },
-//  { "vfs", thread_vfs_init, thread_vfs_fini, 0 },
+  { "vfs", thread_vfs_init, thread_vfs_fini, 0 },
   { "cell", thread_cell_init, thread_cell_fini, 1 },
   // shell thread
   { "shell", thread_shell_init, thread_shell_fini, 1 },

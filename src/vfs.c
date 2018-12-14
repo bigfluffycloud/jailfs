@@ -21,6 +21,7 @@
 #include <sys/mount.h>
 #include <dirent.h>
 #include "logger.h"
+#include "threads.h"
 #include "vfs.h"
 
 // Anywhere VFS recurses, hard limit it to this:
