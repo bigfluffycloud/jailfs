@@ -1265,6 +1265,7 @@ void initEditor(void) {
     E.screenrows -= 2; /* Get room for status bar. */
 }
 
+// this is hacked up a little to support embedding
 int kilo_main(const char *filename) {
     initEditor();
     editorSelectSyntaxHighlight(filename);
