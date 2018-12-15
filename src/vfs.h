@@ -16,6 +16,10 @@
  */
 #if	!defined(__VFS_H)
 #define	__VFS_H
+#define	FUSE_USE_VERSION 26
+#include <fuse/fuse.h>
+#include <fuse/fuse_lowlevel.h>
+#include <fuse/fuse_opt.h>
 #include "vfs_mimetype.h"
 
 struct vfs_handle {
@@ -57,8 +61,23 @@ extern BlockHeap *vfs_watch_heap;
 extern u_int32_t vfs_root_inode;
 extern dlink_list vfs_watch_list;
 
-extern void *thread_vfs_init(void *data);
-extern void *thread_vfs_fini(void *data);
+extern struct fuse_args vfs_fuse_args;
+extern void *fuse_thr(void *unused);
+extern void vfs_fuse_fini(void);
+extern void vfs_fuse_init(void);
+extern void vfs_fuse_getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi);
+extern void vfs_fuse_access(fuse_req_t req, fuse_ino_t ino, int mask);
+extern void vfs_fuse_readlink(fuse_req_t req, fuse_ino_t ino);
+extern void vfs_fuse_opendir(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi);
+extern void vfs_fuse_readdir(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, struct fuse_file_info *fi);
+extern void vfs_fuse_releasedir(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi);
+extern void vfs_fuse_open(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi);
+extern void vfs_fuse_release(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi);
+extern void vfs_fuse_read(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, struct fuse_file_info *fi);
+extern void vfs_fuse_statfs(fuse_req_t req, fuse_ino_t ino);
+extern void vfs_fuse_getxattr(fuse_req_t req, fuse_ino_t ino, const char *name, size_t size);
+extern void vfs_fuse_listxattr(fuse_req_t req, fuse_ino_t ino, size_t size);
+extern void vfs_fuse_lookup(fuse_req_t req, fuse_ino_t parent, const char *name);
 
 extern void *thread_vfs_init(void *data);
 extern void *thread_vfs_fini(void *data);
