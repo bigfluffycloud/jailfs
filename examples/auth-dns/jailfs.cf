@@ -32,7 +32,11 @@ path.symtab=../../dbg/jailfs.symtab
 ; This should be :memory: in production
 path.db=state/jailfs.db
 path.log=file://log/jailfs.log
+; Load all files in all packages into the cache at startup?
+pkg.precache=true
+; Use inotify to track changes to pkgdir
 pkgdir.inotify=true
+; Load ALL packages in pkgdir instead of require's in [jailconf]?
 pkgdir.prescan=true
 ; Keep 100 lines of shell history
 shell.history-length=100
