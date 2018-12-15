@@ -22,7 +22,7 @@
 #include "debugger.h"
 #include "module.h"
 #include "i18n.h"
-#include "jail.h"
+#include "cell.h"
 #include "gc.h"
 #include "vfs.h"
 #include "database.h"
@@ -143,7 +143,7 @@ int main(int argc, char **argv) {
             Log(LOG_ERR, "failed starting thread main:%s", main_threads[i].name);
             abort();
          }
-         Log(LOG_INFO, "started thread main:%s", main_threads[i].name);
+         Log(LOG_INFO, "* started thread main:%s", main_threads[i].name);
       }
       i++;
    } while (i <= thr_cnt);

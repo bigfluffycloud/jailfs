@@ -793,4 +793,3 @@ int vfs_watch_init(void) {
 void vfs_watch_fini(void) {
    blockheap_destroy(vfs_watch_heap);
 }
-

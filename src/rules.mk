@@ -4,6 +4,7 @@ lsd_lib := lib/libsd.a
 lsd_lib_so := lib/libsd.so
 
 jailfs_objs += .obj/api.o
+jailfs_objs += .obj/cell.o
 jailfs_objs += .obj/conf.o
 jailfs_objs += .obj/control.o
 jailfs_objs += .obj/cron.o
@@ -12,7 +13,6 @@ jailfs_objs += .obj/debugger.o
 jailfs_objs += .obj/file-magic.o
 jailfs_objs += .obj/gc.o
 jailfs_objs += .obj/hooks.o
-jailfs_objs += .obj/jail.o
 jailfs_objs += .obj/i18n.o
 jailfs_objs += .obj/kilo.o
 jailfs_objs += .obj/linenoise.o

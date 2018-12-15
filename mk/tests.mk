@@ -26,7 +26,7 @@ testpkg:
 clean-pkgs:
 	rm -f pkg/*.tar
 
-test: ${bin} umount
+test: ${bins} umount
 	rm -f examples/auth-dns/state/jailfs.pid
 	./jailfs examples/auth-dns
 
