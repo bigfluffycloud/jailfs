@@ -72,6 +72,7 @@ static void usage(int argc, char **argv) {
 int main(int argc, char **argv) {
    int         fd;
    int i, thr_cnt = 0;
+
    // XXX: Parses commandline arguments (should be minimal)
 
    Log(LOG_INFO, "jailfs: container filesystem %s starting up...", PKG_VERSION);
@@ -97,13 +98,13 @@ int main(int argc, char **argv) {
    evt_timer_add_periodic(gc_all,
      "gc.blockheap",
       timestr_to_time(dconf_get_str("tuning.timer.blockheap_gc", NULL), 60));
-//   api_master_init();				// Initialize MASTER thread
+   api_master_init();				// Initialize MASTER thread
    conf.dict = dconf_load("jailfs.cf");		// Load config
    log_open(dconf_get_str("path.log", "file://jailfs.log"));
    cron_init();					// Periodic events
    i18n_init();					// Load translations
    dlink_init();				// Doubly linked lists
-//   pkg_init();					// Package utilities
+   pkg_init();					// Package utilities
 
    if (pidfile_open(dconf_get_str("path.pid", NULL))) {
       Log(LOG_EMERG, "Failed opening PID file. Are we already running?");

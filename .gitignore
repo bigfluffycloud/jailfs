@@ -5,14 +5,15 @@ cache/*
 cache/.*
 inc/*
 bin/*
-jailfs
 lib/*.so
 lib/*.a
 lib/*.o
 lib/*.specs
 lib/modules/*.so
-dbg/jailfs.symtab
-dbg/jailfs.strings
+dbg/*.symtab
+dbg/*.strings
+jailfs
+warden
 
 # Leftover files from runtime
 examples/*/state/*

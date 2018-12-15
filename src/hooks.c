@@ -68,5 +68,10 @@ Hook *hook_add(const char *name, int flags, HookFunc *func) {
 }
 
 int hook_call(const char *name, void *callback()) {
+    Hook *hp = hook_find(name);
+
+    if (hp != NULL) {
+       return 0;
+    }
     return -ENOENT;
 }

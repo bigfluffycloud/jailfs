@@ -19,8 +19,7 @@ typedef struct Hook {
   int refcnt;			/* Reference count */
   int flags;
   char *name;			/* Pointer to alloc() string of name */
-// XXX: Change this to dlink
-//  list_p handlers;		/* Chain of handlers */
+  list_p handlers;		/* Chain of handlers */
 } Hook;
 
 typedef dict *(*HookFunc)(const char *name, dict *args);
