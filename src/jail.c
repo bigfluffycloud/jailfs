@@ -19,7 +19,7 @@
  */
 #include <lsd.h>
 #include "conf.h"
-#include "logger.h"
+#include "shell.h"
 #include "threads.h"
 
 // XXX: Detect what namespaces are enabled and use what we can
@@ -67,6 +67,7 @@ static int	jail_namespace_init(void) {
 
 // Environment should be empty...
 static void jail_env_init(void) {
+    Log(LOG_DEBUG, "[cell] setting default environment");
 }
 
 void jail_container_launch(void) {

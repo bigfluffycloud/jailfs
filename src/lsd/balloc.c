@@ -41,7 +41,6 @@
 #include "conf.h"
 #include "dlink.h"
 #include "cron.h"
-#include "logger.h"
 #include "memory.h"
 #include "timestr.h"
 #ifndef MAP_ANONYMOUS

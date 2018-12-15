@@ -18,7 +18,7 @@
 #include <sys/gmon.h>
 #include <lsd.h>
 #include "debugger.h"
-#include "logger.h"
+#include "shell.h"
 #include "conf.h"
 #include "cron.h"
 #include "hooks.h"

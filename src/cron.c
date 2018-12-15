@@ -18,7 +18,7 @@
 #include "cron.h"
 #include "conf.h"
 #include "ev.h"
-#include "logger.h"
+#include "shell.h"
 #include "gc.h"
 struct ev_loop *evt_loop = NULL;
 

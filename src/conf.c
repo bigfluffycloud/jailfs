@@ -22,7 +22,9 @@
  */
 #include <strings.h>
 #include <lsd.h>
+#include "conf.h"
 #include "module.h"
+#include "shell.h"
 #define	JAILCONF_SIZE	16384		// should be plenty...
 
 struct conf conf;

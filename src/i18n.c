@@ -15,7 +15,7 @@
 #include <lsd.h>
 #include "conf.h"
 #include "i18n.h"
-#include "logger.h"
+#include "shell.h"
 
 dict *i18n_load(const char *path) {
      dict *rv = dconf_load(path);

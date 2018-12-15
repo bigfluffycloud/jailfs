@@ -12,7 +12,7 @@
 #
 
 clean: ${clean_targets}
-	${RM} ${clean_objs} ${bin} ${extra_clean} ${libs} ${lib_objs}
+	${RM} ${clean_objs} ${bins} ${extra_clean} ${libs} ${lib_objs}
 
 distclean: ${distclean_targets} clean
 	${RM} ${distclean_objs} ${extra_distclean}

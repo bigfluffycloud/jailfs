@@ -20,7 +20,6 @@
 #include <fuse/fuse.h>
 #include <fuse/fuse_lowlevel.h>
 #include <fuse/fuse_opt.h>
-#include "vfs_mimetype.h"
 
 struct vfs_handle {
 //   char        pkg_file[PATH_MAX];     /* package path */
@@ -48,6 +47,12 @@ struct vfs_fake_stat {
    time_t      st_time;
    char        path[PATH_MAX];
 };
+
+struct CacheItem {
+   int dirty;
+   dict *cache;
+};
+typedef struct CacheItem CacheItem_t;
 
 typedef struct vfs_handle vfs_handle_t;
 typedef struct vfs_watch vfs_watch_t;
@@ -93,7 +98,23 @@ extern void vfs_op_create(fuse_req_t req, fuse_ino_t ino, const char *name, mode
 extern void *thread_vfs_init(void *data);
 extern void *thread_vfs_fini(void *data);
 
-#include "vfs_inode.h"
-#include "vfs_inotify.h"
+extern int  vfs_watch_init(void);
+extern void vfs_watch_fini(void);
+extern vfs_watch_t *vfs_watch_add(const char *path);
+extern int  vfs_watch_remove(vfs_watch_t * watch);
+struct pkg_inode {
+   u_int32_t   st_ino;
+   mode_t      st_mode;
+   off_t       st_size;
+   off_t       st_off;
+   uid_t       st_uid;
+   gid_t       st_gid;
+   time_t      st_time;
+};
+
+typedef struct pkg_inode pkg_inode_t;
+
+extern void vfs_inode_init(void);
+extern void vfs_inode_fini(void);
 
 #endif	// !defined(__VFS_H)

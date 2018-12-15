@@ -21,7 +21,7 @@
 #include "conf.h"
 #include "database.h"
 #include "vfs.h"
-#include "logger.h"
+#include "shell.h"
 #define	SQL_BUFSIZE	8192
 
 static sqlite3 *sqlite_db = NULL;

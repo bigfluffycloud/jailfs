@@ -18,7 +18,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
-#include "logger.h"
 
 /*
  * memory allocation wrappers

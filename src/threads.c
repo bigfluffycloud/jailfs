@@ -13,10 +13,10 @@
  */
 /* Thread pools */
 #include <lsd.h>
-#include "logger.h"
+#include "shell.h"
 #include "threads.h"
 #include "unix.h"
-
+#include "conf.h"
 int core_ready = 0;
 pthread_mutex_t core_ready_m;
 pthread_cond_t core_ready_c;
@@ -96,7 +96,7 @@ Thread *thread_create(ThreadPool *pool, void *(*init)(void *), void *(*fini)(voi
   snprintf(thrname, sizeof(thrname) - 1 /* leave trailing NULL */, "%s", descr);
 
   if ((rv = pthread_setname_np(tmp->thr_info, thrname)) != 0)
-     printf("Failed setting thread name: rv=%d (%d) %s\n", rv, errno, strerror(errno));
+     Log(LOG_SHELL, "Failed setting thread name: rv=%d (%d) %s", rv, errno, strerror(errno));
 
   return tmp;
 }

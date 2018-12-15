@@ -10,12 +10,12 @@
  * on github - https://github.com/bigfluffycloud/jailfs/
  *
  * No warranty of any kind. Good luck!
+ *
+ * Wrapper around libmagic to support mime-type identification
  */
-
-/* Wrapper around libmagic to support mime-type identification */
 #include "conf.h"
-#include "logger.h"
-#include "vfs_mimetype.h"
+#include "shell.h"
+#include "file-magic.h"
 
 magic_t mimetype_init(void) {
   magic_t tmp;

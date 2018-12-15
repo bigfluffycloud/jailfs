@@ -16,8 +16,9 @@
 #include <setjmp.h>
 #include <strings.h>
 #include <lsd.h>
-#include "logger.h"
+#include "shell.h"
 #include "module.h"
+#include "conf.h"
 list_p Modules;
 int in_module = 0;
 sigjmp_buf env;

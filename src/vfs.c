@@ -14,15 +14,29 @@
  * src/vfs.c:
  *	Virtual File System services.
  * Here we synthesize a file system view for the container.
+ *
+ *    author: joseph@bigfluffy.cloud
+ * copyright: 2008-2018 Bigfluffy.cloud, All rights reserved.
+ *   license: MIT
  */
 #include <lsd.h>
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/mount.h>
+#include <sys/stat.h>
+#include <sys/inotify.h>
+#include <fcntl.h>
+#include <string.h>
+#include <stdio.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <lsd.h>
 #include <signal.h>
 #include <errno.h>
 #include <dirent.h>
-#include "logger.h"
+#include "conf.h"
+#include "shell.h"
 #include "threads.h"
 #include "cron.h"
 #include "vfs.h"
@@ -41,8 +55,13 @@
 // Heaps & Lists
 BlockHeap *vfs_handle_heap = NULL;
 BlockHeap *vfs_watch_heap = NULL;
+BlockHeap  *vfs_inode_heap;
+BlockHeap  *cache_entry_heap = NULL;
 dlink_list vfs_watch_list;
 static char *mountpoint = NULL;
+static pthread_mutex_t cache_mutex;
+static char *cache_path = NULL;
+static dict *cache_dict = NULL;
 
 // FUSE state
 static ev_io vfs_fuse_evt;
@@ -50,7 +69,83 @@ static struct fuse_chan *vfs_fuse_chan = NULL;
 static struct fuse_session *vfs_fuse_sess = NULL;
 static struct fuse_args vfs_fuse_args = { 0, NULL, 0 };
 
+// Cache stuff
+struct cache_entry {
+   char 	jail_path[PATH_MAX];		// Path within the jail
+   char		cache_path[PATH_MAX];		// Temporary file path
+   u_int32_t	pkgid;
+   u_int32_t	inode;
+};
+typedef struct cache_entry cache_entry_t;
 
+////////////
+// inodes //
+////////////
+#if	0
+static void fill_statbuf(ext2_ino_t ino, pkg_inode_t * inode, struct stat *st) {
+   /*
+    * st_dev 
+    */
+   st->st_ino = ino;
+   st->st_mode = inode->i_mode;
+   st->st_nlink = inode->i_links_count;
+   st->st_uid = inode->i_uid;          /* add in uid_high */
+   st->st_gid = inode->i_gid;          /* add in gid_high */
+   /*
+    * st_rdev 
+    */
+   st->st_size = inode->i_size;
+   st->st_blksize = EXT2_BLOCK_SIZE(fs->super);
+   st->st_blocks = inode->i_blocks;
+
+   /*
+    * We don't have to implement nanosecs, fs's which don't can return
+    * * 0 here
+    */
+   /*
+    * Using _POSIX_C_SOURCE might also work 
+    */
+#ifdef __APPLE__
+   st->st_atimespec.tv_sec = inode->i_atime;
+   st->st_mtimespec.tv_sec = inode->i_mtime;
+   st->st_ctimespec.tv_sec = inode->i_ctime;
+   st->st_atimespec.tv_nsec = 0;
+   st->st_mtimespec.tv_nsec = 0;
+   st->st_ctimespec.tv_nsec = 0;
+#else
+   st->st_atime = inode->i_atime;
+   st->st_mtime = inode->i_mtime;
+   st->st_ctime = inode->i_ctime;
+#ifdef __FreeBSD__
+   st->st_atimespec.tv_nsec = 0;
+   st->st_mtimespec.tv_nsec = 0;
+   st->st_ctimespec.tv_nsec = 0;
+#else
+   st->st_atim.tv_nsec = 0;
+   st->st_mtim.tv_nsec = 0;
+   st->st_ctim.tv_nsec = 0;
+#endif
+#endif
+}
+#endif
+
+void vfs_inode_init(void) {
+   if (!
+       (vfs_inode_heap =
+        blockheap_create(sizeof(struct pkg_inode),
+                         dconf_get_int("tuning.heap.inode", 128), "pkg"))) {
+      Log(LOG_EMERG, "inode_init(): block allocator failed");
+      raise(SIGTERM);
+   }
+}
+
+void vfs_inode_fini(void) {
+   blockheap_destroy(vfs_inode_heap);
+}
+
+////////////////////
+// fuse interface //
+////////////////////
 static void vfs_fuse_read_cb(struct ev_loop *loop, ev_io * w, int revents) {
    int         res = 0;
    struct fuse_chan *ch = fuse_session_next_chan(vfs_fuse_sess, NULL);
@@ -273,9 +368,7 @@ void vfs_op_lookup(fuse_req_t req, fuse_ino_t parent, const char *name) {
       e.ino = 2;                       /* Inode number */
       e.attr_timeout = 1.0;
       e.entry_timeout = 1.0;
-      /*
-       * XXX: stat 
-       */
+      // XXX: stat 
       vfs_op_stat(e.ino, &e.attr);
       fuse_reply_entry(req, &e);
    }
@@ -294,9 +387,7 @@ static void vfs_dir_walk_recurse(const char *path, int depth) {
    }
 
    while ((r = readdir(d)) != NULL) {
-      /*
-       * Skip over hidden/disabled items 
-       */
+      // Skip over hidden/disabled items 
       if (r->d_name[0] == '.')
          continue;
       memset(buf, 0, PATH_MAX);
@@ -327,13 +418,9 @@ int vfs_dir_walk(void) {
 
    memcpy(buf, dconf_get_str("path.pkg", "/pkg"), PATH_MAX);
 
-   /*
-    * recurse each part of the optionally ':' seperated list 
-    */
+   // recurse each part of the optionally ':' seperated list 
    for (p = strtok(buf, ":\n"); p; p = strtok(NULL, ":\n")) {
-      /*
-       * Run the recursive walker 
-       */
+      // Run the recursive walker 
       vfs_dir_walk_recurse(p, 1);
    }
    return EXIT_SUCCESS;
@@ -400,7 +487,7 @@ void vfs_fuse_fini(void) {
 
    if (vfs_fuse_chan != NULL) {
       fuse_session_remove_chan(vfs_fuse_chan);
-      fuse_unmount(dconf_get_str("path.mountpoint", "/"), vfs_fuse_chan);
+      fuse_unmount(dconf_get_str("path.mountpoint", NULL), vfs_fuse_chan);
    }
 
    if (vfs_fuse_args.allocated)
@@ -408,9 +495,9 @@ void vfs_fuse_fini(void) {
 }
 
 void vfs_fuse_init(void) {
-   Log(LOG_DEBUG, "mountpoint: %s/%s", get_current_dir_name(), conf.mountpoint);
+   Log(LOG_DEBUG, "mountpoint: %s/%s", get_current_dir_name(), mountpoint);
 
-   if ((vfs_fuse_chan = fuse_mount(conf.mountpoint, &vfs_fuse_args)) == NULL) {
+   if ((vfs_fuse_chan = fuse_mount(mountpoint, &vfs_fuse_args)) == NULL) {
       Log(LOG_EMERG, "FUSE: mount error");
       conf.dying = 1;
       raise(SIGTERM);
@@ -425,15 +512,11 @@ void vfs_fuse_init(void) {
       raise(SIGTERM);
    }
 
-   /*
-    * Register an interest in events on the fuse fd 
-    */
+   // Register an interest in events on the fuse fd 
    ev_io_init(&vfs_fuse_evt, vfs_fuse_read_cb, fuse_chan_fd(vfs_fuse_chan), EV_READ);
    ev_io_start(evt_loop, &vfs_fuse_evt);
 
-   /*
-    * Set up our various blockheaps 
-    */
+   // Set up our various blockheaps 
    vfs_handle_heap = blockheap_create(sizeof(vfs_handle_t), dconf_get_int("tuning.heap.vfs_handle", 128), "vfs_handle");
 }
 
@@ -450,6 +533,32 @@ void vfs_garbagecollect(void) {
 void *thread_vfs_init(void *data) {
     dict *args = (dict *)data;
     thread_entry(data);
+    char *cache = NULL;
+
+    thread_entry((dict *)data);
+    cache = dconf_get_str("path.cache", NULL);
+    cache_dict = dict_new();
+    cache_entry_heap = blockheap_create(sizeof(cache_entry_t), dconf_get_int("tuning.heap.files", 1024), "cache entries");
+
+    // If .keepme exists in cachedir (from git), remove it or mount will fail
+    char tmppath[PATH_MAX];
+    memset(tmppath, 0, sizeof(tmppath));
+    snprintf(tmppath, sizeof(tmppath) - 1, "%s/.keepme", cache);
+    if (file_exists(tmppath))
+       unlink(tmppath);
+
+    // Are we configured to use a tmpfs or host fs for cache?
+    if (strcasecmp("tmpfs", dconf_get_str("cache.type", NULL)) == 0) {
+       if (cache != NULL) {
+          int rv = -1;
+
+          // Attempt mounting tmpfs
+          if ((rv = mount("jailfs-cache", cache, "tmpfs", 0, NULL)) != 0) {
+             Log(LOG_ERR, "mounting tmpfs on cache-dir %s failed: %d (%s)", cache, errno, strerror(errno));
+             exit(1);
+          }
+       }
+    }
 
     // Schedule garbage collection
     evt_timer_add_periodic(vfs_garbagecollect, "gc:vfs", dconf_get_int("tuning.timer.vfs_gc", 1200));
@@ -462,7 +571,7 @@ void *thread_vfs_init(void *data) {
     }
 
     mimetype_init();
-    umount(conf.mountpoint);
+    umount(mountpoint);
 
     // XXX: Initialize FUSE stuff
     struct fuse_args margs = FUSE_ARGS_INIT(0, NULL);
@@ -498,14 +607,190 @@ void *thread_vfs_init(void *data) {
 // thread:destructor
 void *thread_vfs_fini(void *data) {
    dict *args = (dict *)data;
+   char *mp = NULL;
 
    vfs_watch_fini();
-   vfs_fuse_init();
-   vfs_inode_fini();
 
    if ((mountpoint = dconf_get_str("path.mountpoint", NULL)) != NULL)
       umount(mountpoint);
 
-   thread_exit(data);
+   if (strcasecmp("tmpfs", dconf_get_str("cache.type", NULL)) == 0) {
+      if ((mp = dconf_get_str("path.cache", NULL)) != NULL)
+         umount(mp);
+   }
+   vfs_fuse_fini();
+   vfs_inode_fini();
+   dict_free(cache_dict);
+   blockheap_destroy(cache_entry_heap);
+   thread_exit((dict *)data);
    return data;
 }
+
+
+// Thread destructor
+void *thread_cache_fini(void *data) {
+}
+
+// Request a new file name
+int cache_new_item(char *buf) {
+    if (buf == NULL)
+       return -1;
+
+    return 0;
+}
+
+/////////////////////
+// inotify support //
+/////////////////////
+#define	INOTIFY_BUFSIZE	((sizeof(struct inotify_event) + FILENAME_MAX) * 1024)
+static int  vfs_inotify_fd = 0;
+static ev_io vfs_inotify_evt;
+
+static dlink_node *vfs_watch_findnode(vfs_watch_t * watch) {
+   dlink_node *ptr, *tptr;
+
+   DLINK_FOREACH_SAFE(ptr, tptr, vfs_watch_list.head) {
+      if ((vfs_watch_t *) ptr->data == watch)
+         return ptr;
+   }
+
+   return NULL;
+}
+
+static dlink_node *vfs_watch_findnode_byfd(const int fd) {
+   dlink_node *ptr, *tptr;
+
+   DLINK_FOREACH_SAFE(ptr, tptr, vfs_watch_list.head) {
+      if (((vfs_watch_t *) ptr->data)->fd == fd)
+         return ptr;
+   }
+
+   return NULL;
+}
+
+/*
+ *    function: vfs_inotify_evt_get
+ * description: process the events inotify has given us
+ */
+void vfs_inotify_evt_get(struct ev_loop *loop, ev_io * w, int revents) {
+   ssize_t     len, i = 0;
+   char        buf[INOTIFY_BUFSIZE] = { 0 };
+   char        path[PATH_MAX];
+   dlink_node *ptr;
+   char       *ext;
+
+   len = read(w->fd, buf, INOTIFY_BUFSIZE);
+
+   while (i < len) {
+      struct inotify_event *e = (struct inotify_event *)&buf[i];
+
+      if (e->name[0] == '.')
+         continue;
+
+      if ((ptr = vfs_watch_findnode_byfd(e->wd)) == NULL) {
+         Log(LOG_ERR, "got watch for unregistered fd %d.. wtf?", e->wd);
+         return;
+      }
+
+      /*
+       * If we don't have a name, this is useless event... 
+       */
+      if (!e->len)
+         return;
+
+      memset(path, 0, PATH_MAX);
+      snprintf(path, PATH_MAX - 1, "%s/%s", ((vfs_watch_t *) ptr->data)->path, e->name);
+
+      if (e->mask & IN_CLOSE_WRITE || e->mask & IN_MOVED_TO)
+         pkg_import(path);
+      else if (e->mask & IN_DELETE || e->mask & IN_MOVED_FROM)
+         pkg_forget(path);
+      else if (e->mask & IN_DELETE_SELF) {
+         vfs_watch_remove((vfs_watch_t *) ptr->data);
+      }
+
+      i += sizeof(struct inotify_event) + e->len;
+   }
+}
+vfs_watch_t *vfs_watch_add(const char *path) {
+   vfs_watch_t *wh = blockheap_alloc(vfs_watch_heap);
+
+   wh->mask = IN_CLOSE_WRITE | IN_MOVED_TO | IN_MOVED_FROM | IN_DELETE | IN_DELETE_SELF;
+   memcpy(wh->path, path, sizeof(wh->path));
+
+   if ((wh->fd = inotify_add_watch(vfs_inotify_fd, path, wh->mask)) <= 0) {
+      Log(LOG_ERR, "failed creating vfs watcher for path %s", wh->path);
+      blockheap_free(vfs_watch_heap, wh);
+      return NULL;
+   }
+
+   dlink_add_tail_alloc(wh, &vfs_watch_list);
+   return wh;
+}
+
+/* XXX: We need to scan the watch lists and remove subdirs too -bk */
+
+int vfs_watch_remove(vfs_watch_t * watch) {
+   int         rv;
+   dlink_node *ptr;
+
+   if ((rv = inotify_rm_watch(watch->fd, vfs_inotify_fd)) != 0) {
+      Log(LOG_ERR, "error removing watch for %s (fd: %d)", watch->path, watch->fd);
+   }
+
+   if ((ptr = vfs_watch_findnode(watch)) != NULL) {
+      dlink_delete(ptr, &vfs_watch_list);
+      blockheap_free(vfs_watch_heap, ptr->data);
+   }
+
+   return rv;
+}
+
+int vfs_watch_init(void) {
+   char        buf[PATH_MAX];
+   char       *p;
+   if (vfs_inotify_fd)
+      return -1;
+
+   /*
+    * Try to initialize inotify interface 
+    */
+   if ((vfs_inotify_fd = inotify_init()) == -1) {
+      Log(LOG_ERR, "%s:inotify_init %d:%s", __FUNCTION__, errno, strerror(errno));
+      return -2;
+   }
+
+   /*
+    * Setup the socket callback 
+    */
+   ev_io_init(&vfs_inotify_evt, vfs_inotify_evt_get, vfs_inotify_fd, EV_READ);
+   ev_io_start(evt_loop, &vfs_inotify_evt);
+
+   /*
+    * set up the blockheap 
+    */
+   vfs_watch_heap =
+       blockheap_create(sizeof(vfs_watch_t),
+                        dconf_get_int("tuning.heap.vfs_watch", 32), "vfs_watch");
+
+   /*
+    * add all the paths in the config file 
+    */
+   memcpy(buf, dconf_get_str("path.pkg", "/pkg"), PATH_MAX);
+   if (strchr(buf, ':') == NULL) {
+      for (p = strtok(buf, ":\n"); p; p = strtok(NULL, ":\n")) {
+         vfs_watch_add(p);
+         Log(LOG_INFO, "inotify watcher started for %s", p);
+       }
+   } else {
+      vfs_watch_add(buf);
+      Log(LOG_INFO, "inotify watcher started for %s", buf);
+   }
+
+   return 0;
+}
+
+void vfs_watch_fini(void) {
+   blockheap_destroy(vfs_watch_heap);
+}
+

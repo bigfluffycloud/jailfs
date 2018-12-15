@@ -15,8 +15,7 @@
  * 	Garbage collection tasks managed by the main thread
  */
 #include <lsd.h>
-#include "logger.h"
-#include "cache.h"
+#include "vfs.h"
 #include "shell.h"
 
 extern BlockHeap *dlink_node_heap;

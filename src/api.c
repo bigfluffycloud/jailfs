@@ -20,7 +20,7 @@
 #include <lsd.h>
 #include "conf.h"
 #include "memory.h"
-#include "logger.h"
+#include "shell.h"
 #include "hooks.h"
 #include "api.h"
 

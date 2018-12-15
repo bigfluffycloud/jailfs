@@ -10,18 +10,12 @@
  * on github - https://github.com/bigfluffycloud/jailfs/
  *
  * No warranty of any kind. Good luck!
+ *
+ * src/warden.c:
+ *	Warden manages a bunch of jailfs based jails
  */
-#if	!defined(__CACHE_H)
-#define	__CACHE_H
-#include <lsd/dict.h>
-
-struct CacheItem {
-   int dirty;
-   dict *cache;
-};
-typedef struct CacheItem CacheItem_t;
-
-extern void *thread_cache_init(void *data);
-extern void *thread_cache_fini(void *data);
-
-#endif	// !defined(__CACHE_H)
+#include <lsd.h>
+#include <stdio.h>
+int main(int argc, char **argv) {
+    printf("Warden is not yet ready, but hopefully will exist by 1.1 release!\n");
+}

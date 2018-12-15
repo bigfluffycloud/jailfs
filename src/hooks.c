@@ -7,7 +7,8 @@
  */
 #include <lsd.h>
 #include "hooks.h"
-#include "logger.h"
+#include "shell.h"
+
 /* Be gentle with this, it can and will explode if you touch it wrong */
 static dict *hooks = NULL;
 

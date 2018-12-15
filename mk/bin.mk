@@ -9,7 +9,16 @@
 # No warranty of any kind. Good luck!
 #
 
-${bin}: $(${bin}_objs) lib/libsd.a
+#${bin}: $(${bin}_objs) lib/libsd.a
+jailfs: ${jailfs_objs} lib/libsd.a
+	@echo "[LD] ($^) => $@"
+	@${CC} -o $@ ${LDFLAGS} ${extra_libs} $^
+ifeq (${CONFIG_STRIP_BINS}, y)
+	@echo "[STRIP] $@"
+	@strip $@
+endif
+
+warden: ${warden_objs} lib/libsd.a
 	@echo "[LD] ($^) => $@"
 	@${CC} -o $@ ${LDFLAGS} ${extra_libs} $^
 ifeq (${CONFIG_STRIP_BINS}, y)

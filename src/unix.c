@@ -14,7 +14,7 @@
 #include <sys/resource.h>
 #include <sys/wait.h>
 #include <lsd.h>
-#include "logger.h"
+#include "shell.h"
 #include "unix.h"
 #include "conf.h"
 #include "cron.h"

@@ -44,7 +44,7 @@
 #include "conf.h"
 #include "database.h"
 #include "cron.h"
-#include "logger.h"
+#include "shell.h"
 #include "pkg.h"
 
 /* This seems to be a BSD thing- it's not fatal if missing, so stub it */

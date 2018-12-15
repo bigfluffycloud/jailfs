@@ -16,13 +16,11 @@
 #include "conf.h"
 #include "unix.h"
 #include "cron.h"
-#include "logger.h"
 #include "threads.h"
 #include "cron.h"
 #include "shell.h"
 #include "debugger.h"
 #include "module.h"
-#include "cache.h"
 #include "i18n.h"
 #include "jail.h"
 #include "gc.h"
@@ -39,12 +37,9 @@ struct ThreadCreator {
    int isolated;
 } main_threads[] = {
   // The order here is sorta significant - logger must be first and shell last!
-  { "logger", thread_logger_init, thread_logger_fini, 0 },
   { "db", thread_db_init, thread_db_fini, 0 },
-  { "cache", thread_cache_init, thread_cache_fini, 0 },
   { "vfs", thread_vfs_init, thread_vfs_fini, 0 },
   { "cell", thread_cell_init, thread_cell_fini, 1 },
-  // shell thread
   { "shell", thread_shell_init, thread_shell_fini, 1 },
   { NULL, NULL, NULL }
 };
@@ -104,6 +99,7 @@ int main(int argc, char **argv) {
       timestr_to_time(dconf_get_str("tuning.timer.blockheap_gc", NULL), 60));
 //   api_master_init();				// Initialize MASTER thread
    conf.dict = dconf_load("jailfs.cf");		// Load config
+   log_open(dconf_get_str("path.log", "file://jailfs.log"));
    cron_init();					// Periodic events
    i18n_init();					// Load translations
    dlink_init();				// Doubly linked lists

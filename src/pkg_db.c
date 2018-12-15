@@ -31,7 +31,7 @@
 #include "conf.h"
 #include "database.h"
 #include "cron.h"
-#include "logger.h"
+#include "shell.h"
 #include "pkg.h"
 #include "pkg_db.h"
 

@@ -20,30 +20,17 @@
  *		* log (log message handler)
  */
 #include <signal.h>
+#include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <unistd.h>
 #include <lsd.h>
 #include "linenoise.h"
-#include "logger.h"
 #include "shell.h"
 #include "unix.h"
 #include "conf.h"
 #include "threads.h"
 #include "gc.h"
-
-//
-// Shell hints stuff
-//
-#define	HINT_RED	31
-#define	HINT_GREEN	32
-#define	HINT_YELLOW	33
-#define	HINT_BLUE	34
-#define	HINT_MAGENTA	35
-#define	HINT_CYAN	36
-#define	HINT_WHITE	37
-
-#define	SHELL_HINT_MAX	120
-#define	SHELL_PROMPT	"jailfs"
 
 BlockHeap *shell_hints_heap = NULL;
 
@@ -51,32 +38,225 @@ BlockHeap *shell_hints_heap = NULL;
 static char shell_prompt[64];
 static char shell_level[40];
 
+struct log_levels {
+   char *str;
+   int level;
+};
+
+static struct log_levels log_levels[] = {
+   { "debug", LOG_DEBUG },
+   { "info", LOG_INFO },
+   { "notice", LOG_NOTICE },
+   { "warn", LOG_WARNING },
+   { "error", LOG_ERR },
+   { "crit", LOG_CRIT },
+   { "alert", LOG_ALERT },
+   { "emerg", LOG_EMERG },
+   { "shell", LOG_SHELL },
+   { NULL, -1 },
+};
+
+// Internal thread-local state keeping
+typedef struct {
+  enum { NONE = 0, SYSLOG, STDOUT, LOGFILE, FIFO } type;
+  FILE *fp;
+} LogHndl;
+static LogHndl *mainlog;
+
+//////////////////////////////////////////////////////////
+// Initial (early) log support, storing messages in memory until logfile is open
+
+static char *logger_earlylog = NULL,
+            *earlylog_p = NULL;
+
+static void *earlylog_init(size_t bufsz) {
+     if (logger_earlylog != NULL) {
+        Log(LOG_DEBUG, "earlylog_init() called twice, why?");
+        return logger_earlylog;
+     }
+
+     if ((logger_earlylog = mem_alloc(MAX_EARLYLOG)) != NULL)
+        return logger_earlylog;
+
+     return NULL;
+}
+
+static int earlylog_append(const char *line) {
+    // XXX: Add to the end of the log
+    if (earlylog_p != NULL) {
+       // Append it
+       Log(LOG_SHELL, "early-log: %s", line);
+    }
+}
+
+static void earlylog_fini(void) {
+    if (logger_earlylog != NULL) {
+       memset(logger_earlylog, 0, MAX_EARLYLOG);
+       mem_free(logger_earlylog);
+    }
+    logger_earlylog = NULL;
+}
+////////////////////////////////////////////
+   
+// Convert numeric log level to string
+static inline const char *LogName(int level) {
+   struct log_levels *lp = log_levels;
+
+   do {
+      if (lp->level == level)
+         return lp->str;
+
+      lp++;
+   } while(lp->str != NULL);
+
+   return NULL;
+}
+
+// Convert string log level to integer
+static inline const int LogLevel(const char *name) {
+   struct log_levels *lp = log_levels;
+
+   do {
+      if (strcmp(lp->str, name) == 0)
+         return lp->level;
+      lp++;
+   } while(lp->str != NULL);
+   return -1;
+}
+
+void Log(int level, const char *msg, ...) {
+   va_list ap;
+   char buf[4096];
+   time_t t;
+   struct tm *lt;
+   int min_lvl;
+   FILE *fp = stdout;
+
+   if (!msg)
+      return;   
+
+   va_start(ap, msg);
+   t = time(NULL);
+
+   if ((lt = localtime(&t)) == NULL) {
+      perror("localtime");
+      return;
+   }
+
+   // If configuration isn't up yet, all messages are info priority
+   if (&conf != NULL && conf.dict != NULL)
+      min_lvl = LogLevel(dconf_get_str("log.level", "info"));
+   else
+      min_lvl = LogLevel("info");
+
+#if	0
+   // If log level of message is lower than minimum level, ignore it
+   if (min_lvl > level) {
+      printf("min_lvl: %d <%s> || level: %d <%s>\n", min_lvl, LogLevel(min_lvl), level, LogLevel(level));
+      return;
+   }
+#endif	// 0
+
+   if (mainlog) {
+      if (mainlog->type == SYSLOG)
+         vsyslog(level, msg, ap);
+
+      if (mainlog->type != STDOUT && mainlog->fp)
+         fp = mainlog->fp;
+   }
+
+   vsnprintf(buf, sizeof(buf) - 1, msg, ap);
+   fprintf(fp, "%d/%02d/%02d %02d:%02d:%02d %5s: %s\n",
+      lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday, lt->tm_hour, lt->tm_min, lt->tm_sec,
+      LogName(level), buf);
+
+   if (fp != stdout) {
+      printf("%s\n", buf);
+      fflush(stdout);
+   }
+
+   va_end(ap);
+}
+
+void log_open(const char *target) {
+   if (mainlog)
+      mem_free(mainlog);
+
+   mainlog = mem_alloc(sizeof(Log));
+
+   if (strcasecmp(target, "syslog") == 0) {
+      mainlog->type = SYSLOG;
+      openlog("jailfs", LOG_NDELAY|LOG_PID, LOG_DAEMON);
+   } else if (strcasecmp(target, "stdout") == 0) {
+      mainlog->type = STDOUT;
+      mainlog->fp = stdout;
+   } else if (strncasecmp(target, "fifo://", 7) == 0) {
+      if (is_fifo(target + 7) || is_file(target + 7))
+         unlink(target + 7);
+
+      mkfifo(target+7, 0600);
+
+      if (!(mainlog->fp = fopen(target + 7, "w"))) {
+         Log(LOG_ERR, "Failed opening log fifo '%s' %s (%d)", target+7, errno, strerror(errno));
+         mainlog->fp = stdout;
+      } else
+         mainlog->type = FIFO;
+   } else if (strncasecmp(target, "file://", 7) == 0) {
+      if (!(mainlog->fp = fopen(target + 7, "w+"))) {
+         Log(LOG_ERR, "failed opening log file '%s' %s (%d)", target+7, errno, strerror(errno));
+         mainlog->fp = stdout;
+      } else
+         mainlog->type = LOGFILE;
+   }
+}
+
+
+static void log_close(void) {
+   if (mainlog == NULL)
+      return;
+
+   if (mainlog->type == LOGFILE || mainlog->type == FIFO)
+      fclose(mainlog->fp);
+   else if (mainlog->type == SYSLOG)
+      closelog();
+
+   mem_free(mainlog);
+   mainlog = NULL;
+}
+
 // this is in src/kilo.c
-void cmd_edit(int argc, char **argv) {
-//   kilo_main(argv[1]);
-   kilo_main("/test.c");
+void cmd_edit(dict *args) {
+   char *ac;
+
+   if (args == NULL)
+      return;
+
+   ac = dict_get(args, "1", NULL);
+
+   if (ac != NULL)
+      kilo_main(ac);
 }
 
 // Use the signal handler to properly shut down the system (SIGTERM/11)
-void cmd_shutdown(int argc, char **argv) {
+void cmd_shutdown(dict *args) {
    Log(LOG_NOTICE, "shutdown command from console.");
    raise(SIGTERM);
 }
 
-static void cmd_user(int argc, char **argv) {
-   printf("User error: replace user\nGoodbye!\n");
+static void cmd_user(dict *args) {
+   Log(LOG_SHELL, "User error: replace user\nGoodbye!");
    raise(SIGTERM);
 }
 
-static void cmd_run(int argc, char **argv) {
-   printf("Starting cell!");
+static void cmd_run(dict *args) {
+   Log(LOG_SHELL, "launching jail!");
 }
 
 // Prototype for help function
-void cmd_help(int argc, char **argv);
+void cmd_help(dict *args);
 
 // Clear the screen via linenoise
-static void cmd_clear(int argc, char **argv) {
+static void cmd_clear(dict *args) {
    linenoiseClearScreen();
    return;
 }
@@ -94,22 +274,22 @@ static void shell_level_set(const char *line) {
 }
 
 
-static void cmd_back(int argc, char **argv) {
+static void cmd_back(dict *args) {
    shell_level_set("main");
 }
 
 // Use the signal handler to trigger a config reload (SIGHUP/1)
-void cmd_reload(int argc, char **argv) {
+void cmd_reload(dict *args) {
    raise(SIGHUP);
    return;
 }
 
-static void cmd_stats(int argc, char **argv) {
-   printf("stats requested by user:\n");
+static void cmd_stats(dict *args) {
+   Log(LOG_SHELL, "stats requested by user:");
 }
 
-static void cmd_conf_dump(int argc, char **argv) {
-   printf("Dumping configuration:\n");
+static void cmd_conf_dump(dict *args) {
+   Log(LOG_SHELL, "Dumping configuration:");
    dict_dump(conf.dict, stdout);
 }
 
@@ -176,7 +356,7 @@ static struct shell_cmd menu_vfs[] = {
    { "chmod", "Change file/dir permissions in jail", HINT_CYAN, 1, 0, 2, -1, NULL, NULL },
    { "cp", "Copy file in jail", HINT_CYAN, 1, 0, 1, -1, NULL, NULL },
    { "debug", "Show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
-   { "edit", "Edit the file in kilo", HINT_GREEN, 1, 0, 1, 1, cmd_edit, NULL },
+   { "edit", "Edit text file in kilo", HINT_GREEN, 1, 0, 1, 1, cmd_edit, NULL },
    { "less", "Show contents of a file (with pager)", HINT_CYAN, 1, 0, 1, 1, NULL, NULL },
    { "ls", "Display directory listing", HINT_CYAN, 1, 0, 0, 1, NULL, NULL },
    { "mv", "Move file/dir in jail", HINT_RED, 0, 0, 1, -1, NULL, NULL },
@@ -214,7 +394,7 @@ static struct shell_cmd menu_mem_bh[] = {
 static struct shell_cmd menu_mem[] = {
    { "blockheap", "BlockHeap allocator", HINT_CYAN, 1, 1, 0, -1, NULL, menu_mem_bh },
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
-   { "gc", "Garbage collector", HINT_CYAN, 1, 1, 0, -1, cmd_help, menu_mem_gc },
+   { "gc", "Garbage collector", HINT_CYAN, 1, 1, 0, -1, NULL, menu_mem_gc },
    { .cmd = NULL, .desc = NULL, .menu = NULL },
 };
 
@@ -249,26 +429,26 @@ static struct shell_cmd menu_thread[] = {
 };
 
 static struct shell_cmd menu_main[] = {
-   { "clear", "Clear screen", HINT_CYAN, 1, 0, 0, 0, &cmd_clear, NULL },
-   { "conf", "Configuration keys", HINT_CYAN, 1, 0, 0, -1, &cmd_help, NULL },
+   { "clear", "Clear screen", HINT_CYAN, 1, 0, 0, 0, cmd_clear, NULL },
+   { "conf", "Configuration keys", HINT_CYAN, 1, 0, 0, -1, NULL, menu_conf },
    { "cron", "Periodic event scheduler", HINT_CYAN, 1, 1, 0, -1, NULL, menu_cron },
-   { "db", "Database admin", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_db },
-   { "debug", "Built-in debugger", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_debug },
-   { "hooks", "Hooks management", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_hooks },
-   { "logging", "Log file", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_logging },
-   { "memory", "Memory manager", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_mem },
-   { "module", "Loadable module support", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_module },
-   { "net", "Network", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_net },
-   { "pkg", "Package commands", HINT_CYAN, 1, 1, 1, -1, &cmd_help, menu_pkg },
+   { "db", "Database admin", HINT_CYAN, 1, 1, 0, -1, NULL, menu_db },
+   { "debug", "Built-in debugger", HINT_CYAN, 1, 1, 0, -1, NULL, menu_debug },
+   { "hooks", "Hooks management", HINT_CYAN, 1, 1, 0, -1, NULL, menu_hooks },
+   { "logging", "Log file", HINT_CYAN, 1, 1, 0, -1, NULL, menu_logging },
+   { "memory", "Memory manager", HINT_CYAN, 1, 1, 0, -1, NULL, menu_mem },
+   { "module", "Loadable module support", HINT_CYAN, 1, 1, 0, -1, NULL, menu_module },
+   { "net", "Network", HINT_CYAN, 1, 1, 0, -1, NULL, menu_net },
+   { "pkg", "Package commands", HINT_CYAN, 1, 1, 1, -1, NULL, menu_pkg },
    { "profiling", "Profiling support", HINT_CYAN, 1, 1, 0, -1, NULL, menu_profiling },
-   { "quit", "Alias to shutdown", HINT_RED, 1, 0, 0, 0, &cmd_shutdown, NULL },
-   { "reload", "Reload configuration", HINT_CYAN, 1, 0, 0, 0, &cmd_reload, NULL },
+   { "quit", "Alias to shutdown", HINT_RED, 1, 0, 0, 0, cmd_shutdown, NULL },
+   { "reload", "Reload configuration", HINT_CYAN, 1, 0, 0, 0, cmd_reload, NULL },
    { "run", "Start the container (if autorun disabled)", HINT_GREEN, 1, 0, 0, 0, &cmd_run, NULL },
-   { "shutdown", "Terminate the service", HINT_RED, 1, 0, 0, 0, &cmd_shutdown, NULL },
-   { "stats", "Display statistics", HINT_CYAN, 1, 0, 0, 0, &cmd_stats, NULL },
-   { "thread", "Thread manager", HINT_CYAN, 1, 1, 0, -1, &cmd_help, menu_thread },
-   { "user", "Tools for users", HINT_YELLOW, 0, 0, 0, 0, &cmd_user, NULL },
-   { "vfs", "Virtual FileSystem (VFS)", HINT_CYAN, 1, 1, 1, -1, &cmd_help, menu_vfs },
+   { "shutdown", "Terminate the service", HINT_RED, 1, 0, 0, 0, cmd_shutdown, NULL },
+   { "stats", "Display statistics", HINT_CYAN, 1, 0, 0, 0, cmd_stats, NULL },
+   { "thread", "Thread manager", HINT_CYAN, 1, 1, 0, -1, NULL, menu_thread },
+   { "user", "Tools for users", HINT_YELLOW, 0, 0, 0, 0, cmd_user, NULL },
+   { "vfs", "Virtual FileSystem (VFS)", HINT_CYAN, 1, 1, 1, -1, NULL, menu_vfs },
    { .cmd = NULL, .desc = NULL, .menu = NULL },
 };
 
@@ -277,13 +457,16 @@ static struct shell_cmd *shell_get_menu(const char *line) {
    int x = 0, i = 0;
 
    // Find the appropriate menu context
+   if (shell_level == NULL)
+      shell_level_set("main");
+
    if (strcmp(shell_level, "main") == 0) {
       menu = menu_main;
    } else {
       x = sizeof(menu_main) / sizeof(menu_main[0]);
       i = 0;
       do {
-         if (&menu_main[i] == NULL || menu_main[i].cmd == NULL)
+         if (&menu_main[i] == NULL || menu_main[i].menu)
             break;
 
          if (strcasecmp(menu_main[i].cmd, shell_level) == 0)
@@ -298,45 +481,58 @@ static struct shell_cmd *shell_get_menu(const char *line) {
 }
 
 static int shell_command(const char *line) {
-   char *args[32], *last_p = NULL, *p = NULL;
+   char *p = NULL, key[8];
    char *tmp;
    struct shell_cmd *menu = NULL;
+   dict *args = dict_new();
    int i = 0;
 
    if (line == NULL)
       return -1;
 
+   if (shell_level == NULL)
+      shell_level_set("main");
+
+   // Duplicate the (const) string given to us, so we can mangle it...
    tmp = mem_alloc(strlen(line));
    memset(tmp, 0, sizeof(tmp));
-   memset(args, 0, sizeof(args));
    memcpy(tmp, args, sizeof(tmp));
 
-   args[0] = dconf_get_str("jail.name", NULL);
+   if (tmp == NULL)
+      return -1;
 
    strtok(tmp, " ");
    while ((p = strtok(NULL, " ")) != NULL) {
       if (p != NULL) {
          i++;
-         args[i] = p;
+         memset(key, 0, sizeof(key));
+         snprintf(key, sizeof(key) - 1, "%d", i);
+         dict_add(args, key, p);
       } else
          break;
    }
-
    // Command that apply in all menus:
    if (strncasecmp(line, "help", 4) == 0) {
-      cmd_help(i, args);
+      cmd_help(args);
+   } else if (strncasecmp(line, "vfs edit", 8) == 0) {
+      if (*(line+8) != ' ') {
+         Log(LOG_SHELL, "vfs edit requires an argument (file name)");
+         return -1;
+      }
+      kilo_main(line+9);
    } else if (strcasecmp(line, "back") == 0) {
       shell_level_set("main");
    } else if (strcasecmp(line, "shutdown") == 0 || strcasecmp(line, "quit") == 0) {
-      cmd_shutdown(i, args);
+      cmd_shutdown(args);
    } else if (strcasecmp(line, "conf dump") == 0) {
-      cmd_conf_dump(i, args);
+      cmd_conf_dump(args);
    } else if (strcasecmp(line, "gc now") == 0) {
-      printf("gc: Freed %d objects", gc_all());
+      Log(LOG_SHELL, "gc: Freed %d objects", gc_all());
    } else {	// Attempt to render the menu..
       menu = shell_get_menu(line);
+      i = 0;
 
-      do {
+      while (1) {
          if (&menu[i] == NULL || menu[i].desc == NULL)
             break;
 
@@ -344,40 +540,61 @@ static int shell_command(const char *line) {
          if (strcasecmp(menu[i].cmd, line) == 0) {
             if (menu[i].menu != NULL) {
                if (menu[i].menu == menu_value) {
-                  // XXX: Handle debug stanzas - We don't cd to the menu...
-                  printf("XXX: Not yet implemented\n");
+                  Log(LOG_SHELL, "XXX: Not yet implemented");
                } else {
                   shell_level_set(line);
                }
                return 0;
             } else if (menu[i].handler != NULL) {
-               menu[i].handler(i, args);
+               menu[i].handler(args);
+               mem_free(tmp);
                return 0;
             } else {
-               printf("That option '%s %s' is not yet implemented...\n", shell_level, line);
+               Log(LOG_SHELL, "That option '%s %s' is not yet implemented...", shell_level, line);
+               mem_free(tmp);
                return 0;
             }
          }
          i++;
-      } while(1);
-      printf("Unknown command, try help: %s\n", line);
+      }
+      Log(LOG_SHELL, "Unknown command, try help: %s", line);
    }
+   mem_free(tmp);
    return 0;
 }
 
 static void shell_completion(const char *buf, linenoiseCompletions *lc) {
    int i = 0;
+   char tmp[128];
    struct shell_cmd *menu = shell_get_menu(shell_level);
 
-   do {
-      if (&menu[i] == NULL || menu[i].desc == NULL)
-         break;
-
-      if (strncasecmp(buf, menu[i].cmd, strlen(buf)) == 0)
+#if	0
+   while (&menu[i] != NULL) {
+      if (strncasecmp(buf, menu[i].cmd, strlen(buf)) == 0) {
          linenoiseAddCompletion(lc, menu[i].cmd);
 
+         if (menu[i].menu != NULL) {
+            struct shell_cmd *submenu = menu[i].menu;
+
+            Log(LOG_SHELL, "---------------------");
+
+            if (submenu != NULL) {
+               Log(LOG_SHELL, "->");
+
+               int j = 0;
+               while (&submenu[j] != NULL) {
+                  memset(tmp, 0, sizeof(tmp));
+                  snprintf(tmp, sizeof(tmp) - 1, "%s %s", shell_level, submenu[i].cmd);
+                  linenoiseAddCompletion(lc, tmp);
+                  j++;
+               }
+               Log(LOG_SHELL, ".");
+            }
+         }
+      }
       i++;
-   } while(1);
+   }
+#endif
 
    // Extras (until we clean this mess up...)
    if (strncasecmp(buf, "gc now", strlen(buf)) == 0)
@@ -388,6 +605,8 @@ static void shell_completion(const char *buf, linenoiseCompletions *lc) {
       linenoiseAddCompletion(lc, "back");
    else if (strncasecmp(buf, "help", strlen(buf)) == 0)
       linenoiseAddCompletion(lc, "help");
+   else if (strncasecmp(buf, "vfs ", strlen(buf)) == 0)
+      linenoiseAddCompletion(lc, "vfs edit");
 }
 
 static char *shell_hints(const char *buf, int *color, int *bold) {
@@ -403,24 +622,29 @@ static char *shell_hints(const char *buf, int *color, int *bold) {
 
    // Static entries that will soon go away...
    if (strncasecmp(buf, "gc now", 6) == 0) {
-      *color = HINT_YELLOW,
-      *bold = 1,
+      *color = HINT_YELLOW;
+      *bold = 1;
       snprintf(msg, SHELL_HINT_MAX, " - run garbage collector now");
       return msg;
    } else if (strncasecmp(buf, "conf dump", 9) == 0) {
-      *color = HINT_YELLOW,
-      *bold = 1,
+      *color = HINT_YELLOW;
+      *bold = 1;
       snprintf(msg, SHELL_HINT_MAX, " - dump active configuration file");
       return msg;
    } else if (strncasecmp(buf, "back", 4) == 0) {
-      *color = HINT_GREEN,
-      *bold = 1,
+      *color = HINT_GREEN;
+      *bold = 1;
       snprintf(msg, SHELL_HINT_MAX, " - go to previous menu");
       return msg;
    } else if (strncasecmp(buf, "help", 4) == 0) {
-      *color = HINT_GREEN,
-      *bold = 1,
+      *color = HINT_GREEN;
+      *bold = 1;
       snprintf(msg, SHELL_HINT_MAX, " - display help text");
+      return msg;
+   } else if (strncasecmp(buf, "vfs edit", 8) == 0) {
+      *color = HINT_YELLOW;
+      *bold = 1;
+      snprintf(msg, SHELL_HINT_MAX, " - edit text file");
       return msg;
    } else {
       do {
@@ -443,39 +667,30 @@ static void shell_hints_free(char *buf) {
     blockheap_free(shell_hints_heap, buf);
 }
 
-void cmd_help(int argc, char **argv) {
+void cmd_help(dict *args) {
    struct shell_cmd *menu = NULL;
    int i = 0;
 
-//   if (argc == 0) {
-//      printf("Using menu: main\n");
-//      menu = menu_main;
-//   } else
-//      menu = shell_get_menu(argv[1]);
-
    menu = shell_get_menu(shell_level);
-
-   printf("Menu %s help\n", shell_level);
+   Log(LOG_SHELL, "Menu %s help", shell_level);
 
    if (menu != menu_main)
-      printf("%15s\t - go back to previous menu\n", "back");
+      Log(LOG_SHELL, "%15s\t - go back to previous menu", "back");
 
-   printf("%15s\t - display help text\n", "help");
+   Log(LOG_SHELL, "%15s\t - display help text", "help");
 
    do {
       if (&menu[i] == NULL || menu[i].desc == NULL)
          break;
 
-      printf("%15s\t - %s%s\n", menu[i].cmd, menu[i].desc, (menu[i].menu == NULL ? "" : " (menu)"));
+      Log(LOG_SHELL, "%15s\t - %s%s", menu[i].cmd, menu[i].desc, (menu[i].menu == NULL ? "" : " (menu)"));
 
       i++;
    } while(1);
    return;
 }
 
-//
 // Initialize the shell/debugger thread
-//
 void *thread_shell_init(void *data) {
    char *line = NULL;
 
@@ -490,12 +705,11 @@ void *thread_shell_init(void *data) {
    linenoiseHistorySetMaxLen(dconf_get_int("shell.history-length", 100));
    linenoiseHistoryLoad("state/.shell.history");
 
-   // Try to avoid our console prompt being spammed by startup text
-   sleep(1);
+   // We need to properly lock rather than sleep!
+   sleep(2);
    Log(LOG_INFO, "Ready to accept requests");
-   sleep(1);
-   printf("jailfs shell starting. You are managing jail '%s'\n\n", dconf_get_str("jail.name", NULL));
-   printf("Try 'help' for a list of available commands or 'shutdown' to halt the service\nTab completion is enabled.\n\n");
+   Log(LOG_SHELL, "jailfs shell starting. You are managing jail '%s'", dconf_get_str("jail.name", NULL));
+   Log(LOG_SHELL, "Try 'help' for a list of available commands or 'shutdown' to halt the service\nTab completion is enabled.");
    shell_level_set("main");
 
    // As long as the dying flag has not been set, we continue to run
@@ -521,6 +735,7 @@ void *thread_shell_init(void *data) {
 // Shell destructor
 void *thread_shell_fini(void *data) {
    linenoiseHistorySave("state/.shell.history");	// Save history
+   log_close();
    blockheap_destroy(shell_hints_heap);
    thread_exit((dict *)data);
    return NULL;

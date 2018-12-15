@@ -18,7 +18,6 @@
 #include <lsd.h>
 
 struct conf {
-   char       *mountpoint;
    int         dying;
    dict *dict;
    time_t      born;

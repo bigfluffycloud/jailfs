@@ -17,7 +17,8 @@
 #include <ctype.h>
 #include <errno.h>
 #include <time.h>
-#include "logger.h"
+#include <stdio.h>
+#include <lsd.h>
 #include "str.h"
 
 char       *str_dup(const char *str) {
