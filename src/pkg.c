@@ -321,9 +321,10 @@ int pkg_import(const char *path) {
       else
          _f_type = 'f';
 
-      // We do not add directories...
+      // Add directories...
       if (_f_type == 'd') {
          archive_read_data_skip(a);
+         // XXX: Add to database
          continue;
       }
 
@@ -332,7 +333,7 @@ int pkg_import(const char *path) {
              basename(path), _f_name, _f_uid, _f_owner, _f_gid, _f_group, _f_mode, _f_perm, st->st_size, 0);
 
       if (_f_type == 'l') {
-         // XXX: Handle symlinks...
+         // XXX: Save symlinks...
       } else {
          db_file_add(pkgid, _f_name, _f_type, _f_uid, _f_gid,
                          _f_owner, _f_group, st->st_size,
@@ -353,16 +354,12 @@ int pkg_import(const char *path) {
 }
 
 void pkg_init(void) {
-   if (!
-       (pkg_heap =
-        blockheap_create(sizeof(struct pkg_handle),
+   if (!(pkg_heap = blockheap_create(sizeof(struct pkg_handle),
                          dconf_get_int("tuning.heap.pkg", 128), "pkg"))) {
       Log(LOG_EMERG, "pkg_init(): block allocator failed - pkg");
       raise(SIGTERM);
    }
-   if (!
-       (pkg_file_heap =
-        blockheap_create(sizeof(struct pkg_file_mapping),
+   if (!(pkg_file_heap = blockheap_create(sizeof(struct pkg_file_mapping),
                          dconf_get_int("tuning.heap.files", 128), "files"))) {
       Log(LOG_EMERG, "pkg_init(): block allocator failed - files");
       raise(SIGTERM);

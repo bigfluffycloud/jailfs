@@ -1,0 +1,34 @@
+
+[Warden]
+Manages each jail's jailfs process.
+
+[jailfs]
+Each container will run an instance of jailfs.
+
+
+jailfs is extensively multithreaded:
+	* The main thread handles housekeeping
+	* Database
+		- sqlite based database for packages
+	* pkg (Package Handling)
+	* shell - User interface/admin console
+	* vfs (Virtual File System)
+
+----
+
+Extensive use of LSD (libsd) for data types support.
+	- ini-like configuration file with extensible syntax
+	- Hooks system
+
+Extensive modularity
+	- Loadable modules
+	- Message-based API for interthread communication
+
+
+- We scan packages available (eventually only jailconf pkgs).
+- When files are accessed (or when scanned if precache enabled)
+  - Check the cache if it exists
+    - If so, increase refcnt and return the file via FUE read-only (??)
+  - Extract the file from the package into cache
+    - Increase refcnt and return the file via FUSE read-only (??) from cache
+  ? Support spillover files for changed files (someday)

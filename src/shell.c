@@ -693,7 +693,6 @@ void cmd_help(dict *args) {
 // Initialize the shell/debugger thread
 void *thread_shell_init(void *data) {
    char *line = NULL;
-
    thread_entry((dict *)data);
    shell_hints_heap = blockheap_create(SHELL_HINT_MAX, 32, "shell hints");
 
