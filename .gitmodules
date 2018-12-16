@@ -28,3 +28,6 @@
 [submodule "ext/kernel-headers"]
 	path = ext/kernel-headers
 	url = https://github.com/sabotage-linux/kernel-headers.git
+[submodule "ext/libev"]
+	path = ext/libev
+	url = https://github.com/enki/libev.git

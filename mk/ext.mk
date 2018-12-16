@@ -21,26 +21,36 @@ musl_srcdir := ext/musl
 musl_lib := lib/libc.so
 
 lib/libc.so: ${musl_srcdir}/lib/libc.so
-	cp -arvx ${musl_srcdir}/lib/* lib/
-	cp -avrx ${musl_srcdir}/obj/musl-gcc bin/
-	cp -avrx ${musl_srcdir}/include/* inc/
+#	cp -arvx ${musl_srcdir}/lib/* lib/
+#	cp -avrx ${musl_srcdir}/obj/musl-gcc bin/
+#	cp -avrx ${musl_srcdir}/include/* include/
+	${MAKE} -C ${musl_srcdir} DESTDIR=${PWD} install
 
 ${musl_srcdir}/configure:
 	git submodule init; git submodule pull
 
-${musl_srcdir}/lib/libc.so: ${musl_srcdir}/configure
+${musl_srcdir}/config.mak:
 	-${MAKE} -C ${musl_srcdir} distclean
 	cd ${musl_srcdir}/; ./configure --prefix=/ --enable-wrapper=yes
-	${MAKE} -C ${musl_srcdir}
-	# Kernel headers
 
-kernel-headers:
+${musl_srcdir}/lib/libc.so: ${musl_srcdir}/config.mak include/linux/utsname.h
+	${MAKE} -C ${musl_srcdir}
+
+include/linux/utsname.h:
 	${MAKE} -C ${kernel_headers_srcdir} ARCH=x86_64 prefix=/ DESTDIR=${PWD} install
 
 musl-clean:
 	${MAKE} -C ${musl_srcdir} distclean
 
 libs += ${musl_lib}
+
+#######################
+# ev - event handling #
+#######################
+#ext_libs +=
+ev_srcdir := ext/libev/
+#
+#	./ellcc build x86_64-linux
 
 ###################################
 # FUSE - Filesystems in USErspace #
@@ -66,11 +76,11 @@ ${fuse_objdir}/%.o:${fuse_srcdir}/%.c
 # libtomcrypt #
 ###############
 distclean_targets += musl-clean
-extra_distclean += $(wild inc/*.h)
+extra_distclean += $(wild include/*.h)
 extra_distclean += $(wildcard lib/*.o lib/*.so lib/*.a lib/*.specs) bin/musl-gcc
 
 ext/libtomcrypt/libtomcrypt.a ext/libtomcrypt/libtomcrypt.so:
-	${MAKE} -C ext/libtomcrypt -f makefile.shared
+	CC=./bin/musl-gcc ${MAKE} -C ext/libtomcrypt -f makefile.shared
 
 lib/libtomcrypt.a: lib/libtomcrypt.so
 lib/libtomcrypt.so: ext/libtomcrypt/.libs/libtomcrypt.so

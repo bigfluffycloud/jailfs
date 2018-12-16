@@ -25,9 +25,9 @@ CONFIG_STRIP_LIBS=n
 # Compiler options #
 ####################
 # Eventually we plan to build an entirely self-contained static binary...
-#CC := bin/musl-gcc
+CC := bin/musl-gcc
 CFLAGS += -O1 -g -pipe -ansi  -std=gnu99
-CFLAGS += -I./src #-I./inc/
+CFLAGS += -nostdinc -I./include -I./src
 CFLAGS += -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -fPIC -D_GNU_SOURCE
 warn_noerror := -Wall -Wno-unused -Wno-strict-aliasing
 #warn_flags := ${warn_noerror} #-Werror

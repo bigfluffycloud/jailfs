@@ -27,7 +27,6 @@
  */
 #include <signal.h>
 #include "balloc.h"
-#include "conf.h"
 #include "dlink.h"
 int         dlink_count = 0;
 BlockHeap  *dlink_node_heap;

@@ -38,7 +38,6 @@
 #include <sys/mman.h>
 #include <string.h>
 #include "balloc.h"
-#include "conf.h"
 #include "dlink.h"
 #include "cron.h"
 #include "memory.h"
