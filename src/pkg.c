@@ -51,7 +51,6 @@
 #if	!defined(MAP_NOSYNC)
 #define	MAP_NOSYNC	0
 #endif                                 /* !defined(MAP_NOSYNC) */
-#define	BLOCK_SIZE	10240
 
 // private module-global stuff 
 BlockHeap *pkg_heap = NULL;            	// BlockHeap for packages
@@ -353,6 +352,7 @@ int pkg_import(const char *path) {
    return EXIT_SUCCESS;
 }
 
+
 void pkg_init(void) {
    if (!(pkg_heap = blockheap_create(sizeof(struct pkg_handle),
                          dconf_get_int("tuning.heap.pkg", 128), "pkg"))) {
@@ -368,4 +368,9 @@ void pkg_init(void) {
    // We take care of package file cleanup here too...
    pkg_lifetime = timestr_to_time(dconf_get_str("tuning.timer.pkg_gc", NULL), 60);
    evt_timer_add_periodic(pkg_gc, "gc.pkg", pkg_lifetime);
+}
+
+void pkg_fini(void) {
+   blockheap_destroy(pkg_heap);
+   blockheap_destroy(pkg_file_heap);
 }

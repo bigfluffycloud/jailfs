@@ -210,7 +210,6 @@ void log_open(const char *target) {
    }
 }
 
-
 static void log_close(void) {
    if (mainlog == NULL)
       return;
@@ -233,8 +232,13 @@ void cmd_edit(dict *args) {
 
    ac = dict_get(args, "1", NULL);
 
-   if (ac != NULL)
-      kilo_main(ac);
+   if (ac != NULL) {
+      char path[PATH_MAX];
+      memset(path, 0, sizeof(path));
+      snprintf(path, sizeof(path) - 1, "./%s", ac);
+      snprintf(path, sizeof(path) - 1, "%s/%s", ac, dconf_get_str("path.mountpoint", NULL));
+      kilo_main(path);
+   }
 }
 
 // Use the signal handler to properly shut down the system (SIGTERM/11)
@@ -519,7 +523,10 @@ static int shell_command(const char *line) {
          Log(LOG_SHELL, "vfs edit requires an argument (file name)");
          return -1;
       }
-      kilo_main(line+9);
+      char path[PATH_MAX];
+      memset(path, 0, sizeof(path));
+      snprintf(path, sizeof(path) - 1, "%s/%s", line+9, dconf_get_str("path.mountpoint", NULL));
+      kilo_main(path);
    } else if (strcasecmp(line, "back") == 0) {
       shell_level_set("main");
    } else if (strcasecmp(line, "shutdown") == 0 || strcasecmp(line, "quit") == 0) {
@@ -568,6 +575,7 @@ static void shell_completion(const char *buf, linenoiseCompletions *lc) {
    char tmp[128];
    struct shell_cmd *menu = shell_get_menu(shell_level);
 
+// XXX: Something's fucky here... We'll get around to it eventually...
 #if	0
    while (&menu[i] != NULL) {
       if (strncasecmp(buf, menu[i].cmd, strlen(buf)) == 0) {
@@ -605,8 +613,10 @@ static void shell_completion(const char *buf, linenoiseCompletions *lc) {
       linenoiseAddCompletion(lc, "back");
    else if (strncasecmp(buf, "help", strlen(buf)) == 0)
       linenoiseAddCompletion(lc, "help");
-   else if (strncasecmp(buf, "vfs ", strlen(buf)) == 0)
+   else if (strncasecmp(buf, "vfs ", strlen(buf)) == 0) {
+      linenoiseAddCompletion(lc, "vfs");
       linenoiseAddCompletion(lc, "vfs edit");
+   }
 }
 
 static char *shell_hints(const char *buf, int *color, int *bold) {

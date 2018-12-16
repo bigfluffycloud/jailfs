@@ -107,6 +107,7 @@ expose 53/udp
 ; pdns_server will drop privileges once it binds ports it needs
 user root
 group root
+capab net_bind_port
 exec /etc/init.d/pdns start
 @END
 

@@ -3,12 +3,9 @@
 .obj/*.so
 cache/*
 cache/.*
-inc/*
+include/*
 bin/*
-lib/*.so
-lib/*.a
-lib/*.o
-lib/*.specs
+lib/*
 lib/modules/*.so
 dbg/*.symtab
 dbg/*.strings

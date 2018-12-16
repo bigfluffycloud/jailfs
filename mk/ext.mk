@@ -11,11 +11,41 @@
 #
 
 # Build rules for third party (git-hosted) code...
-ext_libs += libfuse.a
+
+#######################
+# musl - a small libc #
+#######################
+ARCH := $(uname -m)
+kernel_headers_srcdir := ext/kernel-headers
+musl_srcdir := ext/musl
+musl_lib := lib/libc.so
+
+lib/libc.so: ${musl_srcdir}/lib/libc.so
+	cp -arvx ${musl_srcdir}/lib/* lib/
+	cp -avrx ${musl_srcdir}/obj/musl-gcc bin/
+	cp -avrx ${musl_srcdir}/include/* inc/
+
+${musl_srcdir}/configure:
+	git submodule init; git submodule pull
+
+${musl_srcdir}/lib/libc.so: ${musl_srcdir}/configure
+	-${MAKE} -C ${musl_srcdir} distclean
+	cd ${musl_srcdir}/; ./configure --prefix=/ --enable-wrapper=yes
+	${MAKE} -C ${musl_srcdir}
+	# Kernel headers
+
+kernel-headers:
+	${MAKE} -C ${kernel_headers_srcdir} ARCH=x86_64 prefix=/ DESTDIR=${PWD} install
+
+musl-clean:
+	${MAKE} -C ${musl_srcdir} distclean
+
+libs += ${musl_lib}
 
 ###################################
 # FUSE - Filesystems in USErspace #
 ###################################
+ext_libs += libfuse.a
 fuse_srcdir := ext/libfuse/lib/
 fuse_objdir := .obj/libfuse/
 fuse_src += buffer fuse fuse_loop fuse_loop_mt
@@ -32,32 +62,19 @@ ${fuse_objdir}/%.o:${fuse_srcdir}/%.c
 	@echo "[CC] $< => $@"
 	@${CC} ${libfuse_cflags} -o $@ -c $^
 
-objs += ${libfuse_obj}
-
-#######################
-# musl - a small libc #
-#######################
-musl_srcdir := ext/musl
-musl_lib := lib/libc.so
-
-lib/libc.so: ${musl_srcdir}/lib/libc.so
-	cp -arvx ${musl_srcdir}/lib/* lib/
-	cp -avrx ${musl_srcdir}/obj/musl-gcc bin/
-	cp -avrx ${musl_srcdir}/include/* inc/
-
-${musl_srcdir}/configure:
-	git submodule init; git submodule pull
-
-${musl_srcdir}/lib/libc.so: ${musl_srcdir}/configure
-	-${MAKE} -C ${musl_srcdir} distclean
-	cd ${musl_srcdir}/; ./configure --prefix=/ --enable-wrapper=yes
-	${MAKE} -C ${musl_srcdir}
-
-musl-clean:
-	${MAKE} -C ${musl_srcdir} distclean
-
-libs += lib/libc.so
-
+###############
+# libtomcrypt #
+###############
 distclean_targets += musl-clean
 extra_distclean += $(wild inc/*.h)
 extra_distclean += $(wildcard lib/*.o lib/*.so lib/*.a lib/*.specs) bin/musl-gcc
+
+ext/libtomcrypt/libtomcrypt.a ext/libtomcrypt/libtomcrypt.so:
+	${MAKE} -C ext/libtomcrypt -f makefile.shared
+
+lib/libtomcrypt.a: lib/libtomcrypt.so
+lib/libtomcrypt.so: ext/libtomcrypt/.libs/libtomcrypt.so
+	cp ext/libtomcrypt/.libs/* lib/
+
+libs += lib/libtomcrypt.a
+libs += lib/libtomcrypt.so

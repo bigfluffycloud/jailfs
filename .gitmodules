@@ -22,3 +22,9 @@
 [submodule "ext/nosqlite"]
 	path = ext/nosqlite
 	url = https://github.com/aaashun/nosqlite.git
+[submodule "ext/libtomcrypt"]
+	path = ext/libtomcrypt
+	url = https://github.com/libtom/libtomcrypt.git
+[submodule "ext/kernel-headers"]
+	path = ext/kernel-headers
+	url = https://github.com/sabotage-linux/kernel-headers.git

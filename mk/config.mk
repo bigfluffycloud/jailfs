@@ -27,12 +27,14 @@ CONFIG_STRIP_LIBS=n
 # Eventually we plan to build an entirely self-contained static binary...
 #CC := bin/musl-gcc
 CFLAGS += -O1 -g -pipe -ansi  -std=gnu99
-CFLAGS += -I./src
+CFLAGS += -I./src #-I./inc/
 CFLAGS += -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -fPIC -D_GNU_SOURCE
 warn_noerror := -Wall -Wno-unused -Wno-strict-aliasing
 #warn_flags := ${warn_noerror} #-Werror
 warn_flags :=
-LDFLAGS := -lz -lcrypto -pthread -lrt -lsqlite3 -lm -lev -lunwind -lfuse -lmagic -ldl -larchive -lbsd
+LDFLAGS := -L./lib/ -lz -lcrypto -pthread -lrt -lsqlite3 
+LDFLAGS += -lm -lev -lunwind -lfuse -lmagic -ldl -larchive
+LDFLAGS += -lbsd -ltomcrypt
 lib_ldflags += -shared -ldl
 
 #################
