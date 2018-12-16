@@ -31,3 +31,6 @@
 [submodule "ext/libev"]
 	path = ext/libev
 	url = https://github.com/enki/libev.git
+[submodule "ext/llvm"]
+	path = ext/llvm
+	url = https://github.com/llvm-mirror/llvm.git
