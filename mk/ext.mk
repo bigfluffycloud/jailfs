@@ -19,6 +19,7 @@ ARCH := $(uname -m)
 kernel_headers_srcdir := ext/kernel-headers
 musl_srcdir := ext/musl
 musl_lib := lib/libc.so
+libs += ${musl_lib}
 
 lib/libc.so: ${musl_srcdir}/lib/libc.so
 #	cp -arvx ${musl_srcdir}/lib/* lib/
@@ -42,15 +43,48 @@ include/linux/utsname.h:
 musl-clean:
 	${MAKE} -C ${musl_srcdir} distclean
 
-libs += ${musl_lib}
-
 #######################
 # ev - event handling #
 #######################
-#ext_libs +=
+ev_lib := lib/libev.so
 ev_srcdir := ext/libev/
-#
+libs += ${ev_lib}
+
+${ev_lib}: ${ev_srcdir}/libev.so
+	${MAKE} -C ${ev_srcdir} DESTDIR=${PWD} install
 #	./ellcc build x86_64-linux
+
+${ev_srcdir}/libev.so:
+	${MAKE} -C ${ev_srcdir}
+
+${ev_srcdir}/Makefile: 
+	./configure --prefix=/
+
+${ev_srcdir}/configure:
+	git submodule init; git submodule pull
+
+##################################
+# libbsd - bsd safe string stuff #
+##################################
+libbsd_lib := lib/libbsd.a
+libbsd_srcdir := ext/libbsd
+libs += ${libbsd_lib}
+
+${libbsd_lib}: ${libbsd_srcdir}/src/.libs/libbsd.a
+	${MAKE} -C ${libbsd_srcdir} DESTDIR=${PWD} install
+
+${libbsd_srcdir}/src/.libs/libbsd.a:
+	${MAKE} -C ${libbsd_srcdir}
+
+${libbsd_srcdir}/Makefile: ${libbsd_srcdir}/configure
+	(cd ${libbsd_srcdir}; ./configure --prefix=/ \
+	--with-sysroot=${PWD}/lib)
+
+${libbsd_srcdir}/configure: ${libbsd_srcdir}/autogen.sh
+	(cd ${libbsd_srcdir}; ./autogen.sh)
+
+${libbsd_srcdir}/autogen.sh:
+	git submodule init; git submodule pull
 
 ###################################
 # FUSE - Filesystems in USErspace #

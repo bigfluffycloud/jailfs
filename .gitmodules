@@ -34,3 +34,6 @@
 [submodule "ext/llvm"]
 	path = ext/llvm
 	url = https://github.com/llvm-mirror/llvm.git
+[submodule "ext/clang"]
+	path = ext/clang
+	url = https://github.com/llvm-mirror/clang.git

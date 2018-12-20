@@ -303,12 +303,12 @@ int blockheap_free(BlockHeap * bh, void *ptr) {
 #ifdef CONFIG_DEBUG_BALLOC
    if (memblock->magic != BALLOC_MAGIC) {
       blockheap_fail("memblock->magic != BALLOC_MAGIC");
-      conf.dying = 1;
+      raise(SIGABRT);
    }
 #endif
    if (memblock->block == NULL) {
       blockheap_fail("memblock->block == NULL, not a valid block?");
-      conf.dying = 1;
+      raise(SIGABRT);
    }
 
    // just in case...

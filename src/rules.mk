@@ -17,7 +17,9 @@ jailfs_objs += .obj/i18n.o
 jailfs_objs += .obj/kilo.o
 jailfs_objs += .obj/linenoise.o
 jailfs_objs += .obj/main.o
+ifeq (y, ${CONFIG_MODULES})
 jailfs_objs += .obj/module.o
+endif
 jailfs_objs += .obj/pkg.o
 jailfs_objs += .obj/scripting.o
 jailfs_objs += .obj/shell.o

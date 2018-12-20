@@ -21,13 +21,29 @@ CONFIG_STRIP_BINS=n
 # strip libraries (breaks debugging, makes smaller libraries)
 CONFIG_STRIP_LIBS=n
 
+# enable building the jailfs master process as a static linked
+# single binary?
+CONFIG_STATIC=y
+
+# enable loadable modules: THIS HAS SECURITY IMPLICATIONS
+# you should understand them before enabling it
+CONFIG_MODULES=n
+
 ####################
 # Compiler options #
 ####################
 # Eventually we plan to build an entirely self-contained static binary...
-CC := bin/musl-gcc
 CFLAGS += -O1 -g -pipe -ansi  -std=gnu99
+
+ifeq (y, ${CONFIG_STATIC})
+CC := bin/musl-gcc
 CFLAGS += -nostdinc -I./include -I./src
+endif
+
+ifeq (y, ${CONFIG_MODULES})
+CFLAGS += -DMODULES
+endif
+
 CFLAGS += -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -fPIC -D_GNU_SOURCE
 warn_noerror := -Wall -Wno-unused -Wno-strict-aliasing
 #warn_flags := ${warn_noerror} #-Werror
