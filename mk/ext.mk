@@ -86,6 +86,25 @@ ${libbsd_srcdir}/configure: ${libbsd_srcdir}/autogen.sh
 ${libbsd_srcdir}/autogen.sh:
 	git submodule init; git submodule pull
 
+####################################
+# sqlite - Liteweight SQL database #
+####################################
+sqlite_srcdir := ext/sqlite
+sqlite_lib := lib/libsqlite.a
+libs += ${sqlite_lib}
+
+${sqlite_lib}: ${sqlite_srcdir}/
+${sqlite_srcdir}/lib:
+	${MAKE} -C ${sqlite_srcdir}
+
+${sqlite_srcdir}/Makefile: ${sqlite_srcdir}/configure
+	CC=musl-gcc (cd ${sqlite_srcdir}; \
+	./configure --prefix=/ --enable-tempstore=always \
+	--disable-load-extension
+
+${sqlite_srcdir}/configure:
+	git submodule init; git submodule pull
+
 ###################################
 # FUSE - Filesystems in USErspace #
 ###################################

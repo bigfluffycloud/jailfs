@@ -42,7 +42,7 @@ lib/libsd.a: ${lsd_objs}
 	${AR} -cvq $@ $^
 
 lib/libsd.so: ${lsd_objs}
-	${CC} -fPIC -lbsd -lrt -pthread -shared $^ -o $@
+	${CC} -nostdlib -L./lib -fPIC -lbsd -lrt -pthread -shared $^ -o $@
 
 .obj/%.o:src/lsd/%.c $(wildcard src/lsd/*.h src/*.h)
 	@echo "[CC].lib $< => $@"
