@@ -402,10 +402,12 @@ static struct shell_cmd menu_mem[] = {
    { .cmd = NULL, .desc = NULL, .menu = NULL },
 };
 
+#if	defined(CONFIG_MODULES)
 static struct shell_cmd menu_module[] = {
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
    { .cmd = NULL, .desc = NULL, .menu = NULL },
 };
+#endif	// defined(CONFIG_MODULES)
 
 static struct shell_cmd menu_net[] = {
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
@@ -441,7 +443,9 @@ static struct shell_cmd menu_main[] = {
    { "hooks", "Hooks management", HINT_CYAN, 1, 1, 0, -1, NULL, menu_hooks },
    { "logging", "Log file", HINT_CYAN, 1, 1, 0, -1, NULL, menu_logging },
    { "memory", "Memory manager", HINT_CYAN, 1, 1, 0, -1, NULL, menu_mem },
+#if	defined(CONFIG_MODULES)
    { "module", "Loadable module support", HINT_CYAN, 1, 1, 0, -1, NULL, menu_module },
+#endif	// defined(CONFIG_MODULES)
    { "net", "Network", HINT_CYAN, 1, 1, 0, -1, NULL, menu_net },
    { "pkg", "Package commands", HINT_CYAN, 1, 1, 1, -1, NULL, menu_pkg },
    { "profiling", "Profiling support", HINT_CYAN, 1, 1, 0, -1, NULL, menu_profiling },

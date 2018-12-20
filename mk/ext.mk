@@ -77,7 +77,7 @@ ${libbsd_srcdir}/src/.libs/libbsd.a:
 	${MAKE} -C ${libbsd_srcdir}
 
 ${libbsd_srcdir}/Makefile: ${libbsd_srcdir}/configure
-	(cd ${libbsd_srcdir}; ./configure --prefix=/ \
+	CC=musl-gcc (cd ${libbsd_srcdir}; ./configure --prefix=/ \
 	--with-sysroot=${PWD}/lib)
 
 ${libbsd_srcdir}/configure: ${libbsd_srcdir}/autogen.sh
@@ -108,7 +108,7 @@ ${sqlite_srcdir}/configure:
 ###################################
 # FUSE - Filesystems in USErspace #
 ###################################
-ext_libs += libfuse.a
+libs += libfuse.a
 fuse_srcdir := ext/libfuse/lib/
 fuse_objdir := .obj/libfuse/
 fuse_src += buffer fuse fuse_loop fuse_loop_mt
