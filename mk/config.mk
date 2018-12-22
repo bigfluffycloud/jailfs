@@ -23,7 +23,7 @@ CONFIG_STRIP_LIBS=n
 
 # enable building the jailfs master process as a static linked
 # single binary?
-CONFIG_STATIC=y
+#CONFIG_STATIC=y
 
 # enable loadable modules: THIS HAS SECURITY IMPLICATIONS
 # you should understand them before enabling it
@@ -37,20 +37,24 @@ CFLAGS += -O1 -g -pipe -ansi  -std=gnu99
 
 ifeq (y, ${CONFIG_STATIC})
 CC := bin/musl-gcc
-CFLAGS += -nostdinc -I./include -I./src
+CFLAGS += -nostdinc
+LFLAGS += -nostdlib
 endif
 
 ifeq (y, ${CONFIG_MODULES})
 CFLAGS += -DMODULES
 endif
 
+CFLAGS += -I./include -I./src
 CFLAGS += -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -fPIC -D_GNU_SOURCE
+CFLAGS += -DFUSE_USE_VERSION=31
 warn_noerror := -Wall -Wno-unused -Wno-strict-aliasing
 #warn_flags := ${warn_noerror} #-Werror
 warn_flags :=
-LDFLAGS := -L./lib/ -lz -lcrypto -pthread -lrt -lsqlite3 
-LDFLAGS += -lm -lev -lunwind -lfuse -lmagic -ldl -larchive
-LDFLAGS += -lbsd -ltomcrypt
+LDFLAGS := -L./lib/
+#LDFLAGS += -lc -lz -lcrypto -pthread -lrt -lsqlite3 
+#LDFLAGS += -lm -lev -lunwind -lmagic -ldl -larchive
+#LDFLAGS += -lbsd -ltomcrypt
 lib_ldflags += -shared -ldl
 
 #################

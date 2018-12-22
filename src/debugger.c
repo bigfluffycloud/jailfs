@@ -15,6 +15,7 @@
  * debugger.c:
  *	Extends the shell(.c) to add a debuggger
  */
+#if	defined(CONFIG_DEBUGGER)
 #include <sys/gmon.h>
 #include <lsd.h>
 #include "debugger.h"
@@ -159,3 +160,5 @@ void profiling_toggle(void) {
 
    profiling_newmsg = 1;
 }
+
+#endif	// defined(CONFIG_DEBUGGER)

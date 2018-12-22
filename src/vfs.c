@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <lsd.h>
-#include <signal.h>
+#include <sys/signal.h>
 #include <errno.h>
 #include <dirent.h>
 #include "conf.h"

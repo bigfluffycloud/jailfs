@@ -58,7 +58,7 @@ ${ev_srcdir}/libev.so:
 	${MAKE} -C ${ev_srcdir}
 
 ${ev_srcdir}/Makefile: 
-	./configure --prefix=/
+	./configure --prefix=/ --includedir=${PWD}/include
 
 ${ev_srcdir}/configure:
 	git submodule init; git submodule pull
@@ -108,30 +108,37 @@ ${sqlite_srcdir}/configure:
 ###################################
 # FUSE - Filesystems in USErspace #
 ###################################
-libs += libfuse.a
+fuse_libs += lib/libfuse.a
 fuse_srcdir := ext/libfuse/lib/
 fuse_objdir := .obj/libfuse/
 fuse_src += buffer fuse fuse_loop fuse_loop_mt
 fuse_src += fuse_lowlevel fuse_opt fuse_signals
-fuse_src += helper mount mount_bsd mount_util
-libfuse_cflags := ${libfuse_srcdir}
-libfuse_ldflags :=
-libfuse_obj := $(foreach y,${fuse_src},${fuse_objdir}/${y})
-libfuse.a: $(foreach y,${fuse_src},${fuse_objdir}/${y})
-	@echo "[LD] $^ => $@"
-	@${CC} ${libfuse_ldflags} -o $@ $^
+fuse_src += helper mount_util
+fuse_src += mount
+#fuse_src += mount_bsd
+fuse_src += modules/subdir
 
-${fuse_objdir}/%.o:${fuse_srcdir}/%.c
+libs += ${fuse_libs}
+
+fuse_cflags := ${CFLAGS} -Iinclude/fuse
+fuse_ldflags := ${LDFLAGS}
+fuse_obj := $(foreach y,${fuse_src},${fuse_objdir}/${y}.o)
+
+${fuse_libs}: ${fuse_obj}
+	@echo "[LD] $^ => $@"
+	${AR} -cvq $@ $^
+
+${fuse_objdir}/%.o: ${fuse_srcdir}/%.c include/fuse/fuse.h
 	@echo "[CC] $< => $@"
-	@${CC} ${libfuse_cflags} -o $@ -c $^
+	${CC}  ${fuse_cflags} -o $@ -c $<
+
+include/fuse/fuse.h:
+	mkdir -p include/fuse
+	cp -avrx ext/libfuse/include/*.h include/fuse
 
 ###############
 # libtomcrypt #
 ###############
-distclean_targets += musl-clean
-extra_distclean += $(wild include/*.h)
-extra_distclean += $(wildcard lib/*.o lib/*.so lib/*.a lib/*.specs) bin/musl-gcc
-
 ext/libtomcrypt/libtomcrypt.a ext/libtomcrypt/libtomcrypt.so:
 	CC=./bin/musl-gcc ${MAKE} -C ext/libtomcrypt -f makefile.shared
 
@@ -141,3 +148,18 @@ lib/libtomcrypt.so: ext/libtomcrypt/.libs/libtomcrypt.so
 
 libs += lib/libtomcrypt.a
 libs += lib/libtomcrypt.so
+
+############
+# libmagic #
+############
+magic_libs += lib/libmagic.a
+magic_srcdir := ext/libmagic
+magic_objdir := .obj/libmagic
+#lib/libmagic.a
+
+
+#############
+distclean_targets += musl-clean
+extra_distclean += $(wild include/*.h)
+extra_distclean += $(wildcard lib/*.o lib/*.so lib/*.a lib/*.specs) bin/musl-gcc
+

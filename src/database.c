@@ -12,7 +12,7 @@
  * No warranty of any kind. Good luck!
  */
 #include <unistd.h>
-#include <signal.h>
+#include <sys/signal.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <pthread.h>

@@ -19,7 +19,7 @@
  *		* debug (debugger)
  *		* log (log message handler)
  */
-#include <signal.h>
+#include <sys/signal.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>

@@ -31,7 +31,7 @@
 #include <sys/param.h>
 #include <sys/mman.h>
 #include <sys/file.h>
-#include <signal.h>
+#include <sys/signal.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>

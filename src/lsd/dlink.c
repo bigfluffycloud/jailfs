@@ -25,7 +25,7 @@
  *
  *  #Id: tools.c,v 1.6 2002/06/24 16:21:51 leeh Exp #
  */
-#include <signal.h>
+#include <sys/signal.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <stdlib.h>

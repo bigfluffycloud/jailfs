@@ -37,3 +37,6 @@
 [submodule "ext/clang"]
 	path = ext/clang
 	url = https://github.com/llvm-mirror/clang.git
+[submodule "ext/libmagic"]
+	path = ext/libmagic
+	url = https://github.com/threatstack/libmagic.git

@@ -25,7 +25,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
-#include <signal.h>
 #include <stdio.h>
 #include <pthread.h>
 #include <sched.h>
