@@ -41,7 +41,6 @@
 #include "cron.h"
 #include "vfs.h"
 #include "database.h"
-#define FUSE_USE_VERSION 26
 #include <fuse/fuse.h>
 #include <fuse/fuse_lowlevel.h>
 #include <fuse/fuse_opt.h>
@@ -148,6 +147,7 @@ void vfs_inode_fini(void) {
 ////////////////////
 static void vfs_fuse_read_cb(struct ev_loop *loop, ev_io * w, int revents) {
    int         res = 0;
+#if	0
    struct fuse_chan *ch = fuse_session_next_chan(vfs_fuse_sess, NULL);
    struct fuse_chan *tmpch = ch;
    size_t      bufsize = fuse_chan_bufsize(ch);
@@ -166,6 +166,7 @@ static void vfs_fuse_read_cb(struct ev_loop *loop, ev_io * w, int revents) {
 
    mem_free(buf);
    fuse_session_reset(vfs_fuse_sess);
+#endif
 }
 
 /* Write-type operations which should return EROFS */
@@ -486,8 +487,10 @@ void vfs_fuse_fini(void) {
       fuse_session_destroy(vfs_fuse_sess);
 
    if (vfs_fuse_chan != NULL) {
+#if	0
       fuse_session_remove_chan(vfs_fuse_chan);
-      fuse_unmount(dconf_get_str("path.mountpoint", NULL), vfs_fuse_chan);
+#endif
+      fuse_unmount(vfs_fuse_chan);
    }
 
    if (vfs_fuse_args.allocated)
@@ -502,7 +505,7 @@ void vfs_fuse_init(void) {
       conf.dying = 1;
       raise(SIGTERM);
    }
-
+#if	0
    if ((vfs_fuse_sess = fuse_lowlevel_new(&vfs_fuse_args, &vfs_fuse_ops,
                                           sizeof(vfs_fuse_ops), NULL)) != NULL) {
       fuse_session_add_chan(vfs_fuse_sess, vfs_fuse_chan);
@@ -511,10 +514,10 @@ void vfs_fuse_init(void) {
       conf.dying = 1;
       raise(SIGTERM);
    }
-
    // Register an interest in events on the fuse fd 
    ev_io_init(&vfs_fuse_evt, vfs_fuse_read_cb, fuse_chan_fd(vfs_fuse_chan), EV_READ);
    ev_io_start(evt_loop, &vfs_fuse_evt);
+#endif
 
    // Set up our various blockheaps 
    vfs_handle_heap = blockheap_create(sizeof(vfs_handle_t), dconf_get_int("tuning.heap.vfs_handle", 128), "vfs_handle");
@@ -585,7 +588,7 @@ void *thread_vfs_init(void *data) {
     }
 
     umount(mountpoint);
-    vfs_fuse_init();
+//    vfs_fuse_init();
 
     // Add inotify watchers for paths in %{path.pkg}
     if (dconf_get_bool("pkgdir.inotify", 0) == 1)

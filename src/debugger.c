@@ -129,7 +129,9 @@ const char *debug_symtab_lookup(const char *symbol, const char *symtab) {
     return skip;
 }
 
+#endif	// defined(CONFIG_DEBUGGER)
 
+#if	defined(CONFIG_PROFILING)
 void profiling_dump(void) {
    char buf[32];
 
@@ -160,5 +162,4 @@ void profiling_toggle(void) {
 
    profiling_newmsg = 1;
 }
-
-#endif	// defined(CONFIG_DEBUGGER)
+#endif	// defined(CONFIG_PROFILING)

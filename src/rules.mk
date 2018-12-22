@@ -1,5 +1,5 @@
 bins += jailfs
-bins += warden
+
 lsd_lib := lib/libsd.a
 lsd_lib_so := lib/libsd.so
 
@@ -28,6 +28,7 @@ jailfs_objs += .obj/unix.o
 jailfs_objs += .obj/vfs.o
 warden_objs += .obj/warden.o
 
+# LSD - library of Safe Datatypes (and tools)
 lsd_objs += .obj/atomicio.o
 lsd_objs += .obj/balloc.o
 lsd_objs += .obj/dict.o
@@ -36,7 +37,6 @@ lsd_objs += .obj/list.o
 lsd_objs += .obj/str.o
 lsd_objs += .obj/timestr.o
 lsd_objs += .obj/tree.o
-
 
 lib/libsd.a: ${lsd_objs}
 	${AR} -cvq $@ $^

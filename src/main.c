@@ -116,6 +116,7 @@ int main(int argc, char **argv) {
       Log(LOG_WARNING, "You can disable uninteresting debug sources by setting config:[general]/debug.* to false");
    }
 
+#if	defined(CONFIG_MODULES)
    // Initialize configured modules.
    Log(LOG_INFO, "Loading plugins...");
    list_iter_p m_cur = list_iterator(Modules, FRONT);
@@ -126,6 +127,7 @@ int main(int argc, char **argv) {
 
      Log(LOG_INFO, "Plugin @ 0x%x", mod);
    } while ((mod = list_next(m_cur)));
+#endif	// defined(CONFIG_MODULES)
 
    // These are defined at the top of src/main.c
    Log(LOG_INFO, "Starting core threads...");
@@ -148,8 +150,10 @@ int main(int argc, char **argv) {
       i++;
    } while (i <= thr_cnt);
 
+#if	defined(CONFIG_DEBUGGER)
    // Test symbol lookup (needed for debugger) and generate log error if cannot find symtab...
    debug_symtab_lookup("Log", NULL);
+#endif
 
    // We are in flight, allow children to begin doing stuff & things!
    core_ready = 1;
@@ -158,10 +162,12 @@ int main(int argc, char **argv) {
 
    // Main loop for libev
    while (!conf.dying) {
+#if	defined(CONFIG_PROFILING)
       if (profiling_newmsg) {	// profiling events
          Log(LOG_DEBUG, "profiling: %s", profiling_msg);
          profiling_newmsg = 0;
       }
+#endif	// defined(CONFIG_PROFILING)
       ev_loop(evt_loop, 0);
    }
 

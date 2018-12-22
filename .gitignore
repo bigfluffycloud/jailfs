@@ -1,6 +1,8 @@
 # Leftovers from build (please do make clean!)
 .obj/*.o
 .obj/*.so
+.obj/*
+.obj/*/*
 cache/*
 cache/.*
 include/*

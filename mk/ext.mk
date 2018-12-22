@@ -19,7 +19,7 @@ ARCH := $(uname -m)
 kernel_headers_srcdir := ext/kernel-headers
 musl_srcdir := ext/musl
 musl_lib := lib/libc.so
-libs += ${musl_lib}
+#libs += ${musl_lib}
 
 lib/libc.so: ${musl_srcdir}/lib/libc.so
 #	cp -arvx ${musl_srcdir}/lib/* lib/
@@ -91,7 +91,7 @@ ${libbsd_srcdir}/autogen.sh:
 ####################################
 sqlite_srcdir := ext/sqlite
 sqlite_lib := lib/libsqlite.a
-libs += ${sqlite_lib}
+#libs += ${sqlite_lib}
 
 ${sqlite_lib}: ${sqlite_srcdir}/
 ${sqlite_srcdir}/lib:
@@ -113,7 +113,7 @@ fuse_srcdir := ext/libfuse/lib/
 fuse_objdir := .obj/libfuse/
 fuse_src += buffer fuse fuse_loop fuse_loop_mt
 fuse_src += fuse_lowlevel fuse_opt fuse_signals
-fuse_src += helper mount_util
+fuse_src += helper mount_util cuse_lowlevel
 fuse_src += mount
 #fuse_src += mount_bsd
 fuse_src += modules/subdir
@@ -142,12 +142,14 @@ include/fuse/fuse.h:
 ext/libtomcrypt/libtomcrypt.a ext/libtomcrypt/libtomcrypt.so:
 	CC=./bin/musl-gcc ${MAKE} -C ext/libtomcrypt -f makefile.shared
 
-lib/libtomcrypt.a: lib/libtomcrypt.so
+lib/libtomcrypt.a: # lib/libtomcrypt.so
+	cp ext/libtomcrypt/.libs/libtomcrypt.a lib/
+
 lib/libtomcrypt.so: ext/libtomcrypt/.libs/libtomcrypt.so
 	cp ext/libtomcrypt/.libs/* lib/
 
 libs += lib/libtomcrypt.a
-libs += lib/libtomcrypt.so
+#libs += lib/libtomcrypt.so
 
 ############
 # libmagic #
@@ -162,4 +164,3 @@ magic_objdir := .obj/libmagic
 distclean_targets += musl-clean
 extra_distclean += $(wild include/*.h)
 extra_distclean += $(wildcard lib/*.o lib/*.so lib/*.a lib/*.specs) bin/musl-gcc
-

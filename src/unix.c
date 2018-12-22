@@ -50,15 +50,19 @@ static void signal_handler(int signal) {
 
    if (signal == SIGSEGV) {
       stack_unwind();
+#if	defined(CONFIG_MODULES)
       if (in_module) {
          if (module_dying(signal) != 0)
             daemon_restart();
       } else
+#endif
          conf.dying = 1;
+#if	defined(CONFIG_PROFILING)
    } else if (signal == SIGUSR1) {
       profiling_dump();
    } else if (signal == SIGUSR2) {
       profiling_toggle();
+#endif
    } else if (signal == SIGHUP) {
       conf_reload();
    } else if (signal == SIGCHLD) { /* Prevent zombies */

@@ -66,8 +66,9 @@ dict *dconf_load(const char *file) {
       return false;
    }
 
+#if	defined(CONFIG_MODULES)
    Modules = create_list();
-
+#endif
    // This could use some cleanup... But it does work.
    // We need to use safer string functions...
    do {
@@ -137,11 +138,13 @@ dict *dconf_load(const char *file) {
 
          // Store value
          dict_add(cp, key, val);
+#if	defined(CONFIG_MODULES)
       } else if (strncasecmp(section, "modules", 8) == 0) {
          Log(LOG_DEBUG, "Loading module %s", skip);
 
          if (module_load(skip) != 0)
             errors++;
+#endif
       } else if (strncasecmp(section, "jail", 4) == 0) {
          // We ignore [jail] ection as it is for warden
          if (strncasecmp(skip, "@END", 4) == 0)
@@ -201,6 +204,7 @@ int dconf_write(dict *cp, const char *file) {
    if (dict_dump(cp, fp) < 0)
       errors++;
 
+#if	defined(CONFIG_MODULES)
    if (Modules) {
       Module *mp = NULL;
       list_iter_p mod_cur = list_iterator(Modules, FRONT);
@@ -214,7 +218,7 @@ int dconf_write(dict *cp, const char *file) {
       } while((mp = list_next(mod_cur)));
    } else
      Log(LOG_ERR, "conf_write: No Modules list");
-
+#endif	// defined(CONFIG_MODULES)
 
    // XXX: We need to add support here for saving jailconf
    if (errors > 0)

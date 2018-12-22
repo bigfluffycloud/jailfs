@@ -16,6 +16,9 @@ clean: ${clean_targets}
 
 distclean: ${distclean_targets} clean
 	${RM} ${distclean_objs} ${extra_distclean}
+	${RM} -r include/ lib/
+	mkdir -p include lib/modules
+	touch include/.keepme lib/.keepme lib/modules/.keepme
 
 clean-help:
 	@echo -e "*\tclean      - Clean for (re)building"

@@ -16,7 +16,7 @@
  */
 #if	!defined(__VFS_H)
 #define	__VFS_H
-//#define	FUSE_USE_VERSION 26
+#define	FUSE_USE_VERSION 34
 #include <fuse/fuse.h>
 #include <fuse/fuse_lowlevel.h>
 #include <fuse/fuse_opt.h>

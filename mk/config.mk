@@ -11,8 +11,9 @@
 #
 # enable gprof profiling (slower, noisy)
 CONFIG_PROFILING=n
+CONFIG_DEBUGGER=n
 
-# debug block allocator? should be unneeded
+# debug block allocator? should be unneeded as it slows it down
 CONFIG_DEBUG_BALLOC=n
 
 # strip binaries? (breaks debugging, makes smaller binaries)
@@ -47,20 +48,22 @@ endif
 
 CFLAGS += -I./include -I./src
 CFLAGS += -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -fPIC -D_GNU_SOURCE
-CFLAGS += -DFUSE_USE_VERSION=31
-warn_noerror := -Wall -Wno-unused -Wno-strict-aliasing
+#warn_noerror := -Wall -Wno-unused -Wno-strict-aliasing
 #warn_flags := ${warn_noerror} #-Werror
 warn_flags :=
 LDFLAGS := -L./lib/
-#LDFLAGS += -lc -lz -lcrypto -pthread -lrt -lsqlite3 
-#LDFLAGS += -lm -lev -lunwind -lmagic -ldl -larchive
-#LDFLAGS += -lbsd -ltomcrypt
+LDFLAGS += -lz -lcrypto -pthread -lrt -lsqlite3 
+LDFLAGS += -lm -lev -lunwind -lmagic -ldl -larchive
+LDFLAGS += -lbsd -ltomcrypt -lfuse
 lib_ldflags += -shared -ldl
 
 #################
 # Autoconfigure #
 #################
 ifeq (y, ${CONFIG_PROFILING})
-CFLAGS += -pg
-LDFLAGS += -pg
+CFLAGS += -pg -DCONFIG_PROFILING
+LDFLAGS += -pg -DCONFIG_PROFILING
+endif
+ifeq (y, ${CONFIG_DEBUGGER})
+CFLAGS += -DCONFIG_DEBUGGER
 endif
