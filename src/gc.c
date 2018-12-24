@@ -19,23 +19,13 @@
 #include "shell.h"
 
 extern BlockHeap *dlink_node_heap;
-extern BlockHeap *pkg_heap;
-extern BlockHeap *pkg_file_heap;
-extern BlockHeap *cache_entry_heap;
-extern BlockHeap *shell_hints_heap;
 
 int gc_all(void) {
      int freed = 0;
-     // XXX: Add some code to balloc:bh_garbagecollect to return freed items
-     blockheap_garbagecollect(cache_entry_heap);
+     freed += api_gc();
+     freed += shell_gc();
+     freed += vfs_gc();
+
      blockheap_garbagecollect(dlink_node_heap);
-//     blockheap_garbagecollect(pkg_heap);
-//     blockheap_garbagecollect(pkg_file_heap);
-     blockheap_garbagecollect(shell_hints_heap);
-/*
-     blockheap_garbagecollect(vfs_handle_heap);
-     blockheap_garbagecollect(vfs_watch_heap);
-     blockheap_garbagecollect(vfs_inode_heap);
-*/
      return 0;
 }

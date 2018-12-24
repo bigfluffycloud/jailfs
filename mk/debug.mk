@@ -10,16 +10,16 @@
 # No warranty of any kind. Good luck!
 #
 
-dbg/%.symtab: %
+dbg/%.symtab: bin/%
 	nm -Clp $< | \
 	awk '{ printf "%s %s %s\n", $$3, $$2, $$4 }' | \
 	egrep -v "(@@|__FUNCTION)" | sort -u > $@
 
-dbg/%.strings: %
+dbg/%.strings: bin/%
 	strings $< > $@
 
-debug_targets += $(foreach y,${bins},dbg/${y}.symtab)
-debug_targets += $(foreach y,${bins},dbg/${y}.strings)
+debug_targets += $(foreach y,${bins},dbg/$(notdir ${y}).symtab)
+debug_targets += $(foreach y,${bins},dbg/$(notdir ${y}).strings)
 debug_clean += ${debug_targets}
 
 debug: debug-pre ${debug_targets} debug-post

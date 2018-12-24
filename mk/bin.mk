@@ -9,7 +9,7 @@
 # No warranty of any kind. Good luck!
 #
 
-jailfs: ${jailfs_objs} lib/libsd.a
+bin/jailfs: ${jailfs_objs} lib/libsd.a
 	@echo "[LD] ($^) => $@"
 	${CC} -o $@ ${LDFLAGS} $^ ${libs} ${extra_libs}
 ifeq (${CONFIG_STRIP_BINS}, y)

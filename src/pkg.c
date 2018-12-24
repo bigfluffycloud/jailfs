@@ -46,6 +46,7 @@
 #include "cron.h"
 #include "shell.h"
 #include "pkg.h"
+#include "vfs.h"
 
 /* This seems to be a BSD thing- it's not fatal if missing, so stub it */
 #if	!defined(MAP_NOSYNC)
@@ -53,8 +54,8 @@
 #endif                                 /* !defined(MAP_NOSYNC) */
 
 // private module-global stuff 
-BlockHeap *pkg_heap = NULL;            	// BlockHeap for packages
-BlockHeap *pkg_file_heap = NULL;	// BlockHeap for package files
+BlockHeap *heap_pkg = NULL;            	// BlockHeap for packages
+BlockHeap *heap_pkg_file = NULL;	// BlockHeap for package files
 static dlink_list pkg_list;            	// List of currently opened packages
 static time_t pkg_lifetime = 0;        	// see pkg_init() for initialization
 
@@ -88,8 +89,8 @@ static void pkg_release(struct pkg_handle *pkg) {
       pkg->name = NULL;
    }
 
-   // Unlock the file 
-   flock(pkg->fd, LOCK_UN);
+   // Unlock the package source file 
+//   flock(pkg->fd, LOCK_UN);
 
    // close handle, if exists 
    if (pkg->fd) {
@@ -99,7 +100,7 @@ static void pkg_release(struct pkg_handle *pkg) {
 
    if ((ptr = pkg_findnode((struct pkg_handle *)pkg)) != NULL) {
       dlink_delete(ptr, &pkg_list);
-      blockheap_free(pkg_heap, ptr->data);
+      blockheap_free(heap_pkg, ptr->data);
    }
 }
 
@@ -155,7 +156,7 @@ struct pkg_handle *pkg_open(const char *path) {
    // try to find an existing handle for the package
    // If this fails, create one and cache it...
    if ((t = pkg_handle_byname(path)) == NULL) {
-      t = blockheap_alloc(pkg_heap);
+      t = blockheap_alloc(heap_pkg);
       t->name = str_dup(path);
 
       if ((t->fd = open(t->name, O_RDONLY)) < 0) {
@@ -164,12 +165,14 @@ struct pkg_handle *pkg_open(const char *path) {
          return NULL;
       }
 
+/*
       // Try to acquire an exclusive lock, fail if we cant 
       if (flock(t->fd, LOCK_EX | LOCK_NB) == -1) {
          Log(LOG_ERR, "failed locking package %s, bailing...", t->name);
          pkg_release(t);
          return NULL;
       }
+*/
 
       // Add handle to the cache list 
       dlink_add_tail_alloc(t, &pkg_list);
@@ -211,14 +214,14 @@ void pkg_unmap_file(struct pkg_file_mapping *p) {
    if (p->fd > 0)
       close(p->fd);
 
-   blockheap_free(pkg_file_heap, p);
+   blockheap_free(heap_pkg_file, p);
    p = NULL;
 }
 
 struct pkg_file_mapping *pkg_map_file(const char *path, size_t len, off_t offset) {
    struct pkg_file_mapping *p;
 
-   p = blockheap_alloc(pkg_file_heap);
+   p = blockheap_alloc(heap_pkg_file);
 
    p->pkg = str_dup(path);
    p->len = len;
@@ -231,13 +234,27 @@ struct pkg_file_mapping *pkg_map_file(const char *path, size_t len, off_t offset
    }
 
    if ((p->addr =
-        mmap(0, len, PROT_READ | PROT_EXEC, MAP_NOSYNC | MAP_PRIVATE,
+        mmap(0, len, PROT_READ, MAP_NOSYNC | MAP_PRIVATE,
              p->fd, offset)) == MAP_FAILED) {
       Log(LOG_ERR, "%s:mmap: %d:%s", __FUNCTION__, errno, strerror(errno));
       pkg_unmap_file(p);
    }
 
    return p;
+}
+
+struct archive *pkg_archive_open(const char *path) {
+   struct archive *ret = archive_read_new();
+   int r = -1;
+   archive_read_support_filter_all(ret);
+   archive_read_support_format_all(ret);
+   r = archive_read_open_filename(ret, path, 0);
+
+   if (r != ARCHIVE_OK) {
+      Log(LOG_ERR, "package %s is not valid: libarchive returned %d", path, r);
+      return NULL;
+   }
+   return ret;
 }
 
 //
@@ -276,16 +293,8 @@ int pkg_import(const char *path) {
    // Start transaction
    db_begin();
 
-   // Initialize our libarchive reader
-   a = archive_read_new();
-   archive_read_support_filter_all(a);
-   archive_read_support_format_all(a);
-   r = archive_read_open_filename(a, path, 0);
-
-   if (r != ARCHIVE_OK) {
-      Log(LOG_ERR, "package %s is not valid: libarchive returned %d", path, r);
-      return -1;
-   }
+   // Open the archive file
+   a = pkg_archive_open(path);
 
    // Add the package to the database & get the pkgid for it
    pkgid = db_pkg_add(path);
@@ -303,6 +312,7 @@ int pkg_import(const char *path) {
          break;
       }
 
+      // Get file attributes from libarchive
       const char *_f_name = archive_entry_pathname(aentry);
       const char *_f_owner = archive_entry_uname(aentry);
       const char *_f_group = archive_entry_gname(aentry);
@@ -312,6 +322,7 @@ int pkg_import(const char *path) {
       const char *_f_perm = archive_entry_strmode(aentry);
       const struct stat *st = archive_entry_stat(aentry); 
 
+      ////////////
       // XXX: Determine type more sanely
       if (*_f_perm == 'd')
          _f_type = 'd';
@@ -322,25 +333,22 @@ int pkg_import(const char *path) {
 
       // Add directories...
       if (_f_type == 'd') {
+         // Skip archive data section...
          archive_read_data_skip(a);
-         // XXX: Add to database
-         continue;
+         vfs_add_dir(pkgid, _f_name, _f_uid, _f_gid, _f_owner, _f_group, st->st_mode, time(NULL));
+      } else if (_f_type == 'l') {
+         vfs_add_link(pkgid, _f_name, _f_uid, _f_gid, _f_owner, _f_group, st->st_mode, time(NULL));
+      } else {
+         vfs_add_file(pkgid, _f_name, _f_uid, _f_gid, _f_owner, _f_group, st->st_size, st->st_mode, time(NULL));
       }
 
       if (dconf_get_bool("debug.pkg", 0) == 1)
          Log(LOG_DEBUG, "+ %s:%s (user: %d %s) (group: %d %s) mode=%o perms=%s size:%lu@%lu",
              basename(path), _f_name, _f_uid, _f_owner, _f_gid, _f_group, _f_mode, _f_perm, st->st_size, 0);
-
-      if (_f_type == 'l') {
-         // XXX: Save symlinks...
-      } else {
-         db_file_add(pkgid, _f_name, _f_type, _f_uid, _f_gid,
-                         _f_owner, _f_group, st->st_size,
-                         0, time(NULL), st->st_mode, _f_perm);
-      }
    }
 
    archive_read_close(a);
+
    if ((r = archive_read_free(a)) != ARCHIVE_OK)
       Log(LOG_ERR, "possible memory leak! archive_read_free() returned %d", r);
 
@@ -353,13 +361,57 @@ int pkg_import(const char *path) {
 }
 
 
+int pkg_extract_file(u_int32_t pkgid, const char *path) {
+   char       *tmp = NULL;
+   int         db_id = -1, r = 0;
+   struct archive *a;
+   struct archive_entry *aentry;
+   char _f_type = '-';
+
+   if (dconf_get_bool("debug.pkg", 0) == 1)
+      Log(LOG_DEBUG, "BEGIN extractfile <%d> %s", pkgid, basename(path));
+
+   // Find package by pkgid, so we can look up it's path....
+//   tmp = pkg_
+   // Open the archive file
+   a = pkg_archive_open(path);
+
+   // Add the package to the database & get the pkgid for it
+   pkgid = db_pkg_add(path);
+   Log(LOG_DEBUG, "package %s appears valid, assigning pkgid %d", path, pkgid);
+
+   // Add the achive's file entries to the database...
+   while (TRUE) {
+      r = archive_read_next_header(a, &aentry);
+      if (r == ARCHIVE_EOF)
+         break;
+
+      if (r != ARCHIVE_OK) {
+         Log(LOG_DEBUG, "pkg_import: libarchive read_next_header error %d: %s", r, archive_error_string(a));
+         break;
+      }
+
+      // Is this the file we came for?
+      
+   }
+   archive_read_close(a);
+
+   if ((r = archive_read_free(a)) != ARCHIVE_OK)
+      Log(LOG_ERR, "possible memory leak! archive_read_free() returned %d", r);
+
+   db_commit();
+
+   if (dconf_get_bool("debug.pkg", 0) == 1)
+      Log(LOG_INFO, "SUCCESS extract file to cache: <%d> %s", pkgid, basename(path));
+}
+
 void pkg_init(void) {
-   if (!(pkg_heap = blockheap_create(sizeof(struct pkg_handle),
+   if (!(heap_pkg = blockheap_create(sizeof(struct pkg_handle),
                          dconf_get_int("tuning.heap.pkg", 128), "pkg"))) {
       Log(LOG_EMERG, "pkg_init(): block allocator failed - pkg");
       raise(SIGTERM);
    }
-   if (!(pkg_file_heap = blockheap_create(sizeof(struct pkg_file_mapping),
+   if (!(heap_pkg_file = blockheap_create(sizeof(struct pkg_file_mapping),
                          dconf_get_int("tuning.heap.files", 128), "files"))) {
       Log(LOG_EMERG, "pkg_init(): block allocator failed - files");
       raise(SIGTERM);
@@ -371,6 +423,10 @@ void pkg_init(void) {
 }
 
 void pkg_fini(void) {
-   blockheap_destroy(pkg_heap);
-   blockheap_destroy(pkg_file_heap);
+   blockheap_destroy(heap_pkg);
+   blockheap_destroy(heap_pkg_file);
+}
+void pkg_garbagecollect(void) {
+   blockheap_garbagecollect(heap_pkg_file);
+   blockheap_garbagecollect(heap_pkg);
 }

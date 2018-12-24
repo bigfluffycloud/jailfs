@@ -20,6 +20,9 @@
  *		* log (log message handler)
  */
 #include <sys/signal.h>
+#include <sys/ioctl.h>
+#include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
@@ -32,7 +35,7 @@
 #include "threads.h"
 #include "gc.h"
 
-BlockHeap *shell_hints_heap = NULL;
+static BlockHeap *heap_shell_hints = NULL;
 
 // Shell prompt
 static char shell_prompt[64];
@@ -631,7 +634,7 @@ static char *shell_hints(const char *buf, int *color, int *bold) {
    if (strlen(buf) < 2)
       return NULL;
 
-   msg = blockheap_alloc(shell_hints_heap);
+   msg = blockheap_alloc(heap_shell_hints);
    memset(msg, 0, SHELL_HINT_MAX);
 
    // Static entries that will soon go away...
@@ -678,7 +681,7 @@ static char *shell_hints(const char *buf, int *color, int *bold) {
 }
 
 static void shell_hints_free(char *buf) {
-    blockheap_free(shell_hints_heap, buf);
+    blockheap_free(heap_shell_hints, buf);
 }
 
 void cmd_help(dict *args) {
@@ -708,10 +711,10 @@ void cmd_help(dict *args) {
 void *thread_shell_init(void *data) {
    char *line = NULL;
    thread_entry((dict *)data);
-   shell_hints_heap = blockheap_create(SHELL_HINT_MAX, 32, "shell hints");
+   heap_shell_hints = blockheap_create(SHELL_HINT_MAX, 32, "shell hints");
 
    // Configure the input widget appropriately
-   linenoiseSetMultiLine(1);
+   linenoiseSetMultiLine(0);
    linenoiseSetCompletionCallback(shell_completion);
    linenoiseSetHintsCallback(shell_hints);
    linenoiseSetFreeHintsCallback((void *)shell_hints_free);
@@ -725,8 +728,16 @@ void *thread_shell_init(void *data) {
    Log(LOG_SHELL, "Try 'help' for a list of available commands or 'shutdown' to halt the service\nTab completion is enabled.");
    shell_level_set("main");
 
+   // Support console resizing
+   struct winsize w;
+   int	lines = -1, columns = -1;
+
    // As long as the dying flag has not been set, we continue to run
    while (!conf.dying) {
+      ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+      lines = w.ws_row;
+      columns = w.ws_col;
+      printf("[%d;0[K", lines-1);
       line = linenoise(shell_prompt);				// Show prompt
 
       if (line == NULL)
@@ -749,7 +760,11 @@ void *thread_shell_init(void *data) {
 void *thread_shell_fini(void *data) {
    linenoiseHistorySave("state/.shell.history");	// Save history
    log_close();
-   blockheap_destroy(shell_hints_heap);
+   blockheap_destroy(heap_shell_hints);
    thread_exit((dict *)data);
    return NULL;
+}
+
+void shell_gc(void) {
+   blockheap_garbagecollect(heap_shell_hints);
 }

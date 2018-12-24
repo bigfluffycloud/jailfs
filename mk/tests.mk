@@ -28,7 +28,7 @@ clean-pkgs:
 
 test: ${bins} umount
 	rm -f examples/auth-dns/state/jailfs.pid
-	./jailfs examples/auth-dns
+	./bin/jailfs examples/auth-dns
 
 qa:
 	${MAKE} clean world testpkg test umount

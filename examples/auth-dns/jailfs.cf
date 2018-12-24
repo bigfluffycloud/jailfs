@@ -60,6 +60,7 @@ debug.db=false
 debug.jail=true
 debug.mem=true
 debug.net=false
+debug.pkg=false
 debug.threads=false
 debug.vfs=true
 debug.vfs.mime=false

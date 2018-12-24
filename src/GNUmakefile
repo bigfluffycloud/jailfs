@@ -1,5 +1,5 @@
 # Convenience makefile...
 
-all build clean world testpkg umount test qa:
+all build clean distclean world testpkg umount test qa:
 	${MAKE} -C ../ $@
 

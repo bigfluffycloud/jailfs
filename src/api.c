@@ -24,12 +24,12 @@
 #include "hooks.h"
 #include "api.h"
 
-static BlockHeap *api_msg_heap = NULL;
+static BlockHeap *heap_api_msg = NULL;
 
 APImsg *api_create_message(const char *sender, const char *dest, const char *cmd) {
     APImsg *p = NULL;
 
-    if (!(p = blockheap_alloc(api_msg_heap))) {
+    if (!(p = blockheap_alloc(heap_api_msg))) {
        Log(LOG_EMERG, "out of memory attempting to create API message. halting!");
        raise(SIGTERM);
     }
@@ -48,7 +48,7 @@ APImsg *api_create_message(const char *sender, const char *dest, const char *cmd
 int api_destroy_message(APImsg *msg) {
     dict_free(msg->req);
     dict_free(msg->res);
-    blockheap_free(api_msg_heap, msg);
+    blockheap_free(heap_api_msg, msg);
     msg = NULL;
     return 0;
 }
@@ -57,16 +57,20 @@ int api_destroy_message(APImsg *msg) {
 // main thread (master) //
 //////////////////////////
 int api_master_init(void) {
-    api_msg_heap = blockheap_create(sizeof(APImsg), dconf_get_int("tuning.heap.api-msg", 512), "api messages");
+    heap_api_msg = blockheap_create(sizeof(APImsg), dconf_get_int("tuning.heap.api-msg", 512), "api messages");
 
     return 0;
 }
 
 int api_master_fini(void) {
-    blockheap_destroy(api_msg_heap);
-    api_msg_heap = NULL;
+    blockheap_destroy(heap_api_msg);
+    heap_api_msg = NULL;
 
     return 0;
+}
+
+void api_gc(void) {
+    blockheap_garbagecollect(heap_api_msg);
 }
 
 ///////////////////////

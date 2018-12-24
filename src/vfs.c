@@ -51,14 +51,13 @@
 ///////////////////
 // Private stuff //
 ///////////////////
-// Heaps & Lists
-BlockHeap *vfs_handle_heap = NULL;
-BlockHeap *vfs_watch_heap = NULL;
-BlockHeap  *vfs_inode_heap;
-BlockHeap  *cache_entry_heap = NULL;
+static BlockHeap *heap_vfs_cache = NULL,
+          *heap_vfs_handle = NULL,
+          *heap_vfs_inode = NULL,
+          *heap_vfs_watch = NULL;
 dlink_list vfs_watch_list;
-static char *mountpoint = NULL;
 static pthread_mutex_t cache_mutex;
+static char *mountpoint = NULL;
 static char *cache_path = NULL;
 static dict *cache_dict = NULL;
 
@@ -67,15 +66,6 @@ static ev_io vfs_fuse_evt;
 static struct fuse_chan *vfs_fuse_chan = NULL;
 static struct fuse_session *vfs_fuse_sess = NULL;
 static struct fuse_args vfs_fuse_args = { 0, NULL, 0 };
-
-// Cache stuff
-struct cache_entry {
-   char 	jail_path[PATH_MAX];		// Path within the jail
-   char		cache_path[PATH_MAX];		// Temporary file path
-   u_int32_t	pkgid;
-   u_int32_t	inode;
-};
-typedef struct cache_entry cache_entry_t;
 
 ////////////
 // inodes //
@@ -128,19 +118,6 @@ static void fill_statbuf(ext2_ino_t ino, pkg_inode_t * inode, struct stat *st) {
 }
 #endif
 
-void vfs_inode_init(void) {
-   if (!
-       (vfs_inode_heap =
-        blockheap_create(sizeof(struct pkg_inode),
-                         dconf_get_int("tuning.heap.inode", 128), "pkg"))) {
-      Log(LOG_EMERG, "inode_init(): block allocator failed");
-      raise(SIGTERM);
-   }
-}
-
-void vfs_inode_fini(void) {
-   blockheap_destroy(vfs_inode_heap);
-}
 
 ////////////////////
 // fuse interface //
@@ -250,7 +227,7 @@ void vfs_op_getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
       sb.st_size = i->st_size;
       sb.st_uid = i->st_uid;
       sb.st_gid = i->st_gid;
-      blockheap_free(vfs_inode_heap, i);
+      blockheap_free(heap_vfs_inode, i);
    }
 
    // Did we get a valid response?
@@ -292,7 +269,7 @@ void vfs_op_releasedir(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi
 
 void vfs_op_open(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
    struct vfs_handle *fh;
-   fh = blockheap_alloc(vfs_handle_heap);
+   fh = blockheap_alloc(heap_vfs_handle);
    fi->fh = ((uint64_t) fh);
    pkg_inode_t *i;
    struct stat sb;
@@ -324,7 +301,7 @@ void vfs_op_open(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
       }
    }
 
-   blockheap_free(vfs_inode_heap, i);
+   blockheap_free(heap_vfs_inode, i);
    fuse_reply_open(req, fi);
 }
 
@@ -518,15 +495,14 @@ void vfs_fuse_init(void) {
    ev_io_init(&vfs_fuse_evt, vfs_fuse_read_cb, fuse_chan_fd(vfs_fuse_chan), EV_READ);
    ev_io_start(evt_loop, &vfs_fuse_evt);
 #endif
-
-   // Set up our various blockheaps 
-   vfs_handle_heap = blockheap_create(sizeof(vfs_handle_t), dconf_get_int("tuning.heap.vfs_handle", 128), "vfs_handle");
 }
 
 // garbage collector
-void vfs_garbagecollect(void) {
-   blockheap_garbagecollect(vfs_handle_heap);
-   blockheap_garbagecollect(vfs_watch_heap);
+void vfs_gc(void) {
+   blockheap_garbagecollect(heap_vfs_cache);
+   blockheap_garbagecollect(heap_vfs_handle);
+   blockheap_garbagecollect(heap_vfs_inode);
+   blockheap_garbagecollect(heap_vfs_watch);
 }
 
 ////////////
@@ -541,7 +517,25 @@ void *thread_vfs_init(void *data) {
     thread_entry((dict *)data);
     cache = dconf_get_str("path.cache", NULL);
     cache_dict = dict_new();
-    cache_entry_heap = blockheap_create(sizeof(cache_entry_t), dconf_get_int("tuning.heap.files", 1024), "cache entries");
+    if (!(heap_vfs_cache = blockheap_create(sizeof(vfs_cache_entry), dconf_get_int("tuning.heap.files", 1024), "cache entries"))) {
+       Log(LOG_EMERG, "vfs_init: block allocator failed");
+       raise(SIGABRT);
+    }
+
+    if (!(heap_vfs_handle = blockheap_create(sizeof(vfs_handle_t), dconf_get_int("tuning.heap.vfs_handle", 128), "vfs_handle"))) {
+       Log(LOG_EMERG, "vfs_init: block allocator failed");
+       raise(SIGABRT);
+    }
+
+    if (!(heap_vfs_watch = blockheap_create(sizeof(vfs_watch_t), dconf_get_int("tuning.heap.vfs_watch", 32), "vfs_watch"))) {
+       Log(LOG_EMERG, "vfs_init: block allocator failed");
+       raise(SIGABRT);
+    }
+
+    if (!(heap_vfs_inode = blockheap_create(sizeof(struct pkg_inode), dconf_get_int("tuning.heap.inode", 128), "pkg"))) {
+       Log(LOG_EMERG, "vfs_init(): block allocator failed");
+       raise(SIGABRT);
+    }
 
     // If .keepme exists in cachedir (from git), remove it or mount will fail
     char tmppath[PATH_MAX];
@@ -564,8 +558,8 @@ void *thread_vfs_init(void *data) {
     }
 
     // Schedule garbage collection
-    evt_timer_add_periodic(vfs_garbagecollect, "gc:vfs", dconf_get_int("tuning.timer.vfs_gc", 1200));
-    //hook_register("gc", vfs_garbagecollect);
+    evt_timer_add_periodic(vfs_gc, "gc:vfs", dconf_get_int("tuning.timer.vfs_gc", 1200));
+    //hook_register_interest("gc", vfs_gc);
 
     // Mount the virtual file system
     if ((mountpoint = dconf_get_str("path.mountpoint", NULL)) == NULL) {
@@ -612,8 +606,6 @@ void *thread_vfs_fini(void *data) {
    dict *args = (dict *)data;
    char *mp = NULL;
 
-   vfs_watch_fini();
-
    if ((mountpoint = dconf_get_str("path.mountpoint", NULL)) != NULL)
       umount(mountpoint);
 
@@ -622,24 +614,12 @@ void *thread_vfs_fini(void *data) {
          umount(mp);
    }
    vfs_fuse_fini();
-   vfs_inode_fini();
    dict_free(cache_dict);
-   blockheap_destroy(cache_entry_heap);
+   blockheap_destroy(heap_vfs_cache);
+   blockheap_destroy(heap_vfs_inode);
+   blockheap_destroy(heap_vfs_watch);
    thread_exit((dict *)data);
    return data;
-}
-
-
-// Thread destructor
-void *thread_cache_fini(void *data) {
-}
-
-// Request a new file name
-int cache_new_item(char *buf) {
-    if (buf == NULL)
-       return -1;
-
-    return 0;
 }
 
 /////////////////////
@@ -716,14 +696,14 @@ void vfs_inotify_evt_get(struct ev_loop *loop, ev_io * w, int revents) {
    }
 }
 vfs_watch_t *vfs_watch_add(const char *path) {
-   vfs_watch_t *wh = blockheap_alloc(vfs_watch_heap);
+   vfs_watch_t *wh = blockheap_alloc(heap_vfs_watch);
 
    wh->mask = IN_CLOSE_WRITE | IN_MOVED_TO | IN_MOVED_FROM | IN_DELETE | IN_DELETE_SELF;
    memcpy(wh->path, path, sizeof(wh->path));
 
    if ((wh->fd = inotify_add_watch(vfs_inotify_fd, path, wh->mask)) <= 0) {
       Log(LOG_ERR, "failed creating vfs watcher for path %s", wh->path);
-      blockheap_free(vfs_watch_heap, wh);
+      blockheap_free(heap_vfs_watch, wh);
       return NULL;
    }
 
@@ -743,7 +723,7 @@ int vfs_watch_remove(vfs_watch_t * watch) {
 
    if ((ptr = vfs_watch_findnode(watch)) != NULL) {
       dlink_delete(ptr, &vfs_watch_list);
-      blockheap_free(vfs_watch_heap, ptr->data);
+      blockheap_free(heap_vfs_watch, ptr->data);
    }
 
    return rv;
@@ -769,12 +749,6 @@ int vfs_watch_init(void) {
    ev_io_init(&vfs_inotify_evt, vfs_inotify_evt_get, vfs_inotify_fd, EV_READ);
    ev_io_start(evt_loop, &vfs_inotify_evt);
 
-   /*
-    * set up the blockheap 
-    */
-   vfs_watch_heap =
-       blockheap_create(sizeof(vfs_watch_t),
-                        dconf_get_int("tuning.heap.vfs_watch", 32), "vfs_watch");
 
    /*
     * add all the paths in the config file 
@@ -793,6 +767,98 @@ int vfs_watch_init(void) {
    return 0;
 }
 
-void vfs_watch_fini(void) {
-   blockheap_destroy(vfs_watch_heap);
+////////////////
+// cache bits //
+////////////////
+int vfs_add_dir(int pkgid, const char *path, uid_t uid,
+                gid_t gid, const char *owner, const char *group,
+                mode_t mode, time_t ctime) {
+   Log(LOG_DEBUG, "vfs_add_dir: %s", path);
+   return vfs_add_path('d', pkgid, path, uid, gid, owner, group, mode, 0, ctime);
+}
+
+int vfs_add_link(int pkgid, const char *path, uid_t uid,
+                 gid_t gid, const char *owner, const char *group,
+                 mode_t mode, time_t ctime) {
+   Log(LOG_DEBUG, "vfs_add_link: %s", path);
+   return vfs_add_path('l', pkgid, path, uid, gid, owner, group, mode, 0, ctime);
+}
+
+int vfs_add_file(int pkgid, const char *path, uid_t uid, gid_t gid, const char *owner, const char *group,
+                 mode_t mode, size_t size, time_t ctime) {
+   Log(LOG_DEBUG, "vfs_add_file: %s", path);
+   return vfs_add_path('f', pkgid, path, uid, gid, owner, group, mode, size, ctime);
+}
+
+// backend function that does the actual heavy lifting...
+int vfs_add_path(const char type, int pkgid, const char *path, uid_t uid, gid_t gid, const char *owner, const char *group,
+                 mode_t mode, size_t size, time_t ctime) {
+    vfs_cache_entry *fe = NULL;
+
+    if ((type != 'd') && (fe = vfs_find(path))) {
+       Log(LOG_ERR, "vfs_add_path: %d:%s already exists in pkg %d", pkgid, path, fe->pkgid);
+       return -1;
+    }
+
+    if (!(fe = blockheap_alloc(heap_vfs_cache))) {
+       Log(LOG_ERR, "vfs_add_path: error allocating memory");
+       return -1; 
+    }
+
+    // Set up the cache entry structure
+    memset(fe, 0, sizeof(vfs_cache_entry));
+    memcpy(fe->path, path, sizeof(fe->path)-1);
+    memcpy(fe->owner, owner, sizeof(fe->owner)-1);
+    memcpy(fe->group, group, sizeof(fe->group)-1);
+    fe->pkgid = pkgid;
+    fe->uid = uid;
+    fe->gid = gid;
+    fe->mode = mode;
+    fe->size = size;
+    fe->ctime = ctime;
+
+    switch (type) {
+       case 'd':
+          fe->type = PKG_FTYPE_DIR;
+          break;
+       case 'f':
+          fe->type = PKG_FTYPE_FILE;
+          break;
+       case 'l':
+          fe->type = PKG_FTYPE_LINK;
+          break;
+       case 'D':
+          fe->type = PKG_FTYPE_DEV;
+          break;
+       case 'F':
+          fe->type = PKG_FTYPE_FIFO;
+          break;
+    }
+
+    Log(LOG_DEBUG, "vfs_add_path: Added <%d> %c:%s", pkgid, type, path);
+    return 0;
+}
+
+// Find a cache entry
+vfs_cache_entry *vfs_find(const char *path) {
+}
+
+int vfs_unpack_tempfile(vfs_cache_entry *fe) {
+    char *path = NULL;
+
+    if (fe == NULL)
+       return -1;
+
+    if (fe->refcnt > 0) {
+       // Find handle for existing file and return it instead
+    }
+
+    // We haven't extracted it yet...
+    if (fe->cache_path[0] == NULL) {
+       path = pkg_extract_file(fe->pkgid, fe->path);
+       memcpy(fe->cache_path, path, sizeof(fe->cache_path)-1);
+    }
+
+    fe->refcnt++;
+    return 0;
 }

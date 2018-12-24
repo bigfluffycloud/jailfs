@@ -48,7 +48,7 @@ musl-clean:
 #######################
 ev_lib := lib/libev.so
 ev_srcdir := ext/libev/
-libs += ${ev_lib}
+#libs += ${ev_lib}
 
 ${ev_lib}: ${ev_srcdir}/libev.so
 	${MAKE} -C ${ev_srcdir} DESTDIR=${PWD} install
@@ -68,7 +68,7 @@ ${ev_srcdir}/configure:
 ##################################
 libbsd_lib := lib/libbsd.a
 libbsd_srcdir := ext/libbsd
-libs += ${libbsd_lib}
+#libs += ${libbsd_lib}
 
 ${libbsd_lib}: ${libbsd_srcdir}/src/.libs/libbsd.a
 	${MAKE} -C ${libbsd_srcdir} DESTDIR=${PWD} install
