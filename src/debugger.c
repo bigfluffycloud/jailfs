@@ -17,7 +17,7 @@
  */
 #if	defined(CONFIG_DEBUGGER)
 #include <sys/gmon.h>
-#include <lsd.h>
+#include <lsd/lsd.h>
 #include "debugger.h"
 #include "shell.h"
 #include "conf.h"

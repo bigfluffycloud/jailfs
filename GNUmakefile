@@ -24,6 +24,7 @@ include mk/ext.mk
 
 # Project rules
 include doc/rules.mk
+include lsd/rules.mk
 include src/rules.mk
 include tests/rules.mk
 

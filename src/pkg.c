@@ -40,7 +40,7 @@
 #include <fcntl.h>
 #include <archive.h>
 #include <archive_entry.h>
-#include <lsd.h>
+#include <lsd/lsd.h>
 #include "conf.h"
 #include "database.h"
 #include "cron.h"
@@ -426,6 +426,7 @@ void pkg_fini(void) {
    blockheap_destroy(heap_pkg);
    blockheap_destroy(heap_pkg_file);
 }
+
 void pkg_garbagecollect(void) {
    blockheap_garbagecollect(heap_pkg_file);
    blockheap_garbagecollect(heap_pkg);

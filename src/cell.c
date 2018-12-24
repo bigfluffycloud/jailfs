@@ -17,7 +17,7 @@
  * jail. Ideally, we will be running in a clean namespace, with no
  * privileges.
  */
-#include <lsd.h>
+#include <lsd/lsd.h>
 #include "conf.h"
 #include "shell.h"
 #include "threads.h"

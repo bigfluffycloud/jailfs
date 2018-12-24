@@ -15,7 +15,7 @@
 #if	!defined(__CONF_H)
 #define	__CONF_H
 #include <fcntl.h>
-#include <lsd.h>
+#include <lsd/lsd.h>
 
 struct conf {
    int         dying;

@@ -14,7 +14,7 @@
 #if	!defined(__threads_h)
 #define	__threads_h
 #include <pthread.h>
-#include <lsd.h>
+#include <lsd/lsd.h>
 
 typedef struct thread {
    pthread_t 	thr_info;

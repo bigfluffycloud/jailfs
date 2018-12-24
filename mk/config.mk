@@ -46,7 +46,7 @@ ifeq (y, ${CONFIG_MODULES})
 CFLAGS += -DMODULES
 endif
 
-CFLAGS += -I./include -I./src
+CFLAGS += -I./include -I. -I./src
 CFLAGS += -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -fPIC -D_GNU_SOURCE
 #warn_noerror := -Wall -Wno-unused -Wno-strict-aliasing
 #warn_flags := ${warn_noerror} #-Werror

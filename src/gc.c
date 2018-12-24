@@ -14,7 +14,7 @@
  * src/gc.c
  * 	Garbage collection tasks managed by the main thread
  */
-#include <lsd.h>
+#include <lsd/lsd.h>
 #include "vfs.h"
 #include "shell.h"
 

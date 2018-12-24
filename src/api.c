@@ -17,7 +17,7 @@
  *	We try to provide a thread safe way to commnicate
  * across threads and dispatch commands.
  */
-#include <lsd.h>
+#include <lsd/lsd.h>
 #include "conf.h"
 #include "memory.h"
 #include "shell.h"

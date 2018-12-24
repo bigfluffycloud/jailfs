@@ -48,27 +48,13 @@ struct vfs_fake_stat {
    char        path[PATH_MAX];
 };
 
-struct CacheItem {
-   int dirty;
-   dict *cache;
-};
-typedef struct CacheItem CacheItem_t;
-
 typedef struct vfs_handle vfs_handle_t;
 typedef struct vfs_watch vfs_watch_t;
-
 extern int  vfs_dir_walk(void);
-
-extern BlockHeap *vfs_handle_heap;
-extern BlockHeap *vfs_inode_heap;
-extern BlockHeap *vfs_watch_heap;
-
 extern u_int32_t vfs_root_inode;
 extern dlink_list vfs_watch_list;
-
 extern void vfs_fuse_fini(void);
 extern void vfs_fuse_init(void);
-
 extern void vfs_op_getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi);
 extern void vfs_op_access(fuse_req_t req, fuse_ino_t ino, int mask);
 extern void vfs_op_readlink(fuse_req_t req, fuse_ino_t ino);
@@ -97,11 +83,9 @@ extern void vfs_op_create(fuse_req_t req, fuse_ino_t ino, const char *name, mode
 
 extern void *thread_vfs_init(void *data);
 extern void *thread_vfs_fini(void *data);
-
-extern int  vfs_watch_init(void);
-extern void vfs_watch_fini(void);
 extern vfs_watch_t *vfs_watch_add(const char *path);
 extern int  vfs_watch_remove(vfs_watch_t * watch);
+
 struct pkg_inode {
    u_int32_t   st_ino;
    mode_t      st_mode;
@@ -116,5 +100,40 @@ typedef struct pkg_inode pkg_inode_t;
 
 extern void vfs_inode_init(void);
 extern void vfs_inode_fini(void);
+
+///////////////////
+// caching stuff //
+///////////////////
+struct vfs_cache_entry {
+   char path[PATH_MAX];		// VFS path
+   char cache_path[PATH_MAX];	// hash to find this in the cache
+   u_int32_t pkgid;		// Owner package
+   size_t size;			// size in bytes
+   u_int16_t refcnt;		// reference count
+   enum { PKG_FTYPE_NONE = 0, PKG_FTYPE_LINK, PKG_FTYPE_DIR, PKG_FTYPE_FILE, PKG_FTYPE_FIFO, PKG_FTYPE_BLOCK, PKG_FTYPE_DEV } type;
+
+   // Permissions
+   uid_t uid;
+   gid_t gid;
+   char owner[32];
+   char group[32];
+   mode_t mode;
+   // Attributes
+   time_t ctime,		// created time
+          mtime,		// modified time
+          atime;		// access time
+};
+typedef struct vfs_cache_entry vfs_cache_entry;
+
+// Add stuff to the VFS cache
+extern int vfs_add_dir(int pkgid, const char *path, uid_t uid, gid_t gid, const char *owner, const char *group, mode_t mode, time_t ctime);
+extern int vfs_add_link(int pkgid, const char *path, uid_t uid, gid_t gid, const char *owner, const char *group, mode_t mode, time_t ctime);
+extern int vfs_add_file(int pkgid, const char *path, uid_t uid, gid_t gid, const char *owner, const char *group, mode_t mode, size_t size, time_t ctime);
+
+// backend that does all the heavy lifting...
+extern int vfs_add_path(const char type, int pkgid, const char *path, uid_t uid, gid_t gid, const char *owner, const char *group, mode_t mode, size_t size, time_t ctime);
+
+// Look up a path, either returning NULL (maybe setting errno) or a valid cache entry
+extern vfs_cache_entry *vfs_find(const char *path);
 
 #endif	// !defined(__VFS_H)

@@ -11,7 +11,7 @@
  *
  * No warranty of any kind. Good luck!
  */
-#include <lsd.h>
+#include <lsd/lsd.h>
 // This is sloppy.. We need to clean up the headers...
 #include "conf.h"
 #include "unix.h"

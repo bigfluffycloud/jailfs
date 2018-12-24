@@ -12,7 +12,7 @@
  * No warranty of any kind. Good luck!
  */
 /* Thread pools */
-#include <lsd.h>
+#include <lsd/lsd.h>
 #include "shell.h"
 #include "threads.h"
 #include "unix.h"

@@ -27,7 +27,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <unistd.h>
-#include <lsd.h>
+#include <lsd/lsd.h>
 #include "linenoise.h"
 #include "shell.h"
 #include "unix.h"

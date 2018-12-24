@@ -14,7 +14,7 @@
  * src/cron.c:
  *	Periodic event handler support
  */
-#include <lsd.h>
+#include <lsd/lsd.h>
 #include "cron.h"
 #include "conf.h"
 #include "ev.h"

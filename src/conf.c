@@ -21,7 +21,7 @@
  * Thanks!!
  */
 #include <strings.h>
-#include <lsd.h>
+#include <lsd/lsd.h>
 #include "conf.h"
 #include "module.h"
 #include "shell.h"

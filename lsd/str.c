@@ -18,8 +18,8 @@
 #include <errno.h>
 #include <time.h>
 #include <stdio.h>
-#include <lsd.h>
-#include "str.h"
+#include <lsd/lsd.h>
+#include <lsd/str.h>
 
 char       *str_dup(const char *str) {
    register char *ptr = NULL;

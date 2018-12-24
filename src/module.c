@@ -15,7 +15,7 @@
 #include <dlfcn.h>
 #include <setjmp.h>
 #include <strings.h>
-#include <lsd.h>
+#include <lsd/lsd.h>
 #include "shell.h"
 #include "module.h"
 #include "conf.h"

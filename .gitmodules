@@ -7,9 +7,6 @@
 [submodule "ext/libarchive"]
 	path = ext/libarchive
 	url = https://github.com/libarchive/libarchive.git
-[submodule "ext/sqlite"]
-	path = ext/sqlite
-	url = https://github.com/mackyle/sqlite.git
 [submodule "ext/linenoise"]
 	path = ext/linenoise
 	url = https://github.com/antirez/linenoise.git
@@ -19,9 +16,6 @@
 [submodule "ext/libbsd"]
 	path = ext/libbsd
 	url = https://github.com/freedesktop/libbsd.git
-[submodule "ext/nosqlite"]
-	path = ext/nosqlite
-	url = https://github.com/aaashun/nosqlite.git
 [submodule "ext/libtomcrypt"]
 	path = ext/libtomcrypt
 	url = https://github.com/libtom/libtomcrypt.git
@@ -31,12 +25,6 @@
 [submodule "ext/libev"]
 	path = ext/libev
 	url = https://github.com/enki/libev.git
-[submodule "ext/llvm"]
-	path = ext/llvm
-	url = https://github.com/llvm-mirror/llvm.git
-[submodule "ext/clang"]
-	path = ext/clang
-	url = https://github.com/llvm-mirror/clang.git
 [submodule "ext/libmagic"]
 	path = ext/libmagic
 	url = https://github.com/threatstack/libmagic.git

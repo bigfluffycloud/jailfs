@@ -14,7 +14,7 @@
  * src/warden.c:
  *	Warden manages a bunch of jailfs based jails
  */
-#include <lsd.h>
+#include <lsd/lsd.h>
 #include <stdio.h>
 int main(int argc, char **argv) {
     printf("Warden is not yet ready, but hopefully will exist by 1.1 release!\n");

@@ -5,7 +5,7 @@
  * *ALL* strings, *ALL* structs ***MUST*** be allocated
  * as we cross thread-boundaries in the MLS/DPS code
  */
-#include <lsd.h>
+#include <lsd/lsd.h>
 #include "hooks.h"
 #include "shell.h"
 

@@ -19,7 +19,6 @@
  * copyright: 2008-2018 Bigfluffy.cloud, All rights reserved.
  *   license: MIT
  */
-#include <lsd.h>
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/mount.h>
@@ -31,7 +30,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <lsd.h>
+#include <lsd/lsd.h>
 #include <sys/signal.h>
 #include <errno.h>
 #include <dirent.h>
@@ -221,6 +220,7 @@ void vfs_op_getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
    struct stat sb;
    Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
 
+/*
    if ((i = db_query(QUERY_INODE, "SELECT * FROM files WHERE inode = %d", (u_int32_t) ino)) != NULL) {
       sb.st_ino = ino;
       sb.st_mode = i->st_mode;
@@ -229,7 +229,7 @@ void vfs_op_getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
       sb.st_gid = i->st_gid;
       blockheap_free(heap_vfs_inode, i);
    }
-
+*/
    // Did we get a valid response?
    if (sb.st_ino) {
       fuse_reply_attr(req, &sb, 0.0);
@@ -276,6 +276,7 @@ void vfs_op_open(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
    Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
 
    // Check if a spillover file exists
+/*
    if ((i = db_query(QUERY_INODE, "SELECT * FROM spillover WHERE inode = %d", (u_int32_t) ino))) {
      // if file doesn't exist in cache but exist in spillover, extract to cache
      //
@@ -288,7 +289,7 @@ void vfs_op_open(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
      // if file exists in cache; use it
      //
    }
-
+*/
    // Nope, it doesn't exist
    if (!i) {
       // If process didn't use O_CREAT, return not found
@@ -794,6 +795,17 @@ int vfs_add_file(int pkgid, const char *path, uid_t uid, gid_t gid, const char *
 int vfs_add_path(const char type, int pkgid, const char *path, uid_t uid, gid_t gid, const char *owner, const char *group,
                  mode_t mode, size_t size, time_t ctime) {
     vfs_cache_entry *fe = NULL;
+
+    if (pkgid < 1) {
+       Log(LOG_ERR, "vfs_add_path: pkgid %d is not valid (<1)", pkgid);
+       return -1;
+    }
+
+    if (path == NULL || *path == NULL) {
+       Log(LOG_ERR, "vfs_add_path: in pkg %d got NULL path", pkgid);
+       return -1;
+    }
+
 
     if ((type != 'd') && (fe = vfs_find(path))) {
        Log(LOG_ERR, "vfs_add_path: %d:%s already exists in pkg %d", pkgid, path, fe->pkgid);
