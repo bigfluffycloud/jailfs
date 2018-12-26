@@ -124,13 +124,6 @@ struct vfs_cache_entry {
           atime;		// access time
 };
 typedef struct vfs_cache_entry vfs_cache_entry;
-
-// Add stuff to the VFS cache
-extern int vfs_add_dir(int pkgid, const char *path, uid_t uid, gid_t gid, const char *owner, const char *group, mode_t mode, time_t ctime);
-extern int vfs_add_link(int pkgid, const char *path, uid_t uid, gid_t gid, const char *owner, const char *group, mode_t mode, time_t ctime);
-extern int vfs_add_file(int pkgid, const char *path, uid_t uid, gid_t gid, const char *owner, const char *group, mode_t mode, size_t size, time_t ctime);
-
-// backend that does all the heavy lifting...
 extern int vfs_add_path(const char type, int pkgid, const char *path, uid_t uid, gid_t gid, const char *owner, const char *group, mode_t mode, size_t size, time_t ctime);
 
 // Look up a path, either returning NULL (maybe setting errno) or a valid cache entry

@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
    evt_timer_add_periodic(gc_all,
      "gc.blockheap",
       timestr_to_time(dconf_get_str("tuning.timer.blockheap_gc", NULL), 60));
-   api_master_init();				// Initialize MASTER thread
+   api_init();				// Initialize MASTER thread
    conf.dict = dconf_load("jailfs.cf");		// Load config
    log_open(dconf_get_str("path.log", "file://jailfs.log"));
    cron_init();					// Periodic events

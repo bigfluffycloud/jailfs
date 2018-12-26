@@ -53,38 +53,20 @@ int api_destroy_message(APImsg *msg) {
     return 0;
 }
 
-//////////////////////////
-// main thread (master) //
-//////////////////////////
-int api_master_init(void) {
-    heap_api_msg = blockheap_create(sizeof(APImsg), dconf_get_int("tuning.heap.api-msg", 512), "api messages");
-
-    return 0;
-}
-
-int api_master_fini(void) {
-    blockheap_destroy(heap_api_msg);
-    heap_api_msg = NULL;
-
-    return 0;
-}
-
 void api_gc(void) {
     blockheap_garbagecollect(heap_api_msg);
 }
 
-///////////////////////
-// All other threads //
-///////////////////////
 int api_init(void) {
-    // Do stuff and things
+    heap_api_msg = blockheap_create(sizeof(APImsg), dconf_get_int("tuning.heap.api-msg", 512), "api messages");
 
     // Return success
     return 0;
 }
 
 int api_fini(void) {
-    // Do stuff and things
+    blockheap_destroy(heap_api_msg);
+    heap_api_msg = NULL;
 
     // Return success
     return 0;

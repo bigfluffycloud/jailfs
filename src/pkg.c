@@ -54,8 +54,8 @@
 #endif                                 /* !defined(MAP_NOSYNC) */
 
 // private module-global stuff 
-BlockHeap *heap_pkg = NULL;            	// BlockHeap for packages
-BlockHeap *heap_pkg_file = NULL;	// BlockHeap for package files
+static BlockHeap *heap_pkg = NULL;            	// BlockHeap for packages
+static BlockHeap *heap_pkg_file = NULL;	// BlockHeap for package files
 static dlink_list pkg_list;            	// List of currently opened packages
 static time_t pkg_lifetime = 0;        	// see pkg_init() for initialization
 
@@ -123,23 +123,6 @@ struct pkg_handle *pkg_handle_byname(const char *path) {
    return NULL;
 }
 
-/*
- * Scan for packages with refcnt == 0 every once in a while and close them
- * 	This helps to reduce closing and reopening packages unneededly
- *	Adjust tuning parameters in jailfs.cf as needed, based on your memory model.
- * if rfcnt == 0 && now > otime + (tuning.time.pkg_gc): release it
- */
-static void pkg_gc(int fd, short event, void *arg) {
-   dlink_node *ptr, *tptr;
-   struct pkg_handle *p;
-
-   DLINK_FOREACH_SAFE(ptr, tptr, pkg_list.head) {
-      p = (struct pkg_handle *)ptr->data;
-
-      if (p->refcnt == 0 && (time(NULL) > p->otime + pkg_lifetime))
-         pkg_release(p);
-   }
-}
 
 /*
  * Open a package, so that we can map files within it
@@ -331,16 +314,7 @@ int pkg_import(const char *path) {
       else
          _f_type = 'f';
 
-      // Add directories...
-      if (_f_type == 'd') {
-         // Skip archive data section...
-         archive_read_data_skip(a);
-         vfs_add_dir(pkgid, _f_name, _f_uid, _f_gid, _f_owner, _f_group, st->st_mode, time(NULL));
-      } else if (_f_type == 'l') {
-         vfs_add_link(pkgid, _f_name, _f_uid, _f_gid, _f_owner, _f_group, st->st_mode, time(NULL));
-      } else {
-         vfs_add_file(pkgid, _f_name, _f_uid, _f_gid, _f_owner, _f_group, st->st_size, st->st_mode, time(NULL));
-      }
+      vfs_add_path(_f_type, pkgid, _f_name, _f_uid, _f_gid, _f_owner, _f_group, st->st_mode, st->st_size, time(NULL));
 
       if (dconf_get_bool("debug.pkg", 0) == 1)
          Log(LOG_DEBUG, "+ %s:%s (user: %d %s) (group: %d %s) mode=%o perms=%s size:%lu@%lu",
@@ -405,6 +379,21 @@ int pkg_extract_file(u_int32_t pkgid, const char *path) {
       Log(LOG_INFO, "SUCCESS extract file to cache: <%d> %s", pkgid, basename(path));
 }
 
+void pkg_gc(void) {
+   dlink_node *ptr, *tptr;
+   struct pkg_handle *p;
+
+   DLINK_FOREACH_SAFE(ptr, tptr, pkg_list.head) {
+      p = (struct pkg_handle *)ptr->data;
+
+      if (p->refcnt == 0 && (time(NULL) > p->otime + pkg_lifetime))
+         pkg_release(p);
+   }
+
+   blockheap_garbagecollect(heap_pkg_file);
+   blockheap_garbagecollect(heap_pkg);
+}
+
 void pkg_init(void) {
    if (!(heap_pkg = blockheap_create(sizeof(struct pkg_handle),
                          dconf_get_int("tuning.heap.pkg", 128), "pkg"))) {
@@ -425,9 +414,4 @@ void pkg_init(void) {
 void pkg_fini(void) {
    blockheap_destroy(heap_pkg);
    blockheap_destroy(heap_pkg_file);
-}
-
-void pkg_garbagecollect(void) {
-   blockheap_garbagecollect(heap_pkg_file);
-   blockheap_garbagecollect(heap_pkg);
 }

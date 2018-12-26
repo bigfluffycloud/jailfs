@@ -771,25 +771,6 @@ int vfs_watch_init(void) {
 ////////////////
 // cache bits //
 ////////////////
-int vfs_add_dir(int pkgid, const char *path, uid_t uid,
-                gid_t gid, const char *owner, const char *group,
-                mode_t mode, time_t ctime) {
-   Log(LOG_DEBUG, "vfs_add_dir: %s", path);
-   return vfs_add_path('d', pkgid, path, uid, gid, owner, group, mode, 0, ctime);
-}
-
-int vfs_add_link(int pkgid, const char *path, uid_t uid,
-                 gid_t gid, const char *owner, const char *group,
-                 mode_t mode, time_t ctime) {
-   Log(LOG_DEBUG, "vfs_add_link: %s", path);
-   return vfs_add_path('l', pkgid, path, uid, gid, owner, group, mode, 0, ctime);
-}
-
-int vfs_add_file(int pkgid, const char *path, uid_t uid, gid_t gid, const char *owner, const char *group,
-                 mode_t mode, size_t size, time_t ctime) {
-   Log(LOG_DEBUG, "vfs_add_file: %s", path);
-   return vfs_add_path('f', pkgid, path, uid, gid, owner, group, mode, size, ctime);
-}
 
 // backend function that does the actual heavy lifting...
 int vfs_add_path(const char type, int pkgid, const char *path, uid_t uid, gid_t gid, const char *owner, const char *group,
@@ -867,8 +848,10 @@ int vfs_unpack_tempfile(vfs_cache_entry *fe) {
 
     // We haven't extracted it yet...
     if (fe->cache_path[0] == NULL) {
+       // Extract it
        path = pkg_extract_file(fe->pkgid, fe->path);
        memcpy(fe->cache_path, path, sizeof(fe->cache_path)-1);
+       // register the unpacked file
     }
 
     fe->refcnt++;

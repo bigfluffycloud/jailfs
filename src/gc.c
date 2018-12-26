@@ -24,6 +24,7 @@ int gc_all(void) {
      int freed = 0;
      freed += api_gc();
      freed += shell_gc();
+     freed += pkg_gc();
      freed += vfs_gc();
 
      blockheap_garbagecollect(dlink_node_heap);

@@ -1,0 +1,39 @@
+[2J
+2018/12/22 07:57:14  info: jailfs: container filesystem  starting up...
+2018/12/22 07:57:14  info: Copyright (C) 2012-2018 bigfluffy.cloud -- See LICENSE in distribution package for terms of use
+2018/12/22 07:57:14 debug: cfg.section.open: 'general'
+2018/12/22 07:57:14  info: configuration loaded with 0 errors and 0 warnings from jailfs.cf (123 lines)
+starting periodic task scheduler (cron)
+Loading internationalization (i18n) support...
+Wrote pid file state/jailfs.pid: 30665
+Log level is set to DEBUG. Please use info or lower in production
+You can disable uninteresting debug sources by setting config:[general]/debug.* to false
+Starting core threads...
+* started thread main:db
+* started thread main:vfs
+* started thread main:cell
+* started thread main:shell
+Opening database state/jailfs.db
+[vfs] file magic (mime-type) services started succesfully
+inotify watcher started for ../../pkg
+package ../../pkg/pdns.tar appears valid, assigning pkgid 1
+package ../../pkg/openssl.tar appears valid, assigning pkgid 2
+package ../../pkg/glibc.tar appears valid, assigning pkgid 3
+package ../../pkg/bash.tar appears valid, assigning pkgid 4
+package ../../pkg/nginx.tar appears valid, assigning pkgid 5
+[cell] Preparing the jail cell for use...
+[cell] jail_chroot(): bound root to vfs at //root
+[cell] setting default environment
+Ready to accept requests
+jailfs shell starting. You are managing jail 'auth-dns'
+Try 'help' for a list of available commands or 'shutdown' to halt the service
+Tab completion is enabled.
+
+
+
+
+
+
+jailfs:main>
+[auth-dns@atl1] running                   cpu: 1.3% mem: 4.3% procs: 14
+[2A[13C
