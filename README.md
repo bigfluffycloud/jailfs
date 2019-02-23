@@ -19,8 +19,11 @@ See examples/ for example jails
 Quick start
 -----------
 
-## If using debian/raspbian/ubuntu/etc
-apt install libev-dev libbsd-dev
+## If using debian-based OS using shared libs (not needed for full-static)
+```
+apt install libev-dev libbsd-dev libmagic-dev libunwind-dev
+```
+## All hosts:
 ```
 # git submodule init
 # git submodule update
