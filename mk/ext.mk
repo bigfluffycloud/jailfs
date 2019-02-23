@@ -20,11 +20,13 @@ kernel_headers_srcdir := ext/kernel-headers
 musl_srcdir := ext/musl
 musl_lib := lib/libc.so
 #libs += ${musl_lib}
+BIN_CC=gcc
+#BIN_CC=./bin/musl-gcc
 
 lib/libc.so: ${musl_srcdir}/lib/libc.so
-#	cp -arvx ${musl_srcdir}/lib/* lib/
-#	cp -avrx ${musl_srcdir}/obj/musl-gcc bin/
-#	cp -avrx ${musl_srcdir}/include/* include/
+	cp -arvx ${musl_srcdir}/lib/* lib/
+	cp -avrx ${musl_srcdir}/obj/musl-gcc bin/
+	cp -avrx ${musl_srcdir}/include/* include/
 	${MAKE} -C ${musl_srcdir} DESTDIR=${PWD} install
 
 ${musl_srcdir}/configure:
@@ -77,7 +79,7 @@ ${libbsd_srcdir}/src/.libs/libbsd.a:
 	${MAKE} -C ${libbsd_srcdir}
 
 ${libbsd_srcdir}/Makefile: ${libbsd_srcdir}/configure
-	CC=musl-gcc (cd ${libbsd_srcdir}; ./configure --prefix=/ \
+	CC=${BIN_CC} (cd ${libbsd_srcdir}; ./configure --prefix=/ \
 	--with-sysroot=${PWD}/lib)
 
 ${libbsd_srcdir}/configure: ${libbsd_srcdir}/autogen.sh
@@ -124,6 +126,8 @@ fuse_cflags := ${CFLAGS} -Iinclude/fuse
 fuse_ldflags := ${LDFLAGS}
 fuse_obj := $(foreach y,${fuse_src},${fuse_objdir}/${y}.o)
 
+${fuse_obj}: include/fuse_config.h
+
 ${fuse_libs}: ${fuse_obj}
 	@echo "[LD] $^ => $@"
 	${AR} -cvq $@ $^
@@ -132,6 +136,9 @@ ${fuse_objdir}/%.o: ${fuse_srcdir}/%.c include/fuse/fuse.h
 	@echo "[CC] $< => $@"
 	${CC}  ${fuse_cflags} -o $@ -c $<
 
+include/fuse_config.h:
+	echo "#define PACKAGE_VERSION \"$(head -1 ext/libfuse/meson.build |cut -f 6 -d \')\"" > $@
+
 include/fuse/fuse.h:
 	mkdir -p include/fuse
 	cp -avrx ext/libfuse/include/*.h include/fuse
@@ -139,11 +146,14 @@ include/fuse/fuse.h:
 ###############
 # libtomcrypt #
 ###############
-ext/libtomcrypt/libtomcrypt.a ext/libtomcrypt/libtomcrypt.so:
-	CC=./bin/musl-gcc ${MAKE} -C ext/libtomcrypt -f makefile.shared
+ext/libtomcrypt/libtomcrypt.so:
+	CC=${BIN_CC} ${MAKE} -C ext/libtomcrypt -f makefile.shared clean all
 
-lib/libtomcrypt.a: # lib/libtomcrypt.so
-	cp ext/libtomcrypt/.libs/libtomcrypt.a lib/
+ext/libtomcrypt/libtomcrypt.a:
+	CC=${BIN_CC} ${MAKE} -C ext/libtomcrypt -f makefile clean all
+
+lib/libtomcrypt.a: ext/libtomcrypt/libtomcrypt.a
+	cp ext/libtomcrypt/libtomcrypt.a lib/
 
 lib/libtomcrypt.so: ext/libtomcrypt/.libs/libtomcrypt.so
 	cp ext/libtomcrypt/.libs/* lib/
