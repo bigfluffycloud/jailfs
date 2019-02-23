@@ -21,7 +21,7 @@ Quick start
 
 ## If using debian-based OS using shared libs (not needed for full-static)
 ```
-apt install libev-dev libbsd-dev libmagic-dev libunwind-dev
+apt install libarchive-dev libbsd-dev libev-dev libmagic-dev libfuse-dev libunwind-dev libsqlite3-dev
 ```
 ## All hosts:
 ```
