@@ -15,3 +15,4 @@
 #define HAVE_COPY_FILE_RANGE
 #define	FUSE_USE_VERSION 34
 #define FUSERMOUNT_DIR "/bin"
+#include "include/fuse_config.h"
