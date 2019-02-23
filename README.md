@@ -19,12 +19,16 @@ See examples/ for example jails
 Quick start
 -----------
 
+## If using debian-based OS using shared libs (not needed for full-static)
+```
+apt install libarchive-dev libbsd-dev libev-dev libmagic-dev libfuse-dev libunwind-dev libsqlite3-dev
+```
+## All hosts:
 ```
 # git submodule init
 # git submodule update
 # make world
 ```
-
 ## If using gentoo/funtoo, try this ;)
 ```
 # for i in glibc busybox openssl pdns; do ./scripts/emerge2pkg $i; done
