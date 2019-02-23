@@ -4,7 +4,7 @@
  *   a read-only (optionally with spillover file) overlay filesystem
  *   via FUSE or (eventually) LD_PRELOAD library.
  *
- * Copyright (C) 2012-2018 BigFluffy.Cloud <joseph@bigfluffy.cloud>
+ * Copyright (C) 2012-2019 BigFluffy.Cloud <joseph@bigfluffy.cloud>
  *
  * Distributed under a MIT license. Send bugs/patches by email or
  * on github - https://github.com/bigfluffycloud/jailfs/
@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
    // XXX: Parses commandline arguments (should be minimal)
 
    Log(LOG_INFO, "jailfs: container filesystem %s starting up...", PKG_VERSION);
-   Log(LOG_INFO, "Copyright (C) 2012-2018 bigfluffy.cloud -- See LICENSE in distribution package for terms of use");
+   Log(LOG_INFO, "Copyright (C) 2012-2019 bigfluffy.cloud -- See LICENSE in distribution package for terms of use");
 
    if (argc > 1) {
       if (chdir(argv[1])) {

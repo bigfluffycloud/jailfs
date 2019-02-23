@@ -2,7 +2,7 @@
 # GNUmakefile:
 #	Top level Makefile for building this project with GNU make
 #
-# Copyright (C) 2018 Bigfluffy.cloud <joseph@bigfluffy.cloud>
+# Copyright (C) 2012-2019 Bigfluffy.cloud <joseph@bigfluffy.cloud>
 #
 # Distributed under a MIT license. Send bugs/patches by email or
 # on github - https://github.com/bigfluffycloud/jailfs/
