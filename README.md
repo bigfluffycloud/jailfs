@@ -19,12 +19,13 @@ See examples/ for example jails
 Quick start
 -----------
 
+## If using debian/raspbian/ubuntu/etc
+apt install libev-dev libbsd-dev
 ```
 # git submodule init
 # git submodule update
 # make world
 ```
-
 ## If using gentoo/funtoo, try this ;)
 ```
 # for i in glibc busybox openssl pdns; do ./scripts/emerge2pkg $i; done
