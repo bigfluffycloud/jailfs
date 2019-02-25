@@ -1,4 +1,7 @@
 jailfs:	A FUSE and libarchive filesystem for safe jails
+Third Party Sites - 
+[![Waffle.io - Issues in progress](https://badge.waffle.io/bigfluffycloud/jailfs.png?label=in%20progress&title=In%20Progress)](http://waffle.io/bigfluffycloud/jailfs)
+[![Build Status](https://travis-ci.org/bigfluffycloud/jailfs.svg?branch=master)](https://travis-ci.org/bigfluffycloud/jailfs)
 
 There are a few dependencies:
 * libarchive
