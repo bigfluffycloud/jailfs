@@ -23,3 +23,16 @@ warden:
 .obj/%.o:src/%.c
 	@echo "[CC] $< => $@"
 	${CC} ${warn_flags} ${CFLAGS} -o $@ -c $<
+
+.obj/kilo.o:src/kilo.c
+	@echo "[CC] [NOWARN] $< => $@"
+	${CC} ${warn_noerror} ${CFLAGS} -o $@ -c $<
+
+###########################
+# XXX: This needs removed #
+###########################
+.obj/vfs.o:src/vfs.c
+	@echo "[CC] [NOWARN] $< => $@"
+	${CC} ${warn_noerror} ${CFLAGS} -o $@ -c $<
+
+####################

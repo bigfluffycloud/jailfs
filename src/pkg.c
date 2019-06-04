@@ -237,6 +237,7 @@ struct archive *pkg_archive_open(const char *path) {
       Log(LOG_ERR, "package %s is not valid: libarchive returned %d", path, r);
       return NULL;
    }
+
    return ret;
 }
 
@@ -277,11 +278,16 @@ int pkg_import(const char *path) {
    db_begin();
 
    // Open the archive file
-   a = pkg_archive_open(path);
+   if ((a = pkg_archive_open(path)) == NULL)
+      return -1;
 
    // Add the package to the database & get the pkgid for it
    pkgid = db_pkg_add(path);
-   Log(LOG_DEBUG, "package %s appears valid, assigning pkgid %d", path, pkgid);
+
+   if (pkgid)
+      Log(LOG_DEBUG, "package %s appears valid, assigning pkgid %d", path, pkgid);
+   else
+      return -1;
 
    // Add the achive's file entries to the database...
    while (TRUE) {
@@ -377,9 +383,11 @@ int pkg_extract_file(u_int32_t pkgid, const char *path) {
 
    if (dconf_get_bool("debug.pkg", 0) == 1)
       Log(LOG_INFO, "SUCCESS extract file to cache: <%d> %s", pkgid, basename(path));
+
+   return 0;
 }
 
-void pkg_gc(void) {
+int pkg_gc(void) {
    dlink_node *ptr, *tptr;
    struct pkg_handle *p;
 
@@ -392,6 +400,8 @@ void pkg_gc(void) {
 
    blockheap_garbagecollect(heap_pkg_file);
    blockheap_garbagecollect(heap_pkg);
+
+   return 0;
 }
 
 void pkg_init(void) {

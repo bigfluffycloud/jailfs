@@ -66,8 +66,8 @@ symtab_ent_t	*debug_symtab_ent(symtab_ent_t *rv, char *line) {
     _line = strchr(_file, ':') + 1;
 
     memcpy(rv->sym_name, _name, sizeof(rv->sym_name));
-    rv->sym_type = _type;
-    *rv->sym_file = &_file;
+    rv->sym_type = _type[0];
+    memcpy(rv->sym_file, _file, sizeof(rv->sym_file));
     rv->sym_line = atoi(_line);
 
     return rv;
@@ -78,7 +78,7 @@ const char *debug_symtab_lookup(const char *symbol, const char *symtab) {
     FILE *fp;
     int line = 0;
     char buf[768];
-    char *skip = buf;
+    char *skip = buf, *cwd = NULL;
 
     if (symtab == NULL) {
        Log(LOG_DEBUG, "symtab_lookup: Using default symtab from config: %s", dconf_get_str("path.symtab", NULL));
@@ -87,9 +87,10 @@ const char *debug_symtab_lookup(const char *symbol, const char *symtab) {
        Log(LOG_DEBUG, "symtab_lookup: Using symtab from caller: %s", symtab);
        st = (char *)symtab;
     }
+    free(cwd);
 
     if (file_exists(st) == 0) {
-       Log(LOG_ERR, "symtab_lookup: Cannot find symtab: %s/%s", get_current_dir_name(), st);
+       Log(LOG_ERR, "symtab_lookup: Cannot find symtab: %s", st);
        return NULL;
     }
 
@@ -124,6 +125,7 @@ const char *debug_symtab_lookup(const char *symbol, const char *symtab) {
           continue;
 
        Log(LOG_DEBUG, "read symtab line: %s", skip);
+       // skip points to the beginning of the symtab line...
     } while(!feof(fp));
 
     return skip;

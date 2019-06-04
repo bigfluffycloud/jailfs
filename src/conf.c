@@ -130,6 +130,12 @@ dict *dconf_load(const char *file) {
          continue;
       }
 
+      // @END exits a section early
+      if (strncasecmp(skip, "@END", 4) == 0) {
+         section = NULL;
+         continue;
+      }
+
       // Handle configuration sections
       if (strncasecmp(section, "general", 7) == 0) {
          // Parse configuration line (XXX: GET RID OF STRTOK!)
@@ -147,9 +153,6 @@ dict *dconf_load(const char *file) {
 #endif
       } else if (strncasecmp(section, "jail", 4) == 0) {
          // We ignore [jail] ection as it is for warden
-         if (strncasecmp(skip, "@END", 4) == 0)
-            section = NULL;
-         continue;
       } else if (strncasecmp(section, "language", 8) == 0) {
          // Parse configuration line (XXX: GET RID OF STRTOK!)
          key = strtok(skip, "= \n");
@@ -161,6 +164,8 @@ dict *dconf_load(const char *file) {
          } else if (strncasecmp(key, "author", 6) == 0) {
            // XXX:
          }
+      } else if (strncasecmp(section, "acl", 3) == 0) {
+         // Process ACL
       } else if (strncasecmp(section, "strings", 7) == 0) {
          // XXX: Store i18n strings in a dictionary
       } else {

@@ -21,7 +21,7 @@ path.config=config
 path.i18n=../../i18n
 path.pid=state/jailfs.pid
 path.modules=../../lib/modules
-path.mountpoint=root
+path.mountpoint=/root
 ; Package pool (shared)
 path.pkg=../../pkg
 path.pkg-local=pkg
@@ -91,7 +91,6 @@ experimental.spillover=false
 #experimental.warden=true
 experimental.watchdog=false
 
-/*
 [modules]
 #simple_template.so
 #fs-etc.so
@@ -99,8 +98,8 @@ experimental.watchdog=false
 
 ; This will be used by warden to manage the processes in the jail
 [jail]
-require glibc
-require busybox
+require libc-bin
+require busybox-static
 require openssl
 require pdns
 expose 53/tcp
@@ -119,4 +118,3 @@ allow -r ro /config/ as /config/
 allow -r ro /pkg/ as /pkg/
 allow -r rw /log/insecure/ as /log/
 @END
-*/

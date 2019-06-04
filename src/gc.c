@@ -17,7 +17,8 @@
 #include <lsd/lsd.h>
 #include "vfs.h"
 #include "shell.h"
-
+#include "pkg.h"
+#include "api.h"
 extern BlockHeap *dlink_node_heap;
 
 int gc_all(void) {
@@ -28,5 +29,6 @@ int gc_all(void) {
      freed += vfs_gc();
 
      blockheap_garbagecollect(dlink_node_heap);
-     return 0;
+
+     return freed;
 }

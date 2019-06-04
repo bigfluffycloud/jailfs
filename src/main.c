@@ -26,6 +26,9 @@
 #include "gc.h"
 #include "vfs.h"
 #include "database.h"
+#include "pkg.h"
+#include "api.h"
+#include "shell.h"
 BlockHeap  *main_heap;
 ThreadPool *main_threadpool;
 

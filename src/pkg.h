@@ -63,4 +63,7 @@ extern int  pkg_import(const char *path);
 /* 'forget' a package, called by vfs_watcher */
 extern int  pkg_forget(const char *path);
 
+// garbage collect
+extern int pkg_gc(void);
+
 #endif	// !defined(__PKG_H)

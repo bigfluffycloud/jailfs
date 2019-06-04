@@ -33,7 +33,7 @@ static int	jail_drop_privs(void) {
 
 static int	jail_chroot(const char *path) {
     if (chdir("/")) {  /* Nothing */ }
-    Log(LOG_INFO, "[cell] jail_chroot(): bound root to vfs at %s/%s", get_current_dir_name(), path);
+    Log(LOG_INFO, "[cell] jail_chroot(): bound root to vfs at %s", path);
     
     return 0;
 }
@@ -49,7 +49,7 @@ static int	jail_namespace_init(void) {
     char *hostname = dconf_get_str("jail.hostname", NULL);
     char oldhost[HOST_NAME_MAX];
 
-    if (rv = unshare(CLONE_OPTIONS)) {
+    if ((rv = unshare(CLONE_OPTIONS))) {
        Log(LOG_EMERG, "unshare: %d: %s", errno, strerror(errno));
        raise(SIGTERM);
     }
@@ -92,6 +92,7 @@ void jail_container_launch(void) {
 // This is what runs in the freshly created (isolated) process space after clone();
 void *inmate_init(void) {
     jail_namespace_init();
+    return NULL;
 }
 
 void *thread_cell_init(void *data) {
@@ -109,14 +110,14 @@ void *thread_cell_init(void *data) {
        jail_env_init();
 
        // Supervise the task
-//       Log(LOG_INFO, "[cell] init: a new inmate has arrived in the cell.");
+       Log(LOG_INFO, "[cell] init: a new inmate has arrived in the cell.");
 
        // Start the init command
        jail_container_launch();
 
        // If process unexpectedly dies, reset the container and start over...
-//       Log(LOG_NOTICE, "[cell] init: inmate has died, replacing him in 3 seconds!");
-       sleep(3);
+       sleep(100000);
+       Log(LOG_INFO, "[cell] cell has exceeded maximum TTL and is being restarted.");
     }
     return NULL;
 }

@@ -11,9 +11,7 @@
 #
 
 dbg/%.symtab: bin/%
-	nm -Clp $< | \
-	awk '{ printf "%s %s %s\n", $$3, $$2, $$4 }' | \
-	egrep -v "(@@|__FUNCTION)" | sort -u > $@
+	nm -Clp -f posix $< > $@
 
 dbg/%.strings: bin/%
 	strings $< > $@

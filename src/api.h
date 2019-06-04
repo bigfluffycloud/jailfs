@@ -47,4 +47,6 @@ extern int api_master_fini(void);
 extern int api_init(void);
 extern int api_fini(void);
 
+// garbage collect
+extern int api_gc(void);
 #endif	// !defined(__API_H)

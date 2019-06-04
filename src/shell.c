@@ -36,6 +36,8 @@
 #include "gc.h"
 
 static BlockHeap *heap_shell_hints = NULL;
+// extern from kilo.c
+extern int kilo_main(const char *filename);
 
 // Shell prompt
 static char shell_prompt[64];
@@ -90,6 +92,7 @@ static int earlylog_append(const char *line) {
        // Append it
        Log(LOG_SHELL, "early-log: %s", line);
     }
+    return 0;
 }
 
 static void earlylog_fini(void) {
@@ -147,7 +150,7 @@ void Log(int level, const char *msg, ...) {
    }
 
    // If configuration isn't up yet, all messages are info priority
-   if (&conf != NULL && conf.dict != NULL)
+   if (conf.dict != NULL)
       min_lvl = LogLevel(dconf_get_str("log.level", "info"));
    else
       min_lvl = LogLevel("info");
@@ -233,7 +236,7 @@ void cmd_edit(dict *args) {
    if (args == NULL)
       return;
 
-   ac = dict_get(args, "1", NULL);
+   ac = (char *)dict_get(args, "1", NULL);
 
    if (ac != NULL) {
       char path[PATH_MAX];
@@ -251,8 +254,7 @@ void cmd_shutdown(dict *args) {
 }
 
 static void cmd_user(dict *args) {
-   Log(LOG_SHELL, "User error: replace user\nGoodbye!");
-   raise(SIGTERM);
+   Log(LOG_SHELL, ">> User tools <<");
 }
 
 static void cmd_run(dict *args) {
@@ -405,12 +407,10 @@ static struct shell_cmd menu_mem[] = {
    { .cmd = NULL, .desc = NULL, .menu = NULL },
 };
 
-#if	defined(CONFIG_MODULES)
 static struct shell_cmd menu_module[] = {
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
    { .cmd = NULL, .desc = NULL, .menu = NULL },
 };
-#endif	// defined(CONFIG_MODULES)
 
 static struct shell_cmd menu_net[] = {
    { "debug", "show/toggle debugging status", HINT_CYAN, 1, 1, 0, 1, NULL, menu_value },
@@ -446,9 +446,7 @@ static struct shell_cmd menu_main[] = {
    { "hooks", "Hooks management", HINT_CYAN, 1, 1, 0, -1, NULL, menu_hooks },
    { "logging", "Log file", HINT_CYAN, 1, 1, 0, -1, NULL, menu_logging },
    { "memory", "Memory manager", HINT_CYAN, 1, 1, 0, -1, NULL, menu_mem },
-#if	defined(CONFIG_MODULES)
    { "module", "Loadable module support", HINT_CYAN, 1, 1, 0, -1, NULL, menu_module },
-#endif	// defined(CONFIG_MODULES)
    { "net", "Network", HINT_CYAN, 1, 1, 0, -1, NULL, menu_net },
    { "pkg", "Package commands", HINT_CYAN, 1, 1, 1, -1, NULL, menu_pkg },
    { "profiling", "Profiling support", HINT_CYAN, 1, 1, 0, -1, NULL, menu_profiling },
@@ -458,7 +456,7 @@ static struct shell_cmd menu_main[] = {
    { "shutdown", "Terminate the service", HINT_RED, 1, 0, 0, 0, cmd_shutdown, NULL },
    { "stats", "Display statistics", HINT_CYAN, 1, 0, 0, 0, cmd_stats, NULL },
    { "thread", "Thread manager", HINT_CYAN, 1, 1, 0, -1, NULL, menu_thread },
-   { "user", "Tools for users", HINT_YELLOW, 0, 0, 0, 0, cmd_user, NULL },
+   { "user", "User manager", HINT_YELLOW, 0, 0, 0, 0, cmd_user, NULL },
    { "vfs", "Virtual FileSystem (VFS)", HINT_CYAN, 1, 1, 1, -1, NULL, menu_vfs },
    { .cmd = NULL, .desc = NULL, .menu = NULL },
 };
@@ -492,7 +490,7 @@ static struct shell_cmd *shell_get_menu(const char *line) {
 }
 
 static int shell_command(const char *line) {
-   char *p = NULL, key[8];
+   char *p = NULL, key[13];
    char *tmp;
    struct shell_cmd *menu = NULL;
    dict *args = dict_new();
@@ -506,8 +504,8 @@ static int shell_command(const char *line) {
 
    // Duplicate the (const) string given to us, so we can mangle it...
    tmp = mem_alloc(strlen(line));
-   memset(tmp, 0, sizeof(tmp));
-   memcpy(tmp, args, sizeof(tmp));
+   memset(tmp, 0, sizeof(*tmp));
+   memcpy(tmp, args, sizeof(*tmp));
 
    if (tmp == NULL)
       return -1;
@@ -517,7 +515,7 @@ static int shell_command(const char *line) {
       if (p != NULL) {
          i++;
          memset(key, 0, sizeof(key));
-         snprintf(key, sizeof(key) - 1, "%d", i);
+         snprintf(key, sizeof(key) - 1, "%*d", 11, i);
          dict_add(args, key, p);
       } else
          break;
@@ -583,7 +581,7 @@ static void shell_completion(const char *buf, linenoiseCompletions *lc) {
    struct shell_cmd *menu = shell_get_menu(shell_level);
 
 // XXX: Something's fucky here... We'll get around to it eventually...
-#if	0
+#if	1
    while (&menu[i] != NULL) {
       if (strncasecmp(buf, menu[i].cmd, strlen(buf)) == 0) {
          linenoiseAddCompletion(lc, menu[i].cmd);
@@ -721,7 +719,7 @@ void *thread_shell_init(void *data) {
    linenoiseHistorySetMaxLen(dconf_get_int("shell.history-length", 100));
    linenoiseHistoryLoad("state/.shell.history");
 
-   // We need to properly lock rather than sleep!
+   // XXX: We need to properly lock rather than sleep!
    sleep(2);
    Log(LOG_INFO, "Ready to accept requests");
    Log(LOG_SHELL, "jailfs shell starting. You are managing jail '%s'", dconf_get_str("jail.name", NULL));
@@ -765,6 +763,7 @@ void *thread_shell_fini(void *data) {
    return NULL;
 }
 
-void shell_gc(void) {
+int shell_gc(void) {
    blockheap_garbagecollect(heap_shell_hints);
+   return 0;
 }

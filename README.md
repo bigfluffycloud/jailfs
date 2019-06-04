@@ -68,3 +68,9 @@ git submodule init; git submodule update
 
 Then try again. You really should read the instructions above, if you want
 to be successful using this mess....
+
+
+
+--------
+There's a bunch of stubs in places for distros i don't currently target...
+right now i mostly only have ubuntu (and gentoo which is being phased out).

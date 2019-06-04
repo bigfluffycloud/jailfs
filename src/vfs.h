@@ -129,4 +129,7 @@ extern int vfs_add_path(const char type, int pkgid, const char *path, uid_t uid,
 // Look up a path, either returning NULL (maybe setting errno) or a valid cache entry
 extern vfs_cache_entry *vfs_find(const char *path);
 
+// garbage collect
+extern int vfs_gc(void);
+
 #endif	// !defined(__VFS_H)

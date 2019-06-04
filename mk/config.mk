@@ -11,7 +11,7 @@
 #
 # enable gprof profiling (slower, noisy)
 CONFIG_PROFILING=n
-CONFIG_DEBUGGER=n
+CONFIG_DEBUGGER=y
 
 # debug block allocator? should be unneeded as it slows it down
 CONFIG_DEBUG_BALLOC=n
@@ -28,7 +28,7 @@ CONFIG_STRIP_LIBS=n
 
 # enable loadable modules: THIS HAS SECURITY IMPLICATIONS
 # you should understand them before enabling it
-CONFIG_MODULES=n
+CONFIG_MODULES=y
 
 ####################
 # Compiler options #
@@ -48,9 +48,8 @@ endif
 
 CFLAGS += -I./include -I. -I./src
 CFLAGS += -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -fPIC -D_GNU_SOURCE
-#warn_noerror := -Wall -Wno-unused -Wno-strict-aliasing
-#warn_flags := ${warn_noerror} #-Werror
-warn_flags :=
+warn_noerror := -Wall -Wno-unused -Wno-strict-aliasing
+warn_flags := ${warn_noerror} -Werror
 LDFLAGS := -L./lib/
 #LDFLAGS += -lcrypto
 LDFLAGS += -lc -lz -lpthread -lrt -lsqlite3 

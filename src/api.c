@@ -35,7 +35,7 @@ APImsg *api_create_message(const char *sender, const char *dest, const char *cmd
     }
 
     // Create the command packet
-    memset(p, 0, sizeof(p));
+    memset(p, 0, sizeof(*p));
     memcpy(p->sender, sender, API_ADDR_MAX);
     memcpy(p->dest, dest, API_ADDR_MAX);
     memcpy(p->cmd, cmd, API_CMD_MAX);
@@ -53,8 +53,9 @@ int api_destroy_message(APImsg *msg) {
     return 0;
 }
 
-void api_gc(void) {
+int api_gc(void) {
     blockheap_garbagecollect(heap_api_msg);
+    return 0;
 }
 
 int api_init(void) {

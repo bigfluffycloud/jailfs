@@ -54,9 +54,14 @@ struct shell_cmd {
 
 // This is the ONLY public interface that should be used!
 extern void Log(int priority, const char *fmt, ...);
+//XXX:  internal for shell thread..
+extern void log_open(const char *target);
 
 // Set up & tear down the shell thread
 extern void *thread_shell_init(void *data);
 extern void *thread_shell_fini(void *data);
+
+// garbage collect
+extern int shell_gc(void);
 
 #endif	// !defined(__SHELL_H)

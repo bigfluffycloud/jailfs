@@ -10,8 +10,13 @@
 #	equery list \* --format="\$name" |
 # Scan through 
 if [ "$(which equery 2>/dev/null)x" != "x" ]; then
-   equery -C files $1 |  tar --no-recursion -T- -c -v -f pkg/$1.tar; \
+   equery -C files $1 |  tar --no-recursion -T- -c -v -f pkg/$1.tar
 fi
+
 if [ "$(which pacman 2>/dev/null)x" != "x" ]; then
-   pacman -Ql $1 | cut -f 2- -d ' ' | tar --no-recursion -T- -c -v -f pkg/$1.tar;
+   pacman -Ql $1 | cut -f 2- -d ' ' | tar --no-recursion -T- -c -v -f pkg/$1.tar
+fi
+
+if [ "$(which dpdkg 2>/dev/null)x" != "x" ]; then
+   dpkg -L $1 | cut -f 2 -d ' ' | tar --no-recursion -T- -c -v -f pkg/$1.tar
 fi

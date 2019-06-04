@@ -21,6 +21,7 @@
 #include "database.h"
 #include "vfs.h"
 #include "shell.h"
+#include "threads.h"
 
 static pthread_mutex_t db_mutex;
 

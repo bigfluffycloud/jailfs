@@ -276,6 +276,7 @@ void vfs_op_open(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
    Log(LOG_DEBUG, "%s:%d:%s", __FILE__, __LINE__, __FUNCTION__);
 
    // Check if a spillover file exists
+i =  0;
 /*
    if ((i = db_query(QUERY_INODE, "SELECT * FROM spillover WHERE inode = %d", (u_int32_t) ino))) {
      // if file doesn't exist in cache but exist in spillover, extract to cache
@@ -476,7 +477,7 @@ void vfs_fuse_fini(void) {
 }
 
 void vfs_fuse_init(void) {
-   Log(LOG_DEBUG, "mountpoint: %s/%s", get_current_dir_name(), mountpoint);
+   Log(LOG_DEBUG, "mountpoint: (%s)%s", get_current_dir_name(), mountpoint);
 
    if ((vfs_fuse_chan = fuse_mount(mountpoint, &vfs_fuse_args)) == NULL) {
       Log(LOG_EMERG, "FUSE: mount error");
@@ -499,11 +500,12 @@ void vfs_fuse_init(void) {
 }
 
 // garbage collector
-void vfs_gc(void) {
+int vfs_gc(void) {
    blockheap_garbagecollect(heap_vfs_cache);
    blockheap_garbagecollect(heap_vfs_handle);
    blockheap_garbagecollect(heap_vfs_inode);
    blockheap_garbagecollect(heap_vfs_watch);
+   return 0;
 }
 
 ////////////
@@ -834,6 +836,7 @@ int vfs_add_path(const char type, int pkgid, const char *path, uid_t uid, gid_t 
 
 // Find a cache entry
 vfs_cache_entry *vfs_find(const char *path) {
+    return NULL;
 }
 
 int vfs_unpack_tempfile(vfs_cache_entry *fe) {

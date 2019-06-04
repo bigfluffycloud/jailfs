@@ -1,0 +1,30 @@
+#!/bin/sh
+D_ARCH=$(arch)
+D_VARIANT=minbase
+D_SUITE=disco
+#D_KEYRING=keyring
+#D_SIGCHECK=--no-check-gpg
+
+[ -z "$1" ] && {
+   echo "Usage: $(basename $0) [jaildir]"
+   exit 1
+}
+
+######
+# Generate includes from jailfs.cf in the container
+D_INCLUDE=$(egrep '^require.' $1/jailfs.cf | awk '{ print $2 }' | paste -s -d, -)
+
+######
+# Use debootstrap (with cache) to calculate dependancies and fetch needed packages
+######
+debootstrap \
+	--arch=${D_ARCH} \
+	--variant=${D_VARIANT} \
+	--merged-usr \
+	--include=joe,tmux,build-essential,${D_INCLUDE} \
+	${D_KEYRING} \
+	${D_SIGCHECK} \
+	--cache-dir=$(pwd)/cache/debs \
+	--download-only \
+	--verbose --log-extra-deps \
+	${D_SUITE}

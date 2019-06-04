@@ -12,7 +12,7 @@
  * No warranty of any kind. Good luck!
  */
 #include <stdlib.h>
-// #include <bsd/string.h>
+#include <bsd/string.h>
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
@@ -246,6 +246,7 @@ void str_parv_expand(char *dest, int max, int initial, int parc, char *parv[]) {
 
    if (parv[initial])
       strlcpy(dest, parv[initial], max);
+
    for (i = initial + 1; i < parc; i++) {
       strlcat(dest, " ", max);
       strlcat(dest, parv[i], max);
