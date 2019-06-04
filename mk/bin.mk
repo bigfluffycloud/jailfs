@@ -11,7 +11,7 @@
 
 bin/jailfs: ${jailfs_objs} lib/libsd.a
 	@echo "[LD] ($^) => $@"
-	${CC} -o $@ ${LDFLAGS} $^ ${libs} ${extra_libs}
+	${CC} -o $@ $^ ${libs} ${extra_libs} ${LDFLAGS}
 ifeq (${CONFIG_STRIP_BINS}, y)
 	@echo "[STRIP] $@"
 	@strip $@

@@ -21,3 +21,8 @@ git-commit:
 
 git-init:
 	git submodule init
+
+ext/libfuse/include/fuse.h:
+	git submodule init
+	git submodule update
+

@@ -53,7 +53,7 @@ CFLAGS += -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -fPIC -D_GNU_SOURCE
 warn_flags :=
 LDFLAGS := -L./lib/
 #LDFLAGS += -lcrypto
-LDFLAGS += -lz -pthread -lrt -lsqlite3 
+LDFLAGS += -lc -lz -lpthread -lrt -lsqlite3 
 LDFLAGS += -lm -lev -lunwind -lmagic -ldl -larchive
 LDFLAGS += -lbsd -ltomcrypt -lfuse
 lib_ldflags += -shared -ldl

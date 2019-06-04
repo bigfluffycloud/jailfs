@@ -39,4 +39,4 @@ include mk/help.mk
 include mk/git.mk
 
 # Build *everything* suitable for a release
-world: ${libs} ${bins} ${debug_targets} ${extra_targets}
+world: ext/libfuse/include/fuse.h ${libs} ${bins} ${debug_targets} ${extra_targets}
