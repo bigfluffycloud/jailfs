@@ -101,7 +101,7 @@ experimental.watchdog=false
 require libc-bin
 require busybox-static
 require openssl
-require pdns
+require pdns-server
 expose 53/tcp
 expose 53/udp
 ; pdns_server will drop privileges once it binds ports it needs

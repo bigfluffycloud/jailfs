@@ -40,6 +40,7 @@
 #include "cron.h"
 #include "vfs.h"
 #include "database.h"
+#include "pkg.h"
 #include <fuse/fuse.h>
 #include <fuse/fuse_lowlevel.h>
 #include <fuse/fuse_opt.h>
@@ -784,7 +785,7 @@ int vfs_add_path(const char type, int pkgid, const char *path, uid_t uid, gid_t 
        return -1;
     }
 
-    if (path == NULL || *path == NULL) {
+    if (path == NULL) {
        Log(LOG_ERR, "vfs_add_path: in pkg %d got NULL path", pkgid);
        return -1;
     }
@@ -803,8 +804,12 @@ int vfs_add_path(const char type, int pkgid, const char *path, uid_t uid, gid_t 
     // Set up the cache entry structure
     memset(fe, 0, sizeof(vfs_cache_entry));
     memcpy(fe->path, path, sizeof(fe->path)-1);
-    memcpy(fe->owner, owner, sizeof(fe->owner)-1);
-    memcpy(fe->group, group, sizeof(fe->group)-1);
+
+    if (owner != NULL)
+       memcpy(fe->owner, owner, sizeof(fe->owner)-1);
+
+    if (group != NULL)
+       memcpy(fe->group, group, sizeof(fe->group)-1);
     fe->pkgid = pkgid;
     fe->uid = uid;
     fe->gid = gid;
@@ -850,7 +855,7 @@ int vfs_unpack_tempfile(vfs_cache_entry *fe) {
     }
 
     // We haven't extracted it yet...
-    if (fe->cache_path[0] == NULL) {
+    if (fe->cache_path == NULL) {
        // Extract it
        path = pkg_extract_file(fe->pkgid, fe->path);
        memcpy(fe->cache_path, path, sizeof(fe->cache_path)-1);

@@ -131,5 +131,6 @@ extern vfs_cache_entry *vfs_find(const char *path);
 
 // garbage collect
 extern int vfs_gc(void);
-
+//
+extern int vfs_watch_init(void);
 #endif	// !defined(__VFS_H)

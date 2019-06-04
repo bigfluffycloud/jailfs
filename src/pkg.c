@@ -58,6 +58,7 @@ static BlockHeap *heap_pkg = NULL;            	// BlockHeap for packages
 static BlockHeap *heap_pkg_file = NULL;	// BlockHeap for package files
 static dlink_list pkg_list;            	// List of currently opened packages
 static time_t pkg_lifetime = 0;        	// see pkg_init() for initialization
+int g_pkgid = 1;
 
 static dlink_node *pkg_findnode(struct pkg_handle *pkg) {
    dlink_node *ptr, *tptr;
@@ -282,12 +283,10 @@ int pkg_import(const char *path) {
       return -1;
 
    // Add the package to the database & get the pkgid for it
-   pkgid = db_pkg_add(path);
+//   pkgid = db_pkg_add(path);
+   pkgid = g_pkgid++;
 
-   if (pkgid)
-      Log(LOG_DEBUG, "package %s appears valid, assigning pkgid %d", path, pkgid);
-   else
-      return -1;
+   Log(LOG_DEBUG, "package %s appears valid, assigning pkgid %d", path, pkgid);
 
    // Add the achive's file entries to the database...
    while (TRUE) {
@@ -341,12 +340,13 @@ int pkg_import(const char *path) {
 }
 
 
-int pkg_extract_file(u_int32_t pkgid, const char *path) {
+char *pkg_extract_file(u_int32_t pkgid, const char *path) {
    char       *tmp = NULL;
    int         db_id = -1, r = 0;
    struct archive *a;
    struct archive_entry *aentry;
    char _f_type = '-';
+   char *cache_path = NULL;
 
    if (dconf_get_bool("debug.pkg", 0) == 1)
       Log(LOG_DEBUG, "BEGIN extractfile <%d> %s", pkgid, basename(path));
@@ -384,7 +384,7 @@ int pkg_extract_file(u_int32_t pkgid, const char *path) {
    if (dconf_get_bool("debug.pkg", 0) == 1)
       Log(LOG_INFO, "SUCCESS extract file to cache: <%d> %s", pkgid, basename(path));
 
-   return 0;
+   return cache_path;
 }
 
 int pkg_gc(void) {

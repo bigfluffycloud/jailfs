@@ -52,6 +52,9 @@ extern struct pkg_handle *pkg_open(const char *path);
 /* Release our instance of package */
 extern void pkg_close(struct pkg_handle *pkg);
 
+//
+extern char *pkg_extract_file(u_int32_t pkgid, const char *path);
+
 // Stuff for mmap()ing files from packages - XXX: BROKEN!
 extern void pkg_unmap_file(struct pkg_file_mapping *p);
 extern struct pkg_file_mapping *pkg_map_file(const char *path, size_t len, off_t offset);
