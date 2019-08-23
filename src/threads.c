@@ -134,8 +134,7 @@ Thread *thread_shutdown(ThreadPool *pool, Thread *thr) {
 }
 
 /*
- * You *MUST* call these at the beginning and end of your threads or bad things will happen,
- * like in-ability to access appworx services or crashes when you request them
+ * You *MUST* call these at the beginning and end of your threads or bad things will happen
  */
 void thread_entry(dict *_conf) {
     /* block until main thread is read */
@@ -149,6 +148,5 @@ void thread_entry(dict *_conf) {
 }
 
 void thread_exit(dict *_conf) {
-    // XXX: See if this is old enough to exit
     pthread_exit(NULL);
 }

@@ -30,14 +30,13 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include "balloc.h"
+#include "conf.h"
 #include "dlink.h"
 int         dlink_count = 0;
 BlockHeap  *dlink_node_heap;
 
 void dlink_init(void) {
-   if (!(dlink_node_heap = blockheap_create(sizeof(dlink_node), 1024, "dlink_node"))) {
-//        blockheap_create(sizeof(dlink_node),
-//                         dconf_get_int("tuning.heap.node", 1024), "dlink_node"))) {
+   if (!(dlink_node_heap = blockheap_create(sizeof(dlink_node), dconf_get_int("tuning.heap.node", 1024), "dlink_node"))) {
       fprintf(stderr, "dlink_init(): block allocator failed\n");
       raise(SIGSEGV);
    }

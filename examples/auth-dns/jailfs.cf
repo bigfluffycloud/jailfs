@@ -23,7 +23,7 @@ path.pid=state/jailfs.pid
 path.modules=../../lib/modules
 path.mountpoint=/root
 ; Package pool (shared)
-path.pkg=../../pkg
+path.pkg=../../cache/debs
 path.pkg-local=pkg
 path.spillover=pkg
 path.statedir=state

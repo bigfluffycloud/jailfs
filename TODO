@@ -1,10 +1,13 @@
---- Redesign database to be a generic storage system
+shell:
+	conf dump >[filename] to dump to a file
+
+-- Redesign database to be a generic storage system
 	- Flat file
 	- sqlite (rewrite!)
 	- nosqlite (ext/nosqlite)
 	- in-memory (dict based?)
 
---- Add FreeBSD support
+-- Add FreeBSD support
 
 * jail stuff
    CAP_SYS_CHROOT Parent, CAP_NET_BIND_SERVICE both (if client needs)

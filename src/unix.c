@@ -45,10 +45,11 @@ extern void conf_reload(void);
 static void signal_handler(int signal) {
    Log(LOG_WARNING, "Caught signal %d", signal);
 
-   if (signal == SIGTERM || signal == SIGQUIT)
+   if (signal == SIGTERM || signal == SIGQUIT || signal == SIGKILL)
       conf.dying = 1;
 
    if (signal == SIGSEGV) {
+      // Emit a hopefully helpful stack dump
       stack_unwind();
 #if	defined(CONFIG_MODULES)
       if (in_module) {
@@ -68,7 +69,7 @@ static void signal_handler(int signal) {
    } else if (signal == SIGCHLD) { /* Prevent zombies */
       while(waitpid(-1, NULL, WNOHANG) > 0)
          ;
-   } else {
+   } else if (signal == SIGTERM || signal == SIGKILL) {
       goodbye();
    }
 }
@@ -101,6 +102,7 @@ static void signal_init(void) {
    sigfillset(&action.sa_mask);
    action.sa_handler = signal_handler;
 
+#define	setsz(x)	(sizeof(x) / sizeof(x[0]))
    do {
      if (signal_set[i]) {
         /* If SIGSEGV, switch to debugger stack */
@@ -113,7 +115,7 @@ static void signal_init(void) {
            Log(LOG_ERR, "sigaction: signum:%d [%d] %s", i, errno, strerror(errno));
      }
      i++;
-   } while (i < (sizeof(signal_set)/sizeof(signal_set[0])));
+   } while (i < (sizeof(signal_set) / sizeof(signal_set[0])));
 }
 
 int daemon_restart(void) {

@@ -83,7 +83,7 @@ int module_unload(Module *mp) {
       dlclose(mp->dlptr);
 
    /* If module path, free it */
-   if (mp->path)
+   if (mp->path != NULL)
       mem_free(mp->path);
 
    return 0;

@@ -69,6 +69,7 @@ static void usage(int argc, char **argv) {
    printf("Options:\n");
    printf("\t<jaildir>\t\tThe directory containing jailfs.cf, etc for the desired jail\n");
    printf("\t[action]\t\tOptionally an action to take on the jail ([start]|stop|status)\n\n");
+   printf("Your jaildir must be properly laid out (see man jailfs.cf for details).\n");
    exit(1);
 }
 
@@ -101,9 +102,11 @@ int main(int argc, char **argv) {
    evt_timer_add_periodic(gc_all,
      "gc.blockheap",
       timestr_to_time(dconf_get_str("tuning.timer.blockheap_gc", NULL), 60));
-   api_init();				// Initialize MASTER thread
+
+   api_init();					// Initialize MASTER thread
    conf.dict = dconf_load("jailfs.cf");		// Load config
    log_open(dconf_get_str("path.log", "file://jailfs.log"));
+
    cron_init();					// Periodic events
    i18n_init();					// Load translations
    dlink_init();				// Doubly linked lists
@@ -128,7 +131,7 @@ int main(int argc, char **argv) {
      if (mod == NULL)
         continue;
 
-     Log(LOG_INFO, "Plugin @ 0x%x", mod);
+     Log(LOG_INFO, "Loaded plugin [%s] @ 0x%x", mod->name, mod);
    } while ((mod = list_next(m_cur)));
 #endif	// defined(CONFIG_MODULES)
 
