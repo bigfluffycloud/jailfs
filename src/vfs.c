@@ -716,7 +716,6 @@ vfs_watch_t *vfs_watch_add(const char *path) {
 }
 
 /* XXX: We need to scan the watch lists and remove subdirs too -bk */
-
 int vfs_watch_remove(vfs_watch_t * watch) {
    int         rv;
    dlink_node *ptr;

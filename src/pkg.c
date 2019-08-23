@@ -372,7 +372,7 @@ char *pkg_extract_file(u_int32_t pkgid, const char *path) {
       }
 
       // Is this the file we came for?
-      
+      // XXX: Fix this
    }
    archive_read_close(a);
 
