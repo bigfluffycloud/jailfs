@@ -242,8 +242,9 @@ void cmd_edit(dict *args) {
    if (ac != NULL) {
       char path[PATH_MAX];
       memset(path, 0, sizeof(path));
-      snprintf(path, sizeof(path) - 1, "./%s", ac);
-      snprintf(path, sizeof(path) - 1, "%s/%s", ac, dconf_get_str("path.mountpoint", NULL));
+// XXX: Add an option to chose
+//      snprintf(path, sizeof(path) - 1, "./%s", ac);
+      snprintf(path, sizeof(path) - 1, "%s/%s", dconf_get_str("path.mountpoint", NULL), ac);
       kilo_main(path);
    }
 }
