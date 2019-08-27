@@ -18,5 +18,6 @@ extern void goodbye(void);             /* from main.c */
 extern int daemon_restart(void);
 extern void host_init(void);
 extern int pidfile_open(const char *path);
+extern void pidfile_close(void);
 
 #endif	/* !defined(__unix_h) */

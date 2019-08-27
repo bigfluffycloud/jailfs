@@ -4,7 +4,7 @@
  *   a read-only (optionally with spillover file) overlay filesystem
  *   via FUSE or (eventually) LD_PRELOAD library.
  *
- * Copyright (C) 2012-2018 BigFluffy.Cloud <joseph@bigfluffy.cloud>
+ * Copyright (C) 2012-2019 BigFluffy.Cloud <joseph@bigfluffy.cloud>
  *
  * Distributed under a MIT license. Send bugs/patches by email or
  * on github - https://github.com/bigfluffycloud/jailfs/
@@ -14,6 +14,9 @@
 #include <sys/resource.h>
 #include <sys/wait.h>
 #include <lsd/lsd.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdlib.h>
 #include "shell.h"
 #include "unix.h"
 #include "conf.h"
@@ -27,6 +30,8 @@ char **g_argv = NULL;
 extern int module_dying(int signal);
 /* src/conf.c */
 extern void conf_reload(void);
+static char pidfile_name[PATH_MAX];
+static FILE *pidfile = NULL;
 
 /*
  * Signal handling
@@ -162,23 +167,39 @@ void host_init(void) {
    signal_init();
 }
 
+void pidfile_close(void) {
+   // close the file descriptor
+   // XXX: Should we do this in pidfile_open? I prefer to keep lockfiles open until exit()
+   // XXX: unless we're hurting for fds
+   fclose(pidfile);
+   unlink(pidfile_name);
+   Log(LOG_INFO, "Unlinked pidfile %s", pidfile_name);
+   memset(pidfile_name, 0, sizeof(pidfile_name));
+}
+
 int	pidfile_open(const char *path) {
-   FILE *fp = NULL;
    pid_t pid = 0;
+
+   if (pidfile_name[0] != (char)0) {
+      Log(LOG_DEBUG, "it seems you've called pidfile_open() more than once...");
+      return -1;
+   }
 
    if (file_exists(path)) {
       errno = EADDRINUSE;
       return -1;
    }
 
-   if ((fp = fopen(path, "w")) == NULL) {
+   if ((pidfile = fopen(path, "w")) == NULL) {
       Log(LOG_EMERG, "pidfile_open: failed to open pid file %s: %d (%s)", path, errno, strerror(errno));
    }
 
    pid = getpid();
-   fprintf(fp, "%i\n", pid);
-   fflush(fp);
-   fclose(fp);
-   Log(LOG_INFO, "Wrote pid file %s: %d", path, pid);
+   fprintf(pidfile, "%i\n", pid);
+   fflush(pidfile);
+   // Store the pid file name so we can unlink it on exit
+   memset(pidfile_name, 0, sizeof(pidfile_name));
+   memcpy(pidfile_name, path, sizeof(pidfile_name));
+   Log(LOG_INFO, "Wrote pid file %s: %d", pidfile_name, pid);
    return 0;
 }

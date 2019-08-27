@@ -57,9 +57,7 @@ void goodbye(void) {
    dlink_fini();
    dconf_fini();
 
-   if (pidfile && file_exists(pidfile))
-      unlink(pidfile);
-
+   pidfile_close();
    exit(EXIT_SUCCESS);
 }
 
@@ -96,6 +94,8 @@ int main(int argc, char **argv) {
    host_init();					// Platform initialization
    conf.born = conf.now = time(NULL);		// Set birthday and clock (cron maintains)
    umask(0077);					// Restrict umask on new files
+   api_init();					// Initialize MASTER thread
+   conf.dict = dconf_load("jailfs.cf");		// Load config
    evt_init();					// Socket event handler
    blockheap_init();				// Block heap allocator
    // Start garbage collector
@@ -103,8 +103,6 @@ int main(int argc, char **argv) {
      "gc.blockheap",
       timestr_to_time(dconf_get_str("tuning.timer.blockheap_gc", NULL), 60));
 
-   api_init();					// Initialize MASTER thread
-   conf.dict = dconf_load("jailfs.cf");		// Load config
    log_open(dconf_get_str("path.log", "file://jailfs.log"));
 
    cron_init();					// Periodic events
@@ -177,6 +175,5 @@ int main(int argc, char **argv) {
       ev_loop(evt_loop, 0);
    }
 
-   goodbye();
    return EXIT_SUCCESS;
 }

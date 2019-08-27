@@ -70,13 +70,14 @@ static LogHndl *mainlog;
 
 //////////////////////////////////////////////////////////
 // Initial (early) log support, storing messages in memory until logfile is open
-
+//
+// This isn't finished, but wil
 static char *logger_earlylog = NULL,
             *earlylog_p = NULL;
 
 static void *earlylog_init(size_t bufsz) {
      if (logger_earlylog != NULL) {
-        Log(LOG_DEBUG, "earlylog_init() called twice, why?");
+        Log(LOG_DEBUG, "earlylog_init() called twice, why? check your code...");
         return logger_earlylog;
      }
 
@@ -521,7 +522,7 @@ static int shell_command(const char *line) {
          break;
    }
    // Command that apply in all menus:
-   if (strncasecmp(line, "help", 4) == 0) {
+   if (strncasecmp(line, "help", 4) == 0 || (strlen(line) == 1 && line[0] == '?')) {
       cmd_help(args);
    } else if (strncasecmp(line, "vfs edit", 8) == 0) {
       if (*(line+8) != ' ') {
@@ -723,7 +724,7 @@ void *thread_shell_init(void *data) {
    sleep(2);
    Log(LOG_INFO, "Ready to accept requests");
    Log(LOG_SHELL, "jailfs shell starting. You are managing jail '%s'", dconf_get_str("jail.name", NULL));
-   Log(LOG_SHELL, "Try 'help' for a list of available commands or 'shutdown' to halt the service\nTab completion is enabled.");
+   Log(LOG_SHELL, "Try 'help' or ? for a list of available commands or 'shutdown' to halt the service\nTab completion is enabled.");
    shell_level_set("main");
 
    // Support console resizing
