@@ -28,7 +28,7 @@ Extensive modularity
 - We scan packages available (eventually only jailconf pkgs).
 - When files are accessed (or when scanned if precache enabled)
   - Check the cache if it exists
-    - If so, increase refcnt and return the file via FUE read-only (??)
+    - If so, increase refcnt and return the file via FUSE read-only (??)
   - Extract the file from the package into cache
     - Increase refcnt and return the file via FUSE read-only (??) from cache
   ? Support spillover files for changed files (someday)

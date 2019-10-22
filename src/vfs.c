@@ -124,7 +124,7 @@ static void fill_statbuf(ext2_ino_t ino, pkg_inode_t * inode, struct stat *st) {
 ////////////////////
 static void vfs_fuse_read_cb(struct ev_loop *loop, ev_io * w, int revents) {
    int         res = 0;
-#if	0
+#if	1
    struct fuse_chan *ch = fuse_session_next_chan(vfs_fuse_sess, NULL);
    struct fuse_chan *tmpch = ch;
    size_t      bufsize = fuse_chan_bufsize(ch);
@@ -386,7 +386,7 @@ static void vfs_dir_walk_recurse(const char *path, int depth) {
          if (ext == NULL)
             return;
 
-         pkg_import(buf);
+         pkg_open(buf);
       }
    }
 
@@ -689,7 +689,7 @@ void vfs_inotify_evt_get(struct ev_loop *loop, ev_io * w, int revents) {
       snprintf(path, PATH_MAX - 1, "%s/%s", ((vfs_watch_t *) ptr->data)->path, e->name);
 
       if (e->mask & IN_CLOSE_WRITE || e->mask & IN_MOVED_TO)
-         pkg_import(path);
+         pkg_open(path);
       else if (e->mask & IN_DELETE || e->mask & IN_MOVED_FROM)
          pkg_forget(path);
       else if (e->mask & IN_DELETE_SELF) {
@@ -859,6 +859,7 @@ int vfs_unpack_tempfile(vfs_cache_entry *fe) {
        path = pkg_extract_file(fe->pkgid, fe->path);
        memcpy(fe->cache_path, path, sizeof(fe->cache_path)-1);
        // register the unpacked file
+       
     }
 
     fe->refcnt++;

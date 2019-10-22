@@ -90,8 +90,9 @@ static void pkg_release(struct pkg_handle *pkg) {
       pkg->name = NULL;
    }
 
-   // Unlock the package source file 
-//   flock(pkg->fd, LOCK_UN);
+   // Unlock the package source file
+   if (dconf_get_bool("vfs.locking.host", 0))
+      flock(pkg->fd, LOCK_UN);
 
    // close handle, if exists 
    if (pkg->fd) {
@@ -126,50 +127,6 @@ struct pkg_handle *pkg_handle_byname(const char *path) {
 
 
 /*
- * Open a package, so that we can map files within it
- *
- * First, we try to see if the package already exists
- * in the cache. If it does, use it.
- *
- * Either way, we bump the ref count
- */
-struct pkg_handle *pkg_open(const char *path) {
-   struct pkg_handle *t;
-   int         res = 0;
-
-   // try to find an existing handle for the package
-   // If this fails, create one and cache it...
-   if ((t = pkg_handle_byname(path)) == NULL) {
-      t = blockheap_alloc(heap_pkg);
-      t->name = str_dup(path);
-
-      if ((t->fd = open(t->name, O_RDONLY)) < 0) {
-         Log(LOG_ERR, "failed opening pkg %s, bailing...", t->name);
-         pkg_release(t);
-         return NULL;
-      }
-
-/*
-      // Try to acquire an exclusive lock, fail if we cant 
-      if (flock(t->fd, LOCK_EX | LOCK_NB) == -1) {
-         Log(LOG_ERR, "failed locking package %s, bailing...", t->name);
-         pkg_release(t);
-         return NULL;
-      }
-*/
-
-      // Add handle to the cache list 
-      dlink_add_tail_alloc(t, &pkg_list);
-   }
-
-   // Adjust last used time and reference count either way... 
-   t->otime = time(NULL);
-   t->refcnt++;
-
-   return t;
-}
-
-/*
  * reduce the package's reference count
  *
  * We no longer free the package as the garbage collector
@@ -202,6 +159,7 @@ void pkg_unmap_file(struct pkg_file_mapping *p) {
    p = NULL;
 }
 
+// This is used for uncompressed (mmap()able) files
 struct pkg_file_mapping *pkg_map_file(const char *path, size_t len, off_t offset) {
    struct pkg_file_mapping *p;
 
@@ -243,108 +201,123 @@ struct archive *pkg_archive_open(const char *path) {
 }
 
 //
-// pkg_import: Scan the contents of a package and add them to the VFS view
-//
+// pkg_open: Scan the contents of a package and add them to the VFS view
 // XXX: We should add a 'preload' option to jailconf to cache all files in
 // XXX: important packages. - jm 12/13/18
-int pkg_import(const char *path) {
+// First, we try to see if the package already exists
+// in the cache. If it does, use it.
+// Either way, we bump the ref count
+struct pkg_handle *pkg_open(const char *path) {
+   struct pkg_handle *t;
+   int         res = 0;
    char       *tmp = NULL;
    int         infd, outfd;
    int         db_id = -1;
    struct archive *a;
    struct archive_entry *aentry;
    int r;
-   int pkgid = -1;
    char _f_type = '-';
+   
+   Log(LOG_DEBUG, "pkg_open: beginning for: %s", path);
 
-   /*
-    * Upgrading a package should consist of replace it with
-    * one with a higher version number than the old one.
-    *
-    * A flag will be set on the package, indicating it is to be removed
-    * and when the refcnt hits ZERO, it will be unlinked by the system.
-    * This won't work until the persistent database is in place
-    * and will also require the assistance of the package manager to ensure
-    * nothing gets left behind. -- For now, it's not gonna happen
-    */
-   if (pkg_handle_byname(path)) {
-      Log(LOG_CRIT, "BUG: Active package %s was changed, ignoring...");
-      return EXIT_SUCCESS;
-   }
+   // try to find an existing handle for the package
+   // If this fails, create one and cache it...
+   if ((t = pkg_handle_byname(path)) == NULL) {
+      // Start transaction
+      db_begin();
 
-   if (dconf_get_bool("debug.pkg", 0) == 1)
-      Log(LOG_DEBUG, "BEGIN import pkg %s", basename(path));
+      t = blockheap_alloc(heap_pkg);
+      t->name = str_dup(path);
+      t->pkgid = db_pkg_add(path);
 
-   // Start transaction
-   db_begin();
-
-   // Open the archive file
-   if ((a = pkg_archive_open(path)) == NULL)
-      return -1;
-
-   // Add the package to the database & get the pkgid for it
-//   pkgid = db_pkg_add(path);
-   pkgid = g_pkgid++;
-
-   Log(LOG_DEBUG, "package %s appears valid, assigning pkgid %d", path, pkgid);
-
-   // Add the achive's file entries to the database...
-   while (TRUE) {
-      r = archive_read_next_header(a, &aentry);
-      if (r == ARCHIVE_EOF)
-         break;
-
-      if (r != ARCHIVE_OK) {
-         db_rollback();
-         Log(LOG_DEBUG, "pkg_import: libarchive read_next_header error %d: %s", r, archive_error_string(a));
-         break;
+      if ((t->fd = open(t->name, O_RDONLY)) < 0) {
+         Log(LOG_ERR, "failed opening pkg %s, bailing...", t->name);
+         pkg_release(t);
+         return NULL;
       }
 
-      // Get file attributes from libarchive
-      const char *_f_name = archive_entry_pathname(aentry);
-      const char *_f_owner = archive_entry_uname(aentry);
-      const char *_f_group = archive_entry_gname(aentry);
-      const uid_t _f_uid = archive_entry_uid(aentry);
-      const gid_t _f_gid = archive_entry_gid(aentry);
-      const mode_t _f_mode = archive_entry_perm(aentry);
-      const char *_f_perm = archive_entry_strmode(aentry);
-      const struct stat *st = archive_entry_stat(aentry); 
+      // Try to acquire an exclusive lock, fail if we cant 
+      if (dconf_get_bool("vfs.locking.host", 0) && flock(t->fd, LOCK_EX | LOCK_NB) == -1) {
+         Log(LOG_ERR, "failed locking package %s, bailing...", t->name);
+         pkg_release(t);
+         return NULL;
+      }
 
-      ////////////
-      // XXX: Determine type more sanely
-      if (*_f_perm == 'd')
-         _f_type = 'd';
-      else if (*_f_perm == 'l')
-         _f_type = 'l';
-      else
-         _f_type = 'f';
+      // Add handle to the cache list 
+      dlink_add_tail_alloc(t, &pkg_list);
 
-      vfs_add_path(_f_type, pkgid, _f_name, _f_uid, _f_gid, _f_owner, _f_group, st->st_mode, st->st_size, time(NULL));
+      // begin...
+      if (dconf_get_bool("debug.pkg", 0) == 1)
+         Log(LOG_DEBUG, "BEGIN import pkg %s", basename(path));
+
+      // Open the archive file
+      if ((a = pkg_archive_open(path)) == NULL)
+         return NULL;
+
+      Log(LOG_DEBUG, "package %s appears valid, assigning pkgid %d", path, t->pkgid);
+
+      // Add the achive's file entries to the database...
+      while (TRUE) {
+         r = archive_read_next_header(a, &aentry);
+         if (r == ARCHIVE_EOF)
+            break;
+
+         if (r != ARCHIVE_OK) {
+            db_rollback();
+            Log(LOG_DEBUG, "pkg_open: libarchive read_next_header error %d: %s", r, archive_error_string(a));
+            break;
+         }
+
+         // Get file attributes from libarchive
+         const char *_f_name = archive_entry_pathname(aentry);
+         const char *_f_owner = archive_entry_uname(aentry);
+         const char *_f_group = archive_entry_gname(aentry);
+         const uid_t _f_uid = archive_entry_uid(aentry);
+         const gid_t _f_gid = archive_entry_gid(aentry);
+         const mode_t _f_mode = archive_entry_perm(aentry);
+         const char *_f_perm = archive_entry_strmode(aentry);
+         const struct stat *st = archive_entry_stat(aentry); 
+
+         ////////////
+         // XXX: Determine type more sanely
+         if (*_f_perm == 'd')
+            _f_type = 'd';
+         else if (*_f_perm == 'l')
+            _f_type = 'l';
+         else
+            _f_type = 'f';
+
+         vfs_add_path(_f_type, t->pkgid, _f_name, _f_uid, _f_gid, _f_owner, _f_group, st->st_mode, st->st_size, time(NULL));
+
+         if (dconf_get_bool("debug.pkg", 0) == 1)
+            Log(LOG_DEBUG, "+ %s:%s (user: %d %s) (group: %d %s) mode=%o perms=%s size:%lu@%lu",
+                basename(path), _f_name, _f_uid, _f_owner, _f_gid, _f_group, _f_mode, _f_perm, st->st_size, 0);
+      }
+
+      archive_read_close(a);
+
+      if ((r = archive_read_free(a)) != ARCHIVE_OK)
+         Log(LOG_ERR, "possible memory leak! archive_read_free() returned %d", r);
+
+      db_commit();
 
       if (dconf_get_bool("debug.pkg", 0) == 1)
-         Log(LOG_DEBUG, "+ %s:%s (user: %d %s) (group: %d %s) mode=%o perms=%s size:%lu@%lu",
-             basename(path), _f_name, _f_uid, _f_owner, _f_gid, _f_group, _f_mode, _f_perm, st->st_size, 0);
+         Log(LOG_INFO, "SUCCESS import pkg %s", basename(path));
    }
 
-   archive_read_close(a);
-
-   if ((r = archive_read_free(a)) != ARCHIVE_OK)
-      Log(LOG_ERR, "possible memory leak! archive_read_free() returned %d", r);
-
-   db_commit();
-
-   if (dconf_get_bool("debug.pkg", 0) == 1)
-      Log(LOG_INFO, "SUCCESS import pkg %s", basename(path));
-
-   return EXIT_SUCCESS;
+   // Adjust last used time and reference count either way... 
+   t->otime = time(NULL);
+   t->refcnt++;
+ 
+   return t;
 }
 
 
 char *pkg_extract_file(u_int32_t pkgid, const char *path) {
-   char       *tmp = NULL;
    int         db_id = -1, r = 0;
    struct archive *a;
    struct archive_entry *aentry;
+   struct pkg_handle *pkg;
    char _f_type = '-';
    char *cache_path = NULL;
 
@@ -352,27 +325,25 @@ char *pkg_extract_file(u_int32_t pkgid, const char *path) {
       Log(LOG_DEBUG, "BEGIN extractfile <%d> %s", pkgid, basename(path));
 
    // Find package by pkgid, so we can look up it's path....
-//   tmp = pkg_
+   pkg = pkg_open(path);
+
    // Open the archive file
    a = pkg_archive_open(path);
 
-   // Add the package to the database & get the pkgid for it
-   pkgid = db_pkg_add(path);
-   Log(LOG_DEBUG, "package %s appears valid, assigning pkgid %d", path, pkgid);
+   // Add the package to the database & get the pkg->pkgid for it
+   pkg->pkgid = db_pkg_add(path);
+   Log(LOG_DEBUG, "package %s appears valid, assigning pkgid %d", path, pkg->pkgid);
 
-   // Add the achive's file entries to the database...
    while (TRUE) {
       r = archive_read_next_header(a, &aentry);
       if (r == ARCHIVE_EOF)
          break;
 
       if (r != ARCHIVE_OK) {
-         Log(LOG_DEBUG, "pkg_import: libarchive read_next_header error %d: %s", r, archive_error_string(a));
+         Log(LOG_DEBUG, "pkg_open: libarchive read_next_header error %d: %s", r, archive_error_string(a));
          break;
       }
-
-      // Is this the file we came for?
-      // XXX: Fix this
+      // extract it...
    }
    archive_read_close(a);
 
@@ -382,7 +353,7 @@ char *pkg_extract_file(u_int32_t pkgid, const char *path) {
    db_commit();
 
    if (dconf_get_bool("debug.pkg", 0) == 1)
-      Log(LOG_INFO, "SUCCESS extract file to cache: <%d> %s", pkgid, basename(path));
+      Log(LOG_INFO, "SUCCESS extract file to cache: <%d> %s", pkg->pkgid, basename(path));
 
    return cache_path;
 }
@@ -408,12 +379,13 @@ void pkg_init(void) {
    if (!(heap_pkg = blockheap_create(sizeof(struct pkg_handle),
                          dconf_get_int("tuning.heap.pkg", 128), "pkg"))) {
       Log(LOG_EMERG, "pkg_init(): block allocator failed - pkg");
-      raise(SIGTERM);
+      raise(SIGABRT);
    }
+
    if (!(heap_pkg_file = blockheap_create(sizeof(struct pkg_file_mapping),
                          dconf_get_int("tuning.heap.files", 128), "files"))) {
       Log(LOG_EMERG, "pkg_init(): block allocator failed - files");
-      raise(SIGTERM);
+      raise(SIGABRT);
    }
 
    // We take care of package file cleanup here too...

@@ -75,8 +75,9 @@ int main(int argc, char **argv) {
    int         fd;
    int i, thr_cnt = 0;
 
-   // XXX: Parses commandline arguments (should be minimal)
-
+   // XXX: Parse commandline arguments (should be minimal)
+   // -d --debug: Debug mode
+   // -f --fg --foreground: Foregroun mode
    Log(LOG_INFO, "jailfs: container filesystem %s starting up...", PKG_VERSION);
    Log(LOG_INFO, "Copyright (C) 2012-2019 bigfluffy.cloud -- See LICENSE in distribution package for terms of use");
 
@@ -98,6 +99,7 @@ int main(int argc, char **argv) {
    conf.dict = dconf_load("jailfs.cf");		// Load config
    evt_init();					// Socket event handler
    blockheap_init();				// Block heap allocator
+
    // Start garbage collector
    evt_timer_add_periodic(gc_all,
      "gc.blockheap",

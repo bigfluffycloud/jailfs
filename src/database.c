@@ -22,6 +22,7 @@
 #include "vfs.h"
 #include "shell.h"
 #include "threads.h"
+extern int g_pkgid;	// pkg.c
 
 static pthread_mutex_t db_mutex;
 
@@ -47,7 +48,8 @@ int db_pkg_add(const char *path) {
    if (stat(path, &sb))
       return -errno;
 
-   return pkgid;
+//   return pkgid;
+    return ++g_pkgid;	// from pkg.c
 }
 
 /* type: [f]ile, [d]ir, [l]ink, [p]ipe, f[i]fo, [c]har, [b]lock, [s]ocket */

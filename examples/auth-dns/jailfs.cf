@@ -42,6 +42,7 @@ pkgdir.prescan=true
 shell.history-length=100
 ; This should come from [jail] section but we aren't that fancy yet...
 init.cmd=/init.sh
+vfs.locking.host=true
 
 ;;;;;;;;;;;
 ; Logging ;
